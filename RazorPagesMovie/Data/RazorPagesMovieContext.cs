@@ -5,7 +5,7 @@ namespace RazorPagesMovie.Models
     {
         public RazorPagesMovieContext(DbContextOptions<RazorPagesMovieContext> options):base(options)
         {
-
+            
         }
 
         public DbSet<Movie> Movies{get;set;} 

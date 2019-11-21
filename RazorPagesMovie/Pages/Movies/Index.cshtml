@@ -14,7 +14,7 @@
     <thead>
         <tr>
             <th>
-                @Html.DisplayNameFor(model => model.Movie[0].Title)
+                @Html.DisplayNameFor(model=> model.Movie[0].Title)
             </th>
             <th>
                 @Html.DisplayNameFor(model => model.Movie[0].ReleaseDate)
@@ -32,7 +32,8 @@
 @foreach (var item in Model.Movie) {
         <tr>
             <td>
-                @Html.DisplayFor(modelItem => item.Title)
+                @item.Title
+                <!-- @Html.DisplayFor(modelItem => item.Title) -->
             </td>
             <td>
                 @Html.DisplayFor(modelItem => item.ReleaseDate)
