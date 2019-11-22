@@ -1,0 +1,18 @@
+<ul>
+    <li *ngFor="let item of list;let key = index;">
+        <a [routerLink]="['/newscontent']" [queryParams]="{aid:key}">{{key}}--{{item}}</a>
+    </li>
+</ul>
+
+<br>
+<h2>newscontent2使用动态路由的方式</h2>
+<ul>
+    <li *ngFor="let item of list;let key = index;">
+        <a [routerLink]="[ '/newscontent2/',key  ]">{{key}}--{{item}}</a>
+    </li>
+</ul>
+<br>
+<h2>js跳转</h2>
+<button (click)="redirectGetJs()">get方式js跳转</button>
+<br>
+<button (click)="redirectRouteJs()">路由方式js跳转</button>
