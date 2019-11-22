@@ -1,4 +1,5 @@
-@page
+@page "{id:int?}" 
+@* 定义路由，而且必须要提供整型参数，如果没有提供或者提供的不是整数，则会抛出404错误 *@
 @model RazorPagesMovie.Pages.Movies.DeleteModel
 
 @{
