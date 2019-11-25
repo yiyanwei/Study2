@@ -4,7 +4,8 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace RazorPagesMovie.Models
-{    public static class SeedData
+{
+    public static class SeedData
     {
         public static void Initialize(IServiceProvider serviceProvider)
         {
@@ -21,7 +22,8 @@ namespace RazorPagesMovie.Models
                         Title = "速度与激情番外篇",
                         ReleaseDate = DateTime.Parse("2019-10-22"),
                         Genre = "杰森斯坦森",
-                        Price = 30.00M
+                        Price = 30.00M,
+                        Rating = "三星"
                     },
 
                     new Movie
@@ -29,7 +31,8 @@ namespace RazorPagesMovie.Models
                         Title = "Ghostbusters ",
                         ReleaseDate = DateTime.Parse("1984-3-13"),
                         Genre = "Comedy",
-                        Price = 8.99M
+                        Price = 8.99M,
+                        Rating = "二星"
                     },
 
                     new Movie
@@ -37,7 +40,8 @@ namespace RazorPagesMovie.Models
                         Title = "Ghostbusters 2",
                         ReleaseDate = DateTime.Parse("1986-2-23"),
                         Genre = "Comedy",
-                        Price = 9.99M
+                        Price = 9.99M,
+                        Rating = "四星"
                     },
 
                     new Movie
@@ -45,7 +49,8 @@ namespace RazorPagesMovie.Models
                         Title = "Rio Bravo",
                         ReleaseDate = DateTime.Parse("1959-4-15"),
                         Genre = "Western",
-                        Price = 3.99M
+                        Price = 3.99M,
+                        Rating = "三星"
                     });
                 //保存更改
                 context.SaveChanges();
