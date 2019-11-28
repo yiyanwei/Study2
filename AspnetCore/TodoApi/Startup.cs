@@ -33,6 +33,10 @@ namespace TodoApi
                 options.RespectBrowserAcceptHeader = true;
                 //添加xml数据格式的输出
                 options.OutputFormatters.Add(new XmlSerializerOutputFormatter());
+                //添加普通文本的请求
+                options.OutputFormatters.Add(new TodoApi.Common.TextPlainOutputFormatter());
+                //options.OutputFormatters.Add(new SystemTextJsonOutputFormatter)
+                //options.OutputFormatters.Add()
             });
             services.AddDbContext<TodoContext>(options=>{
                 options.UseInMemoryDatabase("TodoList");

@@ -9,6 +9,8 @@ using TodoApi.Models;
 
 namespace TodoApi.Controllers
 {
+    //返回固定的json格式
+    //[Produces("application/json")]
     [Route("api/[controller]")]
     [ApiController]
     public class TodoItemsController : ControllerBase
