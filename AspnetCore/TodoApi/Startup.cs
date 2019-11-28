@@ -13,6 +13,7 @@ using Microsoft.Extensions.Logging;
 using TodoApi.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Mvc.Formatters;
+using Microsoft.AspNetCore.Mvc.Formatters.Xml;
 
 namespace TodoApi
 {
@@ -37,7 +38,7 @@ namespace TodoApi
                 options.OutputFormatters.Add(new TodoApi.Common.TextPlainOutputFormatter());
                 //options.OutputFormatters.Add(new SystemTextJsonOutputFormatter)
                 //options.OutputFormatters.Add()
-            });
+            }).AddXmlSerializerFormatters();
             services.AddDbContext<TodoContext>(options=>{
                 options.UseInMemoryDatabase("TodoList");
             });

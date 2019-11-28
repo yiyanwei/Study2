@@ -11,6 +11,7 @@ namespace TodoApi.Controllers
 {
     //返回固定的json格式
     //[Produces("application/json")]
+    [FormatFilter]
     [Route("api/[controller]")]
     [ApiController]
     public class TodoItemsController : ControllerBase
@@ -24,13 +25,16 @@ namespace TodoApi.Controllers
 
         // GET: api/TodoItems
         [HttpGet]
+        [Route("[action]/{format?}")]
         public async Task<ActionResult<IEnumerable<TodoItem>>> GetTodoItems()
         {
             return await _context.TodoItems.ToListAsync();
         }
 
         // GET: api/TodoItems/5
-        [HttpGet("{id}")]
+        //("{id}")
+        [HttpGet]
+        [Route("[action]/{id}.{format?}")]
         public async Task<ActionResult<TodoItem>> GetTodoItem(int id)
         {
             var todoItem = await _context.TodoItems.FindAsync(id);

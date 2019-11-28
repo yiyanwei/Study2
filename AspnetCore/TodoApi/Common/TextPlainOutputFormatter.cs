@@ -6,6 +6,7 @@ using Microsoft.Net.Http.Headers;
 using Microsoft.AspNetCore.Mvc.Formatters;
 using Microsoft.Extensions.Logging;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace TodoApi.Common
 {
@@ -29,6 +30,7 @@ namespace TodoApi.Common
         {
             //IServiceProvider serviceProvider = context.HttpContext.RequestServices;
             //var logger = serviceProvider.GetService(typeof(ILogger<TextPlainOutputFormatter>)) as ILogger;
+            //var logger = serviceProvider.GetRequiredService<ILogger<TextPlainOutputFormatter>>();
             var response = context.HttpContext.Response;
 
             //定义输出的对象
