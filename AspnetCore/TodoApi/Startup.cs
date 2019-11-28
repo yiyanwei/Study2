@@ -12,6 +12,7 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using TodoApi.Models;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Mvc.Formatters;
 
 namespace TodoApi
 {
@@ -27,7 +28,12 @@ namespace TodoApi
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddControllers();
+            services.AddControllers((options)=>{
+                //优先使用客户端指定的数据格式，资源的表述
+                options.RespectBrowserAcceptHeader = true;
+                //添加xml数据格式的输出
+                options.OutputFormatters.Add(new XmlSerializerOutputFormatter());
+            });
             services.AddDbContext<TodoContext>(options=>{
                 options.UseInMemoryDatabase("TodoList");
             });
