@@ -21,3 +21,6 @@ bld/
 !.vscode/launch.json
 !.vscode/extensions.json
 .history/*
+
+#Filter Db
+BooksData/
