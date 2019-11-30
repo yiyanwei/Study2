@@ -12,6 +12,7 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using BooksApi.Models;
+using BooksApi.Services;
 
 namespace BooksApi
 {
@@ -29,7 +30,11 @@ namespace BooksApi
         {
             services.Configure<BookstoreDatabaseSettings>(Configuration.GetSection(nameof(BookstoreDatabaseSettings)));
             services.AddSingleton<IBookstoreDatabaseSettings>(sp=>sp.GetRequiredService<IOptions<BookstoreDatabaseSettings>>().Value);
-            services.AddControllers();
+            services.AddControllers()
+            //使用大驼峰序列化json
+            .AddNewtonsoftJson(options=>options.UseMemberCasing());
+            //添加BookService到依赖注入，单例模式,因为mongo client的重用原则
+            services.AddSingleton<BookService>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
