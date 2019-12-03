@@ -21,21 +21,30 @@ namespace RazorPagesSchool.Pages_Departments
         [BindProperty]
         public Department Department { get; set; }
 
-        public async Task<IActionResult> OnGetAsync(int? id)
-        {
-            if (id == null)
-            {
-                return NotFound();
-            }
+        public string ConcurrencyErrorMessage { get; set; }
 
-            Department = await _context.Departments.FirstOrDefaultAsync(m => m.DepartmentId == id);
+        public async Task<IActionResult> OnGetAsync(int id, bool? concurrencyError)
+        {
+            Department = await _context.Departments
+                .AsNoTracking()
+                .FirstOrDefaultAsync(m => m.DepartmentId == id);
 
             if (Department == null)
             {
                 return NotFound();
             }
+
+            if (concurrencyError.GetValueOrDefault())
+            {
+                ConcurrencyErrorMessage = "The record you attempted to delete "
+                  + "was modified by another user after you selected delete. "
+                  + "The delete operation was canceled and the current values in the "
+                  + "database have been displayed. If you still want to delete this "
+                  + "record, click the Delete button again.";
+            }
             return Page();
         }
+
 
         public async Task<IActionResult> OnPostAsync(int? id)
         {
@@ -44,15 +53,21 @@ namespace RazorPagesSchool.Pages_Departments
                 return NotFound();
             }
 
-            Department = await _context.Departments.FindAsync(id);
-
-            if (Department != null)
+            try
             {
-                _context.Departments.Remove(Department);
-                await _context.SaveChangesAsync();
-            }
+                if (await _context.Departments.AnyAsync(t=>t.DepartmentId == id))
+                {
+                    _context.Departments.Remove(Department);
+                    await _context.SaveChangesAsync();
+                }
 
-            return RedirectToPage("./Index");
+                return RedirectToPage("./Index");
+            }
+            catch (DbUpdateConcurrencyException)
+            {
+                return RedirectToPage("./Delete",
+                    new { concurrencyError = true, id = id });
+            }
         }
     }
 }
