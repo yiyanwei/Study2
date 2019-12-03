@@ -112,5 +112,20 @@ namespace TodoApi.Controllers
         {
             return _context.TodoItems.Any(e => e.Id == id);
         }
+
+
+        [HttpPost]
+        [Route("[action]")]
+        public async Task<string> GetItemsByIdAndName(int id,string name)
+        {
+            var model = await _context.TodoItems.SingleOrDefaultAsync(i=>
+            i.Id==id&&i.Name.Contains(name));
+            string iscomplete = "init";
+            if(model!=null)
+            {
+                iscomplete = model.IsComplete.ToString();
+            }
+            return iscomplete;
+        }
     }
 }
