@@ -6,6 +6,8 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace RazorPagesSchool
 {
@@ -20,7 +22,18 @@ namespace RazorPagesSchool
             Host.CreateDefaultBuilder(args)
                 .ConfigureWebHostDefaults(webBuilder =>
                 {
-                    webBuilder.UseStartup<Startup>();
+                    //webBuilder.UseStartup<Startup>();
+                    webBuilder
+                    .ConfigureServices(services=>{
+                        //services.AddTransient
+                    })
+                    //
+                    .Configure(app=>{
+                        
+                    });
+                })
+                .ConfigureServices(services=>{
+                    
                 });
     }
 }
