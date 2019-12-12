@@ -40,33 +40,94 @@ namespace RazorPagesSchool.Pages_Departments
 
         // To protect from overposting attacks, please enable the specific properties you want to bind to, for
         // more details see https://aka.ms/RazorPagesCRUD.
-        public async Task<IActionResult> OnPostAsync()
+        public async Task<IActionResult> OnPostAsync(int id)
         {
-            if (!ModelState.IsValid)
+            var departmentToUpdate = await _context.Departments
+                .FirstOrDefaultAsync(m => m.DepartmentId == id);
+
+            if (departmentToUpdate == null)
             {
-                return Page();
+                return HandleDeletedDepartment();
             }
 
-            _context.Attach(Department).State = EntityState.Modified;
+             _context.Entry(departmentToUpdate)
+                .Property("RowVersion").OriginalValue = Department.RowVersion;
 
-            try
+            if (await TryUpdateModelAsync<Department>(
+                departmentToUpdate,
+                "Department",
+                s => s.Name, s => s.StartDate, s => s.Budget))
             {
-                await _context.SaveChangesAsync();
-            }
-            catch (DbUpdateConcurrencyException)
-            {
-                if (!DepartmentExists(Department.DepartmentId))
+                try
                 {
-                    return NotFound();
+                    await _context.SaveChangesAsync();
+                    return RedirectToPage("./Index");
                 }
-                else
+                catch (DbUpdateConcurrencyException ex)
                 {
-                    throw;
+                    var exceptionEntry = ex.Entries.Single();
+                    var clientValues = (Department)exceptionEntry.Entity;
+                    var databaseEntry = exceptionEntry.GetDatabaseValues();
+                    if (databaseEntry == null)
+                    {
+                        ModelState.AddModelError(string.Empty, "Unable to save. " +
+                            "The department was deleted by another user.");
+                        return Page();
+                    }
+
+                    var dbValues = (Department)databaseEntry.ToObject();
+                    await setDbErrorMessage(dbValues, clientValues, _context);
+
+                    // Save the current RowVersion so next postback
+                    // matches unless an new concurrency issue happens.
+                    Department.RowVersion = (byte[])dbValues.RowVersion;
+                    // Clear the model error for the next postback.
+                    ModelState.Remove("Department.RowVersion");
                 }
             }
 
-            return RedirectToPage("./Index");
+            return Page();
+
         }
+
+        private IActionResult HandleDeletedDepartment()
+        {
+            var deletedDepartment = new Department();
+            // ModelState contains the posted data because of the deletion error
+            // and will overide the Department instance values when displaying Page().
+            ModelState.AddModelError(string.Empty,
+                "Unable to save. The department was deleted by another user.");
+            return Page();
+        }
+
+        private async Task setDbErrorMessage(Department dbValues,
+                Department clientValues, SchoolContext context)
+        {
+
+            if (dbValues.Name != clientValues.Name)
+            {
+                ModelState.AddModelError("Department.Name",
+                    $"Current value: {dbValues.Name}");
+            }
+            if (dbValues.Budget != clientValues.Budget)
+            {
+                ModelState.AddModelError("Department.Budget",
+                    $"Current value: {dbValues.Budget:c}");
+            }
+            if (dbValues.StartDate != clientValues.StartDate)
+            {
+                ModelState.AddModelError("Department.StartDate",
+                    $"Current value: {dbValues.StartDate:d}");
+            }
+
+            ModelState.AddModelError(string.Empty,
+                "The record you attempted to edit "
+              + "was modified by another user after you. The "
+              + "edit operation was canceled and the current values in the database "
+              + "have been displayed. If you still want to edit this record, click "
+              + "the Save button again.");
+        }
+
 
         private bool DepartmentExists(int id)
         {
