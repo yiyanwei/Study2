@@ -10,7 +10,9 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using AspnetCoreStudy.Services;
+using AspnetCoreStudy.Models;
 
 namespace AspnetCoreStudy
 {
@@ -34,6 +36,9 @@ namespace AspnetCoreStudy
 
             // OperationService depends on each of the other Operation types.
             services.AddSingleton<OperationService, OperationService>();
+
+            services.Configure<Authentication>(Configuration.GetSection(nameof(Authentication)));
+            services.AddSingleton<Authentication>(sp => sp.GetRequiredService<IOptions<Authentication>>().Value);
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
