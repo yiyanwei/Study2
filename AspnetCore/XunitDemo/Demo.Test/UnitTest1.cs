@@ -11,7 +11,6 @@ namespace Demo.Test
         public UnitTest1()
         {
             _service = new Service();
-
         }
 
         [Fact]
