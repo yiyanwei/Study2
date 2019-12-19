@@ -30,11 +30,22 @@ namespace BooksApi
         {
             services.Configure<BookstoreDatabaseSettings>(Configuration.GetSection(nameof(BookstoreDatabaseSettings)));
             services.AddSingleton<IBookstoreDatabaseSettings>(sp=>sp.GetRequiredService<IOptions<BookstoreDatabaseSettings>>().Value);
-            services.AddControllers()
+            services.AddControllers();
             //使用大驼峰序列化json
-            .AddNewtonsoftJson(options=>options.UseMemberCasing());
+            //.AddNewtonsoftJson(options=>options.UseMemberCasing());
             //添加BookService到依赖注入，单例模式,因为mongo client的重用原则
             services.AddSingleton<BookService>();
+
+            //add swagger
+            services.AddSwaggerGen((options)=>{
+                options.SwaggerDoc("v1",new Swashbuckle.AspNetCore.Swagger.Info{
+                    Version = "v1.1.0",
+                    Title = "Books Api",
+                    Description = "框架集合",
+                    TermsOfService = "None",
+                    Contact = new Swashbuckle.AspNetCore.Swagger.Contact{Name="yiyanwei",Email="yiyanwei@live.com"}
+                });
+            });
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -49,6 +60,12 @@ namespace BooksApi
 
             app.UseRouting();
 
+            app.UseSwagger();
+            app.UseSwaggerUI(c =>
+            {
+                c.SwaggerEndpoint("/swagger/v1/swagger.json", "ApiHelp V1");
+            });
+
             app.UseAuthorization();
 
             app.UseEndpoints(endpoints =>
@@ -58,3 +75,5 @@ namespace BooksApi
         }
     }
 }
+
+//https://www.cnblogs.com/RayWang/p/9216820.html
