@@ -19,5 +19,12 @@ namespace Demo.Test
             var number = _service.GetNumber(1);
             Assert.Equal(1,1);
         }
+
+        [Fact]
+        public void GetUserInfoTest()
+        {
+            var result = _service.GetUserInfo(1);
+            Assert.NotNull(result);
+        }
     }
 }
