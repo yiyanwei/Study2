@@ -23,6 +23,10 @@ namespace BooksApi.Controllers
         /// <summary>
         /// 获取所有的书籍信息
         /// </summary>
+        /// <remarks>
+        /// 例子:
+        /// Get api/books/
+        /// </remarks>
         /// <returns>书籍信息的List集合</returns>
         [HttpGet]
         public ActionResult<List<Book>> Get() =>
