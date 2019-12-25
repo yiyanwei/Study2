@@ -57,6 +57,9 @@ namespace BooksApi
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
+            //ConfigurationBinder.Bind()
+            
+            //RabbitMQ.Client.ConnectionFactory
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
