@@ -55,10 +55,10 @@ namespace BooksApi
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
+        public void Configure(IApplicationBuilder app, IWebHostEnvironment env,Microsoft.AspNetCore.Hosting.IApplicationLifetime applLifetime)
         {
             //ConfigurationBinder.Bind()
-            
+
             //RabbitMQ.Client.ConnectionFactory
             if (env.IsDevelopment())
             {
@@ -81,6 +81,17 @@ namespace BooksApi
             // {
             //     c.SwaggerEndpoint("/swagger/v1.0/swagger.json", "My Demo API (V 1.0)");
             // });
+
+            ServiceEntity serviceEntity = new ServiceEntity
+            {
+                IP = "",
+                Port = Convert.ToInt32(Configuration["Service:Port"]),
+                ServiceName = Configuration["Service:Name"],
+                ConsulIP = Configuration["Consul:IP"],
+                ConsulPort = Convert.ToInt32(Configuration["Consul:Port"])
+            };
+
+            app.RegisterConsul(applLifetime, serviceEntity);
 
             //启用中间件服务生成Swagger作为JSON终结点
             app.UseSwagger();
