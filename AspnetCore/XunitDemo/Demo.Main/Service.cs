@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 
 namespace Demo.Main
 {
@@ -8,5 +9,16 @@ namespace Demo.Main
         {
             return param;
         }
+
+        public UserInfo GetUserInfo(int id)
+        {
+            return null;
+        }
+
+        public IList<UserInfo> GetUserInfos()
+        {
+            return new List<UserInfo>();
+        }
+        
     }
 }
