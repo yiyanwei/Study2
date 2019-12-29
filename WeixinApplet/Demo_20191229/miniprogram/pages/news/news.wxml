@@ -1,0 +1,12 @@
+<view>
+  my first page</view>
+------------------------
+<view>
+  <text>{{name}}</text>
+</view>
+
+<view>
+  <view wx:for="{{Courses}}" wx:for-index="key">
+    <text wx:if="{{item.CoursePeriod>30}}">{{key}} -- {{item.CourseName}} -- {{item.CoursePeriod}}</text>
+  </view>
+</view>
