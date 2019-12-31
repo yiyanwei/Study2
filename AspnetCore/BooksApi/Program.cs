@@ -21,7 +21,7 @@ namespace BooksApi
                 .ConfigureWebHostDefaults(webBuilder =>
                 {
                     webBuilder.UseStartup<Startup>()
-                              .UseUrls("http://localhost:8600","http://localhost:8601");
+                              .UseUrls("http://*:8600","http://*:8601");
                 });
     }
 }

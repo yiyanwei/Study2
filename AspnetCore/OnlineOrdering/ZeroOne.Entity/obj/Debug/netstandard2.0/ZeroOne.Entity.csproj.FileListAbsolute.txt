@@ -1,0 +1,8 @@
+E:\Study\AspnetCore\OnlineOrdering\ZeroOne.Entity\bin\Debug\netstandard2.0\ZeroOne.Entity.deps.json
+E:\Study\AspnetCore\OnlineOrdering\ZeroOne.Entity\bin\Debug\netstandard2.0\ZeroOne.Entity.dll
+E:\Study\AspnetCore\OnlineOrdering\ZeroOne.Entity\bin\Debug\netstandard2.0\ZeroOne.Entity.pdb
+E:\Study\AspnetCore\OnlineOrdering\ZeroOne.Entity\obj\Debug\netstandard2.0\ZeroOne.Entity.csprojAssemblyReference.cache
+E:\Study\AspnetCore\OnlineOrdering\ZeroOne.Entity\obj\Debug\netstandard2.0\ZeroOne.Entity.AssemblyInfoInputs.cache
+E:\Study\AspnetCore\OnlineOrdering\ZeroOne.Entity\obj\Debug\netstandard2.0\ZeroOne.Entity.AssemblyInfo.cs
+E:\Study\AspnetCore\OnlineOrdering\ZeroOne.Entity\obj\Debug\netstandard2.0\ZeroOne.Entity.dll
+E:\Study\AspnetCore\OnlineOrdering\ZeroOne.Entity\obj\Debug\netstandard2.0\ZeroOne.Entity.pdb
