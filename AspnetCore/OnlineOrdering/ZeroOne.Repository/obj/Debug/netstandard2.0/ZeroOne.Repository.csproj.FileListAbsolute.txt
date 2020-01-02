@@ -1,0 +1,11 @@
+E:\Study\AspnetCore\OnlineOrdering\ZeroOne.Repository\bin\Debug\netstandard2.0\ZeroOne.Repository.deps.json
+E:\Study\AspnetCore\OnlineOrdering\ZeroOne.Repository\bin\Debug\netstandard2.0\ZeroOne.Repository.dll
+E:\Study\AspnetCore\OnlineOrdering\ZeroOne.Repository\bin\Debug\netstandard2.0\ZeroOne.Repository.pdb
+E:\Study\AspnetCore\OnlineOrdering\ZeroOne.Repository\bin\Debug\netstandard2.0\ZeroOne.Entity.dll
+E:\Study\AspnetCore\OnlineOrdering\ZeroOne.Repository\bin\Debug\netstandard2.0\ZeroOne.Entity.pdb
+E:\Study\AspnetCore\OnlineOrdering\ZeroOne.Repository\obj\Debug\netstandard2.0\ZeroOne.Repository.csprojAssemblyReference.cache
+E:\Study\AspnetCore\OnlineOrdering\ZeroOne.Repository\obj\Debug\netstandard2.0\ZeroOne.Repository.AssemblyInfoInputs.cache
+E:\Study\AspnetCore\OnlineOrdering\ZeroOne.Repository\obj\Debug\netstandard2.0\ZeroOne.Repository.AssemblyInfo.cs
+E:\Study\AspnetCore\OnlineOrdering\ZeroOne.Repository\obj\Debug\netstandard2.0\ZeroOne.Repository.csproj.CopyComplete
+E:\Study\AspnetCore\OnlineOrdering\ZeroOne.Repository\obj\Debug\netstandard2.0\ZeroOne.Repository.dll
+E:\Study\AspnetCore\OnlineOrdering\ZeroOne.Repository\obj\Debug\netstandard2.0\ZeroOne.Repository.pdb
