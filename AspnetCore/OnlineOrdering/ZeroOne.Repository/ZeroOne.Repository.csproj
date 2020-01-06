@@ -2,6 +2,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\ZeroOne.Entity\ZeroOne.Entity.csproj" />
+    <ProjectReference Include="..\ZeroOne.Extension\ZeroOne.Extension.csproj" />
   </ItemGroup>
 
   <ItemGroup>

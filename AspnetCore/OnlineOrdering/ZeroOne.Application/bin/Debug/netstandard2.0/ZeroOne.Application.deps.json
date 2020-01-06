@@ -803,9 +803,16 @@
           "ZeroOne.Entity.dll": {}
         }
       },
+      "ZeroOne.Extension/1.0.0": {
+        "runtime": {
+          "ZeroOne.Extension.dll": {}
+        }
+      },
       "ZeroOne.Repository/1.0.0": {
         "dependencies": {
-          "ZeroOne.Entity": "1.0.0"
+          "ZeroOne.Entity": "1.0.0",
+          "ZeroOne.Extension": "1.0.0",
+          "sqlSugarCore": "5.0.0.11"
         },
         "runtime": {
           "ZeroOne.Repository.dll": {}
@@ -1296,6 +1303,11 @@
       "hashPath": "system.xml.xmldocument.4.3.0.nupkg.sha512"
     },
     "ZeroOne.Entity/1.0.0": {
+      "type": "project",
+      "serviceable": false,
+      "sha512": ""
+    },
+    "ZeroOne.Extension/1.0.0": {
       "type": "project",
       "serviceable": false,
       "sha512": ""

@@ -16,9 +16,9 @@ namespace ZeroOne.Application
         public static IServiceCollection AddRepository(this IServiceCollection services)
         {
             //产品分类仓储服务
-            services.AddTransient<IProCategoryRes, ProCategoryRes>();
+            services.AddTransient<IProCategoryRep, ProCategoryRep>();
             //产品详情仓储服务
-            services.AddTransient<IProInfoRes,ProInfoRes>();
+            services.AddTransient<IProInfoRep,ProInfoRep>();
             return services;
         }
     }

@@ -1012,11 +1012,23 @@
           "bin/placeholder/ZeroOne.Entity.dll": {}
         }
       },
+      "ZeroOne.Extension/1.0.0": {
+        "type": "project",
+        "framework": ".NETStandard,Version=v2.0",
+        "compile": {
+          "bin/placeholder/ZeroOne.Extension.dll": {}
+        },
+        "runtime": {
+          "bin/placeholder/ZeroOne.Extension.dll": {}
+        }
+      },
       "ZeroOne.Repository/1.0.0": {
         "type": "project",
         "framework": ".NETStandard,Version=v2.0",
         "dependencies": {
-          "ZeroOne.Entity": "1.0.0"
+          "ZeroOne.Entity": "1.0.0",
+          "ZeroOne.Extension": "1.0.0",
+          "sqlSugarCore": "5.0.0.11"
         },
         "compile": {
           "bin/placeholder/ZeroOne.Repository.dll": {}
@@ -4227,6 +4239,11 @@
       "type": "project",
       "path": "../ZeroOne.Entity/ZeroOne.Entity.csproj",
       "msbuildProject": "../ZeroOne.Entity/ZeroOne.Entity.csproj"
+    },
+    "ZeroOne.Extension/1.0.0": {
+      "type": "project",
+      "path": "../ZeroOne.Extension/ZeroOne.Extension.csproj",
+      "msbuildProject": "../ZeroOne.Extension/ZeroOne.Extension.csproj"
     },
     "ZeroOne.Repository/1.0.0": {
       "type": "project",

@@ -4,7 +4,7 @@ using ZeroOne.Entity;
 
 namespace ZeroOne.Repository
 {
-    public interface IProInfoRes
+    public interface IProInfoRep:IBaseRep
     {
         /// <summary>
         /// 获取产品列表

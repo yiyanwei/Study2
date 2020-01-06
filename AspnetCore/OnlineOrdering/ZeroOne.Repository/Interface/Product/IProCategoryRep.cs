@@ -9,13 +9,13 @@ namespace ZeroOne.Repository
     /// <summary>
     /// 产品类别仓储接口
     /// </summary>
-    public interface IProCategoryRes
+    public interface IProCategoryRep:IBaseRep
     {
         /// <summary>
         /// 获取所有产品类别数据
         /// </summary>
         /// <returns></returns>
-        Task<IList<Pro_Category>> GetCategoryList();        
+        Task<IList<Pro_Category>> GetCategoryList(bool isdeleted = true);
 
         /// <summary>
         /// 根据类别Id获取类别信息

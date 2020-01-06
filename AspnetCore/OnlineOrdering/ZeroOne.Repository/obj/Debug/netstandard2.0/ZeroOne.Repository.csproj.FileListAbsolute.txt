@@ -9,3 +9,5 @@ E:\Study\AspnetCore\OnlineOrdering\ZeroOne.Repository\obj\Debug\netstandard2.0\Z
 E:\Study\AspnetCore\OnlineOrdering\ZeroOne.Repository\obj\Debug\netstandard2.0\ZeroOne.Repository.csproj.CopyComplete
 E:\Study\AspnetCore\OnlineOrdering\ZeroOne.Repository\obj\Debug\netstandard2.0\ZeroOne.Repository.dll
 E:\Study\AspnetCore\OnlineOrdering\ZeroOne.Repository\obj\Debug\netstandard2.0\ZeroOne.Repository.pdb
+E:\Study\AspnetCore\OnlineOrdering\ZeroOne.Repository\bin\Debug\netstandard2.0\ZeroOne.Extension.dll
+E:\Study\AspnetCore\OnlineOrdering\ZeroOne.Repository\bin\Debug\netstandard2.0\ZeroOne.Extension.pdb

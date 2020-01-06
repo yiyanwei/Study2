@@ -4,7 +4,7 @@ using ZeroOne.Entity;
 
 namespace ZeroOne.Repository
 {
-    public class ProInfoRes : IProInfoRes
+    public class ProInfoRep : IProInfoRep
     {
         public Pro_Info GetModel(Guid id)
         {

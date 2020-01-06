@@ -11,3 +11,5 @@ E:\Study\AspnetCore\OnlineOrdering\ZeroOne.Application\bin\Debug\netstandard2.0\
 E:\Study\AspnetCore\OnlineOrdering\ZeroOne.Application\obj\Debug\netstandard2.0\ZeroOne.Application.csproj.CopyComplete
 E:\Study\AspnetCore\OnlineOrdering\ZeroOne.Application\obj\Debug\netstandard2.0\ZeroOne.Application.dll
 E:\Study\AspnetCore\OnlineOrdering\ZeroOne.Application\obj\Debug\netstandard2.0\ZeroOne.Application.pdb
+E:\Study\AspnetCore\OnlineOrdering\ZeroOne.Application\bin\Debug\netstandard2.0\ZeroOne.Extension.dll
+E:\Study\AspnetCore\OnlineOrdering\ZeroOne.Application\bin\Debug\netstandard2.0\ZeroOne.Extension.pdb
