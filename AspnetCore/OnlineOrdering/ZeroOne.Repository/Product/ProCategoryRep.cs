@@ -24,6 +24,7 @@ namespace ZeroOne.Repository
         /// <returns></returns>
         public async Task<IList<Pro_Category>> GetCategoryList(bool isdeleted = true)
         {
+            //Tuple<IList<BaseRepModel>
             string s="";
             s.ToExpression<Func<Pro_Category, bool>>();
             return await this._client.Queryable<Pro_Category>().Where(x=>x.IsDeleted == isdeleted).ToListAsync();

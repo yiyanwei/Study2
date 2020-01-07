@@ -3,8 +3,8 @@ using SqlSugar;
 
 namespace ZeroOne.Repository
 {
-    public interface IBaseRep
+    public interface IBaseRep<T>
     {
-        
+        //T Model{get;set;}
     }
 }

@@ -5,13 +5,27 @@ namespace ZeroOne.Repository
     /// <summary>
     /// 
     /// </summary>
-    /// <typeparam name="T"></typeparam>
-    public class BaseRepModel<T>
+    public class BaseRepModel
     {
-        public BaseRepModel(string key, EBaseRepOperator _operator, T val)
-        { 
+        public BaseRepModel(string key)
+        {
             this.Key = key;
-            this.Operator = _operator;
+            this.CompareOperator = ECompareOperator.Equal;
+            this.LogicalOperatorType = ELogicalOperatorType.And;
+        }
+
+        public BaseRepModel(string key, ECompareOperator compareOperator, ELogicalOperatorType logicalOperatorType)
+        {
+            this.Key = key;
+            this.CompareOperator = compareOperator;
+            this.LogicalOperatorType = logicalOperatorType;
+        }
+
+        public BaseRepModel(string key, ECompareOperator compareOperator, ELogicalOperatorType logicalOperatorType, object val)
+        {
+            this.Key = key;
+            this.CompareOperator = compareOperator;
+            this.LogicalOperatorType = logicalOperatorType;
             this.Value = val;
         }
         /// <summary>
@@ -21,17 +35,21 @@ namespace ZeroOne.Repository
         /// <summary>
         /// 比较操作类型
         /// </summary>
-        public EBaseRepOperator Operator { get; set; }
+        public ECompareOperator CompareOperator { get; set; }
         /// <summary>
         /// value值
         /// </summary>
-        public T Value { get; set; }
+        public object Value { get; set; }
+        /// <summary>
+        /// 逻辑运算符
+        /// </summary>
+        public ELogicalOperatorType LogicalOperatorType { get; set; }
     }
 
     /// <summary>
     /// 查询数据比较类型
     /// </summary>
-    public enum EBaseRepOperator
+    public enum ECompareOperator
     {
         /// <summary>
         /// 等于
@@ -63,5 +81,27 @@ namespace ZeroOne.Repository
         /// </summary>
         [Description("包含")]
         Contains = 6
+    }
+
+    /// <summary>
+    /// 逻辑运算操作类型
+    /// </summary>
+    public enum ELogicalOperatorType
+    {
+        /// <summary>
+        /// 缺省值
+        /// </summary>
+        [Description("None")]
+        None = 0,
+        /// <summary>
+        /// 并运算
+        /// </summary>
+        [Description("And")]
+        And = 1,
+        /// <summary>
+        /// 或运算
+        /// </summary>
+        [Description("Or")]
+        Or = 2
     }
 }
