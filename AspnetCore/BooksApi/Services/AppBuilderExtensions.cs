@@ -1,5 +1,5 @@
 using System;
-using Microsoft.AspNetCore.Hosting;
+using Microsoft.Extensions.Hosting;
 using Microsoft.AspNetCore.Builder;
 using Consul;
 using BooksApi.Models;
@@ -8,7 +8,7 @@ namespace BooksApi.Services
     public static class AppBuilderExtensions
     {
         public static IApplicationBuilder RegisterConsul(this IApplicationBuilder app,
-        IApplicationLifetime lifetime, ServiceEntity serviceEntity)
+        IHostApplicationLifetime lifetime, ServiceEntity serviceEntity)
         {
             var consulClient = new ConsulClient(x => x.Address = 
             new Uri($"http://{serviceEntity.ConsulIP}:{serviceEntity.ConsulPort}"));
@@ -16,9 +16,11 @@ namespace BooksApi.Services
             {
                 DeregisterCriticalServiceAfter = TimeSpan.FromSeconds(5),
                 Interval = TimeSpan.FromSeconds(10),
-                HTTP = $"http://{serviceEntity.IP}:{serviceEntity.Port}/api/health",
+                HTTP = $"http://{serviceEntity.IP}:{serviceEntity.Port}/api/books",
                 Timeout = TimeSpan.FromSeconds(5)
             };
+
+            
 
             var registration = new AgentServiceRegistration()
             {
