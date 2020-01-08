@@ -11,3 +11,6 @@ https://www.cnblogs.com/edisonchou/p/9124985.html   .net core 微服务之基于
 https://www.cnblogs.com/gnsilence/p/10665951.html     hangfire
 
 https://blog.csdn.net/qq_38973672/article/details/88989354    Navicat for MySQL 12 简体中文版【标准版+序列号永久授权】
+
+https://haokan.baidu.com/v?vid=9810203584786244760&pd=bjh&fr=bjhauthor&type=video   电脑组装教程
+https://www.iqiyi.com/v_19rsehesu4.html 电脑组装教程

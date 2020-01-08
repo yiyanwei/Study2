@@ -1,7 +1,0 @@
-E:\Study\AspnetCore\OnlineOrdering\ZeroOne.Extension\obj\Debug\netstandard2.0\ZeroOne.Extension.AssemblyInfoInputs.cache
-E:\Study\AspnetCore\OnlineOrdering\ZeroOne.Extension\obj\Debug\netstandard2.0\ZeroOne.Extension.AssemblyInfo.cs
-E:\Study\AspnetCore\OnlineOrdering\ZeroOne.Extension\bin\Debug\netstandard2.0\ZeroOne.Extension.deps.json
-E:\Study\AspnetCore\OnlineOrdering\ZeroOne.Extension\bin\Debug\netstandard2.0\ZeroOne.Extension.dll
-E:\Study\AspnetCore\OnlineOrdering\ZeroOne.Extension\bin\Debug\netstandard2.0\ZeroOne.Extension.pdb
-E:\Study\AspnetCore\OnlineOrdering\ZeroOne.Extension\obj\Debug\netstandard2.0\ZeroOne.Extension.dll
-E:\Study\AspnetCore\OnlineOrdering\ZeroOne.Extension\obj\Debug\netstandard2.0\ZeroOne.Extension.pdb

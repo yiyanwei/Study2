@@ -4,68 +4,163 @@ using System.Linq;
 using System.Reflection;
 using System.Collections;
 using System.Collections.Generic;
+using SqlSugar;
+
+using ZeroOne.Extension;
 
 namespace ZeroOne.Repository
 {
     public static class RepExtension
     {
-        public static IList<BaseRepModel> GetList<TModel>(this IList<BaseRepModel> items, TModel model)
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="items"></param>
+        /// <param name="model"></param>
+        /// <param name="client"></param>
+        /// <typeparam name="TWhereModel"></typeparam>
+        /// <typeparam name="TModel"></typeparam>
+        /// <returns></returns>
+        public static IList<TModel> GetList<TWhereModel, TModel>(this IList<BaseRepModel> items, TWhereModel model, SqlSugarClient client)
         {
             //获取model类型
             var type = model.GetType();
-            //获取model所有公共属性
-            var propertys = type.GetProperties(BindingFlags.Instance | BindingFlags.Public | BindingFlags.GetProperty);
+            StringBuilder sbLambda = new StringBuilder();
             PropertyInfo property;
-            foreach (var item in items)
+            if (items.Count > 0)
             {
-                property = propertys.First(t => t.Name.ToLower().Equals(item.Key.ToLower().Trim()));
-                if (property != null)
+                sbLambda.Append("x=>");
+                foreach (var item in items)
                 {
-                    item.Value = property.GetValue(model);
+                    property = type.GetProperty(item.Key);
+                    //判断值是否存在
+                    var value = property.GetValue(model);
+                    if (value == null)
+                    {
+                        continue;
+                    }
+                    sbLambda = sbLambda.GetStrLambda(item.Key, item.LogicalOperatorType, item.CompareOperator, property, nameof(model));
                 }
             }
-            return items;
+            if (sbLambda.Length > 0)
+            {
+                var lambdaExpression = sbLambda.ToString().ToExpression<Func<TModel, bool>>();
+                return client.Queryable<TModel>().Where(lambdaExpression).ToList();
+            }
+            else
+            {
+                return new List<TModel>();
+            }
+
         }
 
-        private static void deal(IList<BaseRepModel> items)
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="sbLambda"></param>
+        /// <param name="key"></param>
+        /// <param name="logicalOperatorType"></param>
+        /// <param name="compareOperator"></param>
+        /// <param name="property"></param>
+        /// <param name="whereModelName"></param>
+        /// <returns></returns>
+        private static StringBuilder GetStrLambda(this StringBuilder sbLambda, string key, ELogicalOperatorType logicalOperatorType,
+        ECompareOperator compareOperator, PropertyInfo property, string whereModelName)
         {
-            StringBuilder strLambda = new StringBuilder();
-            strLambda.Append("x=>");
-            foreach (var item in items)
+            if (property != null)
             {
-                if (item.Value == null)
+                string propTypeName;
+                propTypeName = property.Name;
+                if (property.PropertyType.BaseType is IEnumerable)
                 {
-                    continue;
-                }
-                var type = item.Value.GetType();
-                var typeName = type.Name;
-                if (type.BaseType is IEnumerable)
-                {
-                    strLambda.Append("");
+                    sbLambda.Append($"{whereModelName}.{key}.Contains(x.{key})");
                 }
                 else
                 {
-                    switch (typeName)
+                    switch (propTypeName)
                     {
                         case "Boolean":
+                            sbLambda.Append($"x.{key}=={whereModelName}.{key}");
                             break;
                         case "String":
+                            //比较运算
+                            if (compareOperator == ECompareOperator.Contains)
+                            {
+                                sbLambda.Append($"x.{key}.Contains({whereModelName}.{key})");
+                            }
+                            else if (compareOperator == ECompareOperator.Equal)
+                            {
+                                sbLambda.Append($"x.{key}=={whereModelName}.{key}");
+                            }
+                            //sbLambda.Append($"")
                             break;
+                        #region 数值类型生成字符串lambda表达式
                         case "Int32":
-                            break;
                         case "Single":
-                            break;
                         case "Double":
-                            break;
-                        case "DateTime":
-                            break;
                         case "Decimal":
+                            //比较运算
+                            if (compareOperator == ECompareOperator.Equal)
+                            {
+                                sbLambda.Append($"x.{key}=={whereModelName}.{key}");
+                            }
+                            else if (compareOperator == ECompareOperator.Great)
+                            {
+                                sbLambda.Append($"x.{key}>{whereModelName}.{key}");
+                            }
+                            else if (compareOperator == ECompareOperator.GreatEqual)
+                            {
+                                sbLambda.Append($"x.{key}>={whereModelName}.{key}");
+                            }
+                            else if (compareOperator == ECompareOperator.Less)
+                            {
+                                sbLambda.Append($"x.{key}<{whereModelName}.{key}");
+                            }
+                            else if (compareOperator == ECompareOperator.LessEqual)
+                            {
+                                sbLambda.Append($"x.{key}<={whereModelName}.{key}");
+                            }
                             break;
+                        #endregion
+                        #region  DateTime 生成字符串lambda表达式
+                        case "DateTime":
+                            //比较运算
+                            if (compareOperator == ECompareOperator.Equal)
+                            {
+                                sbLambda.Append($"x.{key}=={whereModelName}.{key}");
+                            }
+                            else if (compareOperator == ECompareOperator.Great)
+                            {
+                                sbLambda.Append($"x.{key}>{whereModelName}.{key}");
+                            }
+                            else if (compareOperator == ECompareOperator.GreatEqual)
+                            {
+                                sbLambda.Append($"x.{key}>={whereModelName}.{key}");
+                            }
+                            else if (compareOperator == ECompareOperator.Less)
+                            {
+                                sbLambda.Append($"x.{key}<{whereModelName}.{key}");
+                            }
+                            else if (compareOperator == ECompareOperator.LessEqual)
+                            {
+                                sbLambda.Append($"x.{key}<={whereModelName}.{key}");
+                            }
+                            break;
+                        #endregion
                         default:
                             break;
                     }
                 }
+                if (logicalOperatorType == ELogicalOperatorType.And)
+                {
+                    sbLambda.Append(" && ");
+                }
+                else if (logicalOperatorType == ELogicalOperatorType.Or)
+                {
+                    sbLambda.Append(" || ");
+                }
             }
+            return sbLambda;
         }
     }
 }
