@@ -20,14 +20,7 @@ namespace ZeroOne.Repository
             this.CompareOperator = compareOperator;
             this.LogicalOperatorType = logicalOperatorType;
         }
-
-        public BaseRepModel(string key, ECompareOperator compareOperator, ELogicalOperatorType logicalOperatorType, object val)
-        {
-            this.Key = key;
-            this.CompareOperator = compareOperator;
-            this.LogicalOperatorType = logicalOperatorType;
-            this.Value = val;
-        }
+        
         /// <summary>
         /// key值
         /// </summary>

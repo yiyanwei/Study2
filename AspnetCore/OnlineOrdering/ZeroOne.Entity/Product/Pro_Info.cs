@@ -1,4 +1,4 @@
-using System; 
+using System;
 using SqlSugar;
 
 namespace ZeroOne.Entity
@@ -6,20 +6,15 @@ namespace ZeroOne.Entity
     /// <summary>
     /// 
     /// </summary>
-    public class Pro_Info
+    public class Pro_Info : BaseEntity
     {
         /// <summary>
         /// 
         /// </summary>
         public Pro_Info()
         {
-        }
 
-        /// <summary>
-        /// 主键
-        /// </summary>
-        [SugarColumn(IsPrimaryKey = true)]
-        public Guid Id { get; set; }
+        }
 
         /// <summary>
         /// 产品名称
@@ -70,6 +65,6 @@ namespace ZeroOne.Entity
         /// 是否已经删除 0：未删除，1：已删除
         /// </summary>
         /// <value></value>
-        public bool IsDeleted{get;set;}
+        public bool? IsDeleted { get; set; }
     }
 }

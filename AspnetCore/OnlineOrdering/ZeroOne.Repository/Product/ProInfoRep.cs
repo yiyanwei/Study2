@@ -1,19 +1,17 @@
 using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
+using SqlSugar;
 using ZeroOne.Entity;
 
 namespace ZeroOne.Repository
 {
-    public class ProInfoRep : IProInfoRep
+    public class ProInfoRep : BaseRep<ProInfoSearch, Pro_Info>, IProInfoRep
     {
-        public Pro_Info GetModel(Guid id)
+        private ISqlSugarClient _client;
+        public ProInfoRep(ISqlSugarClient client) : base(client)
         {
-            return null;
-        }
-
-        public IList<Pro_Info> GetProducts()
-        {
-            return null;
+            this._client = client;
         }
     }
 }
