@@ -10,3 +10,13 @@
     <text wx:if="{{item.CoursePeriod>30}}">{{key}} -- {{item.CourseName}} -- {{item.CoursePeriod}}</text>
   </view>
 </view>
+
+<view id="outer" bindtap="OutHandlerTap">
+  OuterView
+  <view id="middle" catchtap="MiddleHandlerTap">
+    MiddleView
+    <view id="inner" data-aid="123456" bindtap="InnerHandlerTap">
+      InnerView
+    </view>
+  </view>
+</view>
