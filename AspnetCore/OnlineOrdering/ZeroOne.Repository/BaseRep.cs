@@ -69,12 +69,25 @@ namespace ZeroOne.Repository
                         continue;
                     }
                     propTypeName = property.PropertyType.FullName;
-
+                    //判断是泛型IEnumerable<>
                     if (property.PropertyType != typeof(string) && property.PropertyType.GetInterfaces().Any(x => typeof(IEnumerable<>) == (x.IsGenericType ? x.GetGenericTypeDefinition() : x)))
                     {
                         MethodInfo containsMethod = (methodof<Func<IEnumerable<int>, int, bool>>)Enumerable.Contains;
-                        //泛型IEnumerable<>
-                        childExpression = Expression.Call(Expression.Property(compareParamExpr, property), containsMethod, Expression.Property(paramExpr, modelType.GetProperty(item.Key)));
+                        PropertyInfo compareProp = modelType.GetProperty(item.Key);
+                        //判断属性值是否为Nullable类型值
+                        var parentTypes=compareProp.PropertyType.GetGenericTypeDefinition();
+                        if (compareProp.PropertyType.GetGenericTypeDefinition() == typeof(Nullable<>))
+                        {
+                            //var genericTypeArgs = compareProp.PropertyType.GenericTypeArguments;
+                            //var genericTypeArgs2 = compareProp.PropertyType.GetGenericArguments();
+                            var valProp = compareProp.PropertyType.GetProperty("Value");
+                            var valExpression = Expression.Property(Expression.Property(paramExpr, compareProp), valProp);
+                            Expression.Call(containsMethod, Expression.Property(compareParamExpr, property), valExpression);
+                        }
+                        else
+                        {
+                            childExpression = Expression.Call(containsMethod, Expression.Property(compareParamExpr, property), Expression.Property(paramExpr, compareProp));
+                        }
                     }
                     else
                     {
