@@ -53,22 +53,22 @@ namespace ZeroOne.Repository
         /// 大于
         /// </summary>
         [Description("大于")]
-        Great = 2,
+        GreaterThan = 2,
         /// <summary>
         /// 小于
         /// </summary>
         [Description("小于")]
-        Less = 3,
+        LessThan = 3,
         /// <summary>
         /// 大于等于
         /// </summary>
         [Description("大于等于")]
-        GreatEqual = 4,
+        GreaterThanOrEqual = 4,
         /// <summary>
         /// 小于等于
         /// </summary>
         [Description("小于等于")]
-        LessEqual = 5,
+        LessThanOrEqual = 5,
         /// <summary>
         /// 包含
         /// </summary>

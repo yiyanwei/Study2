@@ -19,6 +19,18 @@ namespace ZeroOne.WebApi.Controllers
             this._service = service;
         }
 
+        [HttpGet("GetProByName/{name}")]
+        public async Task<Pro_Info> GetProByName(string name)
+        {
+            return await this._service.GetProByName(name);
+        }
+
+        [HttpGet("GetProduct/{id}")]
+        public async Task<Pro_Info> GetProduct(string id)
+        {
+            return await this._service.GetProductInfo(Guid.Parse(id));
+        }
+
         [HttpGet]
         public async Task<IList<Pro_Info>> GetProducts()
         {

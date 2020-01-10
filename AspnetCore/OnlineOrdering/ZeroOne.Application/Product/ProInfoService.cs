@@ -13,6 +13,12 @@ namespace ZeroOne.Application
         {
             this._ProInfoRep = proInfoRep;
         }
+
+        public async Task<Pro_Info> GetProByName(string name)
+        {
+            return await this._ProInfoRep.GetProByName(name);
+        }
+
         public async Task<Pro_Info> GetProductInfo(Guid id)
         {
             return await this._ProInfoRep.GetModel(id);
@@ -23,11 +29,13 @@ namespace ZeroOne.Application
             IList<BaseRepModel> operators = new List<BaseRepModel>();
             ProInfoSearch search = new ProInfoSearch();
             search.ProName = "红富";
-            search.IsDeleted = true;
+            search.IsDeleted = false;
+            search.DataStatus = new List<int>(new int[] { 1, 2, 3 });
 
-            operators.Add(new BaseRepModel(nameof(search.ProName),ECompareOperator.Contains,ELogicalOperatorType.And));
+            operators.Add(new BaseRepModel(nameof(search.ProName), ECompareOperator.Contains, ELogicalOperatorType.And));
             operators.Add(new BaseRepModel(nameof(search.IsDeleted)));
-            return await this._ProInfoRep.GetModelList(operators,search);
+            operators.Add(new BaseRepModel(nameof(search.DataStatus), ECompareOperator.Contains, ELogicalOperatorType.And));
+            return await this._ProInfoRep.GetModelList(operators, search);
         }
     }
 }

@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 
 namespace ZeroOne.Repository
 {
@@ -8,5 +9,7 @@ namespace ZeroOne.Repository
     public class ProInfoSearch : BaseSearch
     {
         public string ProName{get;set;}
+
+        public IList<int> DataStatus { get; set; }
     }
 }

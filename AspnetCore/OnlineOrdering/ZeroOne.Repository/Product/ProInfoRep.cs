@@ -13,5 +13,11 @@ namespace ZeroOne.Repository
         {
             this._client = client;
         }
+
+        public async Task<Pro_Info> GetProByName(string name)
+        {
+            var query = this._client.Queryable<Pro_Info>();
+            return await query.Where(t => t.ProName.Contains(name.Trim())).FirstAsync();
+        }
     }
 }

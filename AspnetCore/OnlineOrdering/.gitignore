@@ -14,6 +14,9 @@ bld/
 [Oo]bj/
 [Ll]og/
 
+#VS
+.vs/*
+
 # IDE - VSCode
 .vscode/*
 !.vscode/settings.json

@@ -11,5 +11,7 @@ namespace ZeroOne.Application
         Task<Pro_Info> GetProductInfo(Guid id);
 
         Task<IList<Pro_Info>> GetProducts();
+
+        Task<Pro_Info> GetProByName(string name);
     }
 }
