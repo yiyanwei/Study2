@@ -28,6 +28,48 @@ namespace ZeroOne.Repository
         }
 
         /// <summary>
+        /// 根据不同的IEnumerable的泛型类型参数的类型调用不同的Contains方法
+        /// </summary>
+        /// <param name="type">泛型类型参数的类型</param>
+        /// <returns></returns>
+        private MethodInfo GetMethodByGenericArgType(Type type)
+        {
+            MethodInfo method = null;
+            if (type != null)
+            {
+                if (type == typeof(int))
+                {
+                    method = (methodof<Func<IEnumerable<int>, int, bool>>)Enumerable.Contains;
+                }
+                else if (type == typeof(decimal))
+                {
+                    method = (methodof<Func<IEnumerable<decimal>, decimal, bool>>)Enumerable.Contains;
+                }
+                else if (type == typeof(float))
+                {
+                    method = (methodof<Func<IEnumerable<float>, float, bool>>)Enumerable.Contains;
+                }
+                else if (type == typeof(long))
+                {
+                    method = (methodof<Func<IEnumerable<long>, long, bool>>)Enumerable.Contains;
+                }
+                else if (type == typeof(double))
+                {
+                    method = (methodof<Func<IEnumerable<double>, double, bool>>)Enumerable.Contains;
+                }
+                else if (type == typeof(DateTime))
+                {
+                    method = (methodof<Func<IEnumerable<DateTime>, DateTime, bool>>)Enumerable.Contains;
+                }
+                else if (type == typeof(string))
+                {
+                    method = (methodof<Func<IEnumerable<string>, string, bool>>)Enumerable.Contains;
+                }
+            }
+            return method;
+        }
+
+        /// <summary>
         /// 
         /// </summary>
         /// <param name="items"></param>
@@ -38,7 +80,6 @@ namespace ZeroOne.Repository
         /// <returns></returns>
         public async Task<IList<TModel>> GetModelList(IList<BaseRepModel> items, TSearchModel model)
         {
-
             //返回model的类型
             var modelType = typeof(TModel);
             //获取model类型
@@ -72,14 +113,13 @@ namespace ZeroOne.Repository
                     //判断是泛型IEnumerable<>
                     if (property.PropertyType != typeof(string) && property.PropertyType.GetInterfaces().Any(x => typeof(IEnumerable<>) == (x.IsGenericType ? x.GetGenericTypeDefinition() : x)))
                     {
-                        MethodInfo containsMethod = (methodof<Func<IEnumerable<int>, int, bool>>)Enumerable.Contains;
                         PropertyInfo compareProp = modelType.GetProperty(item.Key);
+
+                        MethodInfo containsMethod = this.GetMethodByGenericArgType(property.PropertyType.GetGenericArguments()[0]);
                         //判断属性值是否为Nullable类型值
-                        var parentTypes=compareProp.PropertyType.GetGenericTypeDefinition();
+                        var parentTypes = compareProp.PropertyType.GetGenericTypeDefinition();
                         if (compareProp.PropertyType.GetGenericTypeDefinition() == typeof(Nullable<>))
                         {
-                            //var genericTypeArgs = compareProp.PropertyType.GenericTypeArguments;
-                            //var genericTypeArgs2 = compareProp.PropertyType.GetGenericArguments();
                             var valProp = compareProp.PropertyType.GetProperty("Value");
                             var valExpression = Expression.Property(Expression.Property(paramExpr, compareProp), valProp);
                             Expression.Call(containsMethod, Expression.Property(compareParamExpr, property), valExpression);
@@ -139,9 +179,7 @@ namespace ZeroOne.Repository
                     {
                         if (totalExpression == null)
                         {
-
                             totalExpression = childExpression;
-
                         }
                         else
                         {
