@@ -19,3 +19,5 @@ https://www.iqiyi.com/v_19rsehesu4.html 电脑组装教程
 https://www.w3cschool.cn/
 
 https://github.com/0xd4d/dnSpy/releases  dnspy最新版本
+
+https://github.com/0xd4d/dnSpy.git   dnspy开发源代码
