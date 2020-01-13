@@ -29,3 +29,4 @@ bld/
 Database/*.err
 Database/*bin.*
 Database/*slow.log
+Database/*.pid
