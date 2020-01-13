@@ -37,11 +37,6 @@ namespace ZeroOne.Entity
         public string ProBaseUnit { get; set; }
 
         /// <summary>
-        /// 数据状态 0：正常，1：删除
-        /// </summary>
-        public int? DataStatus { get; set; }
-
-        /// <summary>
         /// 创建人
         /// </summary>
         public string CreateUser { get; set; }

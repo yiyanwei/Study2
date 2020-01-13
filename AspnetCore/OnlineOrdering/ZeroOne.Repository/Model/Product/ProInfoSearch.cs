@@ -10,6 +10,5 @@ namespace ZeroOne.Repository
     {
         public string ProName{get;set;}
 
-        public IList<int> DataStatus { get; set; }
     }
 }

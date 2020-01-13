@@ -30,7 +30,7 @@ namespace ZeroOne.Application
             ProInfoSearch search = new ProInfoSearch();
             search.ProName = "红富";
             search.IsDeleted = false;
-            search.DataStatus = new List<int>(new int[] { 1, 2, 3 });
+            search.DataStatus = new List<int>(new int[] { 2 });
 
             operators.Add(new BaseRepModel(nameof(search.ProName), ECompareOperator.Contains, ELogicalOperatorType.And));
             operators.Add(new BaseRepModel(nameof(search.IsDeleted)));

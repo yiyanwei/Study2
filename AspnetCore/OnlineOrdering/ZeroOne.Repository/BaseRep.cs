@@ -15,6 +15,7 @@ namespace ZeroOne.Repository
 {
     public abstract class BaseRep<TSearchModel, TModel> : IBaseRep<TSearchModel, TModel> where TSearchModel : BaseSearch where TModel : BaseEntity
     {
+
         private ISqlSugarClient _client;
         public BaseRep(ISqlSugarClient client)
         {
@@ -80,6 +81,7 @@ namespace ZeroOne.Repository
         /// <returns></returns>
         public async Task<IList<TModel>> GetModelList(IList<BaseRepModel> items, TSearchModel model)
         {
+
             //返回model的类型
             var modelType = typeof(TModel);
             //获取model类型
@@ -87,7 +89,6 @@ namespace ZeroOne.Repository
 
             //lambda类型参数别名
             ParameterExpression paramExpr = Expression.Parameter(modelType, "it");
-            ParameterExpression compareParamExpr = Expression.Parameter(searchModelType, nameof(model));
 
             PropertyInfo property;
             if (items.Count > 0)
@@ -121,11 +122,13 @@ namespace ZeroOne.Repository
                         {
                             var valProp = compareProp.PropertyType.GetProperty("Value");
                             var valExpression = Expression.Property(Expression.Property(paramExpr, compareProp), valProp);
-                            Expression.Call(containsMethod, Expression.Property(compareParamExpr, property), valExpression);
+                            var searchPropertyExpression = Expression.Property(Expression.Constant(model, searchModelType), property);
+                            childExpression = Expression.Call(containsMethod, searchPropertyExpression, valExpression);
                         }
                         else
                         {
-                            childExpression = Expression.Call(containsMethod, Expression.Property(compareParamExpr, property), Expression.Property(paramExpr, compareProp));
+                            var searchPropertyExpression = Expression.Property(Expression.Constant(model, searchModelType), property);
+                            childExpression = Expression.Call(containsMethod, searchPropertyExpression, Expression.Property(paramExpr, compareProp));
                         }
                     }
                     else
@@ -186,11 +189,11 @@ namespace ZeroOne.Repository
                         {
                             if (item.LogicalOperatorType == ELogicalOperatorType.And)
                             {
-                                totalExpression = Expression.And(totalExpression, childExpression);
+                                totalExpression = Expression.AndAlso(totalExpression, childExpression);
                             }
                             else if (item.LogicalOperatorType == ELogicalOperatorType.Or)
                             {
-                                totalExpression = Expression.Or(totalExpression, childExpression);
+                                totalExpression = Expression.OrElse(totalExpression, childExpression);
                             }
                         }
                     }
@@ -198,7 +201,9 @@ namespace ZeroOne.Repository
                 if (totalExpression != null)
                 {
                     var lambdaExpression = Expression.Lambda<Func<TModel, bool>>(totalExpression, new ParameterExpression[] { paramExpr });
-                    return await this._client.Queryable<TModel>().Where(lambdaExpression).ToListAsync();
+                    var query = this._client.Queryable<TModel>().Where(lambdaExpression);
+                    var keyValues = query.ToSql();
+                    return await query.ToListAsync();
                 }
             }
             return new List<TModel>();

@@ -14,5 +14,10 @@ namespace ZeroOne.Entity
         /// </summary>
         [SugarColumn(IsPrimaryKey = true)]
         public Guid Id { get; set; }
+
+        /// <summary>
+        /// 数据状态 0：正常，1：删除
+        /// </summary>
+        public int? DataStatus { get; set; }
     }
 }

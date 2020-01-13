@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 
 namespace ZeroOne.Repository
 {
@@ -17,5 +18,8 @@ namespace ZeroOne.Repository
         /// 创建时间
         /// </summary>
         public DateTime? CreateDate { get; set; }
+
+
+        public IList<int> DataStatus { get; set; }
     }
 }
