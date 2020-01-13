@@ -24,3 +24,8 @@ bld/
 !.vscode/launch.json
 !.vscode/extensions.json
 .history/*
+
+#MySQL
+Database/*.err
+Database/*bin.*
+Database/*slow.log
