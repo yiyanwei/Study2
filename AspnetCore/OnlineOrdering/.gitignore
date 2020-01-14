@@ -30,3 +30,5 @@ Database/*.err
 Database/*bin.*
 Database/*slow.log
 Database/*.pid
+Database/#innodb_temp
+Database/ibtmp1
