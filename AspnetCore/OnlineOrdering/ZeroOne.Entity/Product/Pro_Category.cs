@@ -50,10 +50,5 @@ namespace ZeroOne.Entity
         /// </summary>
         public DateTime? UpdateDate { get; set; }
 
-        /// <summary>
-        /// 是否已经删除 0：未删除，1：已删除
-        /// </summary>
-        /// <value></value>
-        public bool? IsDeleted { get; set; }
     }
 }

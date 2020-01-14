@@ -13,6 +13,12 @@ namespace ZeroOne.Repository
         /// <param name="id"></param>
         /// <returns></returns>
         Task<TModel> GetModel(Guid id);
+
+        Task<bool> AddModel(TModel model);
+
+        Task<bool> DeleteModel(Guid id);
+
+        Task<bool> UpdateModel(TModel model);
     }
 
     public interface IBaseRep<TSearchModel, TModel> : IBaseRep<TModel> where TSearchModel : BaseSearch where TModel : BaseEntity
