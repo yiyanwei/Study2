@@ -37,6 +37,11 @@ namespace ZeroOne.WebApi.Controllers
             return await this._service.GetProducts();
         }
 
+        /// <summary>
+        /// 添加产品
+        /// </summary>
+        /// <param name="product">产品对象</param>
+        /// <returns></returns>
         [HttpPost]
         public async Task<ActionResult<Pro_Info>> AddProduct(Pro_Info product)
         {
