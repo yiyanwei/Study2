@@ -24,6 +24,23 @@ namespace ZeroOne.Application
             return await this._ProInfoRep.GetModel(id);
         }
 
+        public async Task<Guid> AddProductInfo(Pro_Info model)
+        {
+            if (model == null)
+            {
+                throw new Exception("数据为null");
+            }
+            model.Id = Guid.NewGuid();
+            if( await this._ProInfoRep.AddModel(model))
+            {
+                return model.Id;
+            }
+            else
+            {
+                throw new Exception("数据添加失败");
+            }
+        }
+
         public async Task<IList<Pro_Info>> GetProducts()
         {
             IList<BaseRepModel> operators = new List<BaseRepModel>();

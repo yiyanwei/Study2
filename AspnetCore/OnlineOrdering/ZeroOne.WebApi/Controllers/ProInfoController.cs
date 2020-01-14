@@ -36,5 +36,12 @@ namespace ZeroOne.WebApi.Controllers
         {
             return await this._service.GetProducts();
         }
+
+        [HttpPost]
+        public async Task<ActionResult<Pro_Info>> AddProduct(Pro_Info product)
+        {
+            var proId = await this._service.AddProductInfo(product);
+            return CreatedAtAction(nameof(GetProduct), new { id = proId.ToString() }, product);
+        }
     }
 }

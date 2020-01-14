@@ -1,4 +1,5 @@
 using System;
+using System.Data;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -11,11 +12,12 @@ using SqlSugar;
 using ZeroOne.Entity;
 using ZeroOne.Extension;
 
+
 namespace ZeroOne.Repository
 {
-    public abstract class BaseRep<TSearchModel, TModel> : IBaseRep<TSearchModel, TModel> where TSearchModel : BaseSearch where TModel : BaseEntity,new()
+    public abstract class BaseRep<TSearchModel, TModel> : IBaseRep<TSearchModel, TModel> where TSearchModel : BaseSearch where TModel : BaseEntity, new()
     {
-
+        private static readonly object lockObj = new object();
         private ISqlSugarClient _client;
         public BaseRep(ISqlSugarClient client)
         {
@@ -35,18 +37,34 @@ namespace ZeroOne.Repository
         /// <returns></returns>
         public async Task<bool> AddModel(TModel model)
         {
+            if (!model.RowVersion.HasValue)
+            {
+                model.RowVersion = Guid.Empty;
+            }
             int affectedRows = await this._client.Insertable<TModel>(model).ExecuteCommandAsync();
             return affectedRows > 0;
         }
 
-        public async Task<bool> DeleteModel(Guid id)
+        public async Task<bool> DeleteModel(Guid id, Guid rowVersion)
         {
-            int affecedRows = await this._client.Updateable<TModel>().SetColumns(t => new TModel { IsDeleted = true }).Where(t => t.Id == id).ExecuteCommandAsync();
+            var searchModel = await this._client.Queryable<TModel>().Where(it => it.Id == id && it.RowVersion == rowVersion).FirstAsync();
+            if (searchModel == null)
+            {
+                throw new DBConcurrencyException($"id:{id} 数据已更新，请刷新后重试！");
+            }
+            Guid newGuid = Guid.NewGuid();
+            int affecedRows = await this._client.Updateable<TModel>().SetColumns(t => new TModel { IsDeleted = true, RowVersion = newGuid }).Where(t => t.Id == id).ExecuteCommandAsync();
             return affecedRows > 0;
         }
 
         public async Task<bool> UpdateModel(TModel model)
         {
+            var searchModel = await this._client.Queryable<TModel>().Where(it => it.Id == model.Id && it.RowVersion == model.RowVersion).FirstAsync();
+            if (searchModel == null)
+            {
+                throw new DBConcurrencyException($"id:{model.Id} 数据已更新，请刷新后重试！");
+            }
+            model.RowVersion = Guid.NewGuid();
             int affecedRows = await this._client.Updateable(model).IgnoreColumns(true).ExecuteCommandAsync();
             return affecedRows > 0;
         }
@@ -410,6 +428,6 @@ namespace ZeroOne.Repository
                 }
             }
             return new List<TModel>();
-        }  
+        }
     }
 }

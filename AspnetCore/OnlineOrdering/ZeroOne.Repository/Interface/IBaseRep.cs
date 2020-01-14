@@ -16,7 +16,7 @@ namespace ZeroOne.Repository
 
         Task<bool> AddModel(TModel model);
 
-        Task<bool> DeleteModel(Guid id);
+        Task<bool> DeleteModel(Guid id, Guid rowVersion);
 
         Task<bool> UpdateModel(TModel model);
     }

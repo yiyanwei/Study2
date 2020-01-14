@@ -13,5 +13,7 @@ namespace ZeroOne.Application
         Task<IList<Pro_Info>> GetProducts();
 
         Task<Pro_Info> GetProByName(string name);
+
+        Task<Guid> AddProductInfo(Pro_Info model);
     }
 }

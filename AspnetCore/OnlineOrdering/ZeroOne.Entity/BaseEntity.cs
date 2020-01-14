@@ -25,5 +25,9 @@ namespace ZeroOne.Entity
         /// </summary>
         /// <value></value>
         public bool? IsDeleted { get; set; }
+        /// <summary>
+        /// 行版本号
+        /// </summary>
+        public Guid? RowVersion { get; set; }
     }
 }
