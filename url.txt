@@ -21,3 +21,5 @@ https://www.w3cschool.cn/
 https://github.com/0xd4d/dnSpy/releases  dnspy最新版本
 
 https://github.com/0xd4d/dnSpy.git   dnspy开发源代码
+
+https://www.cnblogs.com/stulzq/p/7551819.html   rabbitmq
