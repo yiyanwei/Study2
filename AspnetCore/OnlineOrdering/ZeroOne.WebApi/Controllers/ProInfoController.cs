@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
 using ZeroOne.Entity;
 using ZeroOne.Application;
 
@@ -11,6 +12,7 @@ namespace ZeroOne.WebApi.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize]
     public class ProInfoController : ControllerBase
     {
         private IProInfoService _service;
@@ -19,18 +21,32 @@ namespace ZeroOne.WebApi.Controllers
             this._service = service;
         }
 
+        /// <summary>
+        /// 根据产品名称获取产品信息（模糊查询）
+        /// </summary>
+        /// <param name="name">产品名称</param>
+        /// <returns></returns>
         [HttpGet("GetProByName/{name}")]
         public async Task<Pro_Info> GetProByName(string name)
         {
             return await this._service.GetProByName(name);
         }
 
+        /// <summary>
+        /// 根据产品Id获取产品信息
+        /// </summary>
+        /// <param name="id">产品Id</param>
+        /// <returns></returns>
         [HttpGet("GetProduct/{id}")]
         public async Task<Pro_Info> GetProduct(string id)
         {
             return await this._service.GetProductInfo(Guid.Parse(id));
         }
 
+        /// <summary>
+        /// 根据查询条件获取符合的产品信息
+        /// </summary>
+        /// <returns></returns>
         [HttpGet]
         public async Task<IList<Pro_Info>> GetProducts()
         {

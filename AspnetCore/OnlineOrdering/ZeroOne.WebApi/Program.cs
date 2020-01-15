@@ -13,17 +13,17 @@ namespace ZeroOne.WebApi
 {
     public class Program
     {
-        private static int Getx(int x)
-        {
-            Console.WriteLine(x);
-            return x;
-        }
+        //private static int Getx(int x)
+        //{
+        //    Console.WriteLine(x);
+        //    return x;
+        //}
         public static void Main(string[] args)
         {
-            if (Getx(1) > 1 && Getx(2) == 2 || 1 == 1)
-            {
-                Console.WriteLine("1=1");
-            }
+            //if (Getx(1) > 1 && Getx(2) == 2 || 1 == 1)
+            //{
+            //    Console.WriteLine("1=1");
+            //}
 
             // A parameter for the lambda expression.
             // ParameterExpression paramExpr = Expression.Parameter(typeof(int), "arg");
