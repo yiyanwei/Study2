@@ -54,7 +54,7 @@ namespace ZeroOne.WebApi.Controllers
                     new Claim(JwtClaimTypes.Name, model.Name),
                     new Claim(JwtClaimTypes.Id, model.Id.ToString()),
                     new Claim(JwtClaimTypes.PhoneNumber, model.MobileNum)
-                }),
+                    }),
                     Expires = expiresAt,
                     //对称秘钥SymmetricSecurityKey
                     //签名证书(秘钥，加密算法)SecurityAlgorithms
