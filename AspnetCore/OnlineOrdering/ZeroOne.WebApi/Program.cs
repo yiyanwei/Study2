@@ -9,6 +9,8 @@ using Microsoft.Extensions.Logging;
 using System.Linq.Expressions;
 
 using ZeroOne.Entity;
+using NLog.Web;
+
 namespace ZeroOne.WebApi
 {
     public class Program
@@ -57,7 +59,7 @@ namespace ZeroOne.WebApi
                 .ConfigureWebHostDefaults(webBuilder =>
                 {
                     webBuilder.UseStartup<Startup>()
-                              .UseUrls("http://*:8888/");
+                              .UseUrls("http://*:5000/");
                 });
     }
 }

@@ -15,38 +15,44 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.OpenApi.Models;
-using SqlSugar;
-using ZeroOne.Application;
-using ZeroOne.Entity;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using IdentityModel;
 using System.Text;
+using NLog.Web;
+using SqlSugar;
+using ZeroOne.Application;
+using ZeroOne.Entity;
 
 namespace ZeroOne.WebApi
 {
     public class Startup
     {
-        public Startup(IConfiguration configuration)
+        public IWebHostEnvironment Environment { get; set; }
+        public IConfiguration Configuration { get; }
+        public Startup(IConfiguration configuration, IWebHostEnvironment env)
         {
             Configuration = configuration;
+            Environment = env;
         }
 
-        public IConfiguration Configuration { get; }
+
 
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddControllers(options=> { 
-                
+            services.AddControllers(options =>
+            {
+
             }).SetCompatibilityVersion(CompatibilityVersion.Version_3_0);
             //添加服务到服务容器
             services.AddRepository();
             services.AddTransient<IProInfoService, ProInfoService>();
             services.AddTransient<IProCategoryService, ProCategoryService>();
             services.AddTransient<IUserInfoService, UserInfoService>();
-            services.Configure<ConnectionConfig>(Configuration.GetSection("ConnectionConfig"));
 
+            //数据库连接配置
+            services.Configure<ConnectionConfig>(Configuration.GetSection("ConnectionConfig"));
             services.AddSingleton<ISqlSugarClient>(t =>
             {
                 var connConfig = t.GetRequiredService<IOptions<ConnectionConfig>>().Value;
@@ -106,10 +112,16 @@ namespace ZeroOne.WebApi
                 var entityXmlPath = Path.Combine(AppContext.BaseDirectory, entityXmlFile);
                 c.IncludeXmlComments(entityXmlPath);
             });
+
+            //添加日志容器服务
+            services.AddLogging(logger =>
+            {
+                logger.AddNLog($"nlog.{Environment.EnvironmentName}.config");
+            });
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
+        public void Configure(IApplicationBuilder app, IWebHostEnvironment env, ILoggerFactory loggerFactory)
         {
             if (env.IsDevelopment())
             {
@@ -129,6 +141,7 @@ namespace ZeroOne.WebApi
             {
                 c.SwaggerEndpoint("/swagger/v1/swagger.json", "ApiHelp V1");
             });
+
 
             app.UseEndpoints(endpoints =>
             {
