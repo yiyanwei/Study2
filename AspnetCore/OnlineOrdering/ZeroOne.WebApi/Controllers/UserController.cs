@@ -29,10 +29,10 @@ namespace ZeroOne.WebApi.Controllers
         }
 
         /// <summary>
-        /// 
+        /// 登录之后获取有效凭证token
         /// </summary>
-        /// <param name="userAccount"></param>
-        /// <param name="pwd"></param>
+        /// <param name="userAccount">用户账号</param>
+        /// <param name="pwd">用户密码</param>
         /// <returns></returns>
         private async Task<object> GetToken(string userAccount, string pwd)
         {
@@ -44,8 +44,11 @@ namespace ZeroOne.WebApi.Controllers
                 var tokenHandler = new JwtSecurityTokenHandler();
 
                 var key = System.Text.Encoding.UTF8.GetBytes(_jwtSettings.SecretKey);
-                var authTime = DateTime.Now;//授权时间
-                var expiresAt = authTime.AddDays(30);//过期时间
+                //授权时间
+                var authTime = DateTime.Now;
+                int seconds = _jwtSettings.ExpireSecond;
+                //过期时间
+                var expiresAt = authTime.AddSeconds(seconds);
                 var tokenDescripor = new SecurityTokenDescriptor
                 {
                     Subject = new ClaimsIdentity(new Claim[] {

@@ -18,5 +18,10 @@ namespace ZeroOne.WebApi
         /// 加密key（SecretKey必须大于16个，是大于，不是大于等于）
         /// </summary>
         public string SecretKey { get; set; }
+        /// <summary>
+        /// 过期的时间秒
+        /// </summary>
+        /// <value></value>
+        public int ExpireSecond{get;set;}
     }
 }

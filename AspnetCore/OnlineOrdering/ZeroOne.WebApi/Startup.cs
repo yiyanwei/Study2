@@ -119,11 +119,11 @@ namespace ZeroOne.WebApi
             app.UseHttpsRedirection();
             //启用身份验证中间件
             app.UseAuthentication();
-
+            //启用路由中间件
             app.UseRouting();
 
             app.UseAuthorization();
-
+            //启用swagger中间件
             app.UseSwagger();
             app.UseSwaggerUI(c =>
             {
