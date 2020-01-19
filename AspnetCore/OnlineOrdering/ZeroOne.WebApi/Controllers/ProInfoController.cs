@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
+using NLog.Web;
 using ZeroOne.Entity;
 using ZeroOne.Application;
 
@@ -18,6 +19,7 @@ namespace ZeroOne.WebApi.Controllers
         private IProInfoService _service;
         public ProInfoController(IProInfoService service)
         {
+            
             this._service = service;
         }
 

@@ -64,6 +64,7 @@ namespace ZeroOne.WebApi
             JwtSettings jwtSettings = new JwtSettings();
             Configuration.Bind("JwtSettings", jwtSettings);
             //添加身份验证
+
             services.AddAuthentication(options =>
             {
                 options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
@@ -97,6 +98,7 @@ namespace ZeroOne.WebApi
                     // ValidateLifetime = true
 
                 };
+                o.Events = new JwtBearerOverrideEvents();
             });
 
             //add swagger

@@ -26,6 +26,8 @@ https://www.cnblogs.com/stulzq/p/7551819.html   rabbitmq
 
 https://jwt.io/   jwt官网
 
+https://www.cnblogs.com/CrabMan/p/5436083.html    AsyncTaskMethodBuilder
+
 https://blog.csdn.net/qq_42606051/article/details/82529336   .net core Azure
 
 https://www.cnblogs.com/yiven/p/8447932.html  微信状态码

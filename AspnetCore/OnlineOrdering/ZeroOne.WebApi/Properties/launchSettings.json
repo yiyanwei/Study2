@@ -20,8 +20,8 @@
     "ZeroOne.WebApi": {
       "commandName": "Project",
       "launchBrowser": true,
-      "launchUrl": "http://localhost:8888/api/proinfo",
-      "applicationUrl": "http://localhost:8888",
+      "launchUrl": "http://localhost:5002/api/proinfo",
+      "applicationUrl": "http://localhost:5002",
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development"
       }
