@@ -66,5 +66,11 @@ namespace ZeroOne.WebApi.Controllers
             var proId = await this._service.AddProductInfo(product);
             return CreatedAtAction(nameof(GetProduct), new { id = proId.ToString() }, product);
         }
+
+        [HttpGet("ImportData")]
+        public void ImportData()
+        {
+            this._service.ImportData();
+        }
     }
 }

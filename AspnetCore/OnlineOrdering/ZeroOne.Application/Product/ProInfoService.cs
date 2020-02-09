@@ -54,5 +54,24 @@ namespace ZeroOne.Application
             operators.Add(new BaseRepModel(nameof(search.DataStatus), ECompareOperator.Contains, ELogicalOperatorType.And));
             return await this._ProInfoRep.GetModelList(operators, search);
         }
+
+        /// <summary>
+        /// 测试导入数据
+        /// </summary>
+        public void ImportData()
+        {
+            IList<Pro_Info> products = new List<Pro_Info>();
+            Pro_Info product;
+            for (int i = 0; i < 666; i++)
+            {
+                product = new Pro_Info() {
+                    Id = Guid.NewGuid(),
+                    ProName = "产品" + (i + 1),
+                    ProCode = (i+1).ToString()
+                };
+                products.Add(product);
+            }
+            this._ProInfoRep.BulkAddOrUpdate(products, nameof(Pro_Info));
+        }
     }
 }

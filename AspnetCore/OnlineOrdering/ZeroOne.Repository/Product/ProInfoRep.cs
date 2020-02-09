@@ -8,10 +8,11 @@ namespace ZeroOne.Repository
 {
     public class ProInfoRep : BaseRep<ProInfoSearch, Pro_Info>, IProInfoRep
     {
+        public ISqlSugarClient Client { get; set; }
         private ISqlSugarClient _client;
         public ProInfoRep(ISqlSugarClient client) : base(client)
         {
-            this._client = client;
+            this.Client = this._client = client;
         }
 
         public async Task<Pro_Info> GetProByName(string name)

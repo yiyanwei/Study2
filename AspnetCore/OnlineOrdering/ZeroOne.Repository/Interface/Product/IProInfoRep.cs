@@ -5,7 +5,7 @@ using ZeroOne.Entity;
 
 namespace ZeroOne.Repository
 {
-    public interface IProInfoRep:IBaseRep<ProInfoSearch,Pro_Info>
+    public interface IProInfoRep : IBaseRep<ProInfoSearch, Pro_Info>, IBulkAddOrUpdate
     {
         /// <summary>
         /// 

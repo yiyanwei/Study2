@@ -22,6 +22,11 @@ namespace ZeroOne.Entity
         public string ProName { get; set; }
 
         /// <summary>
+        /// 产品编码
+        /// </summary>
+        public string ProCode { get; set; }
+
+        /// <summary>
         /// 产品描述
         /// </summary>
         public string ProDesc { get; set; }

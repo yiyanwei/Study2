@@ -84,7 +84,7 @@ namespace ZeroOne.WebApi.Controllers
         }
 
         [AllowAnonymous]
-        [HttpGet("UserLogin")]
+        [HttpPost("UserLogin")]
         public async Task<ActionResult<object>> UserLogin(string account, string pwd)
         {
             var token = await this.GetToken(account, pwd);
