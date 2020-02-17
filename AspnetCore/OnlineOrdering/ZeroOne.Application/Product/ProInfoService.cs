@@ -14,17 +14,17 @@ namespace ZeroOne.Application
             this._ProInfoRep = proInfoRep;
         }
 
-        public async Task<Pro_Info> GetProByName(string name)
+        public async Task<ProInfo> GetProByName(string name)
         {
             return await this._ProInfoRep.GetProByName(name);
         }
 
-        public async Task<Pro_Info> GetProductInfo(Guid id)
+        public async Task<ProInfo> GetProductInfo(Guid id)
         {
             return await this._ProInfoRep.GetModel(id);
         }
 
-        public async Task<Guid> AddProductInfo(Pro_Info model)
+        public async Task<Guid> AddProductInfo(ProInfo model)
         {
             if (model == null)
             {
@@ -41,7 +41,7 @@ namespace ZeroOne.Application
             }
         }
 
-        public async Task<IList<Pro_Info>> GetProducts()
+        public async Task<IList<ProInfo>> GetProducts()
         {
             IList<BaseRepModel> operators = new List<BaseRepModel>();
             ProInfoSearch search = new ProInfoSearch();
@@ -60,18 +60,20 @@ namespace ZeroOne.Application
         /// </summary>
         public void ImportData()
         {
-            IList<Pro_Info> products = new List<Pro_Info>();
-            Pro_Info product;
+            IList<ProInfoBulk> products = new List<ProInfoBulk>();
+            ProInfoBulk product;
+            string bulkVal = DateTime.Now.ToString("yyyyMMddHHmmssfff");
             for (int i = 0; i < 666; i++)
             {
-                product = new Pro_Info() {
+                product = new ProInfoBulk() {
                     Id = Guid.NewGuid(),
                     ProName = "产品" + (i + 1),
-                    ProCode = (i+1).ToString()
+                    ProCode = (i+1).ToString(),
+                    BulkIdentity = bulkVal
                 };
                 products.Add(product);
             }
-            this._ProInfoRep.BulkAddOrUpdate(products, nameof(Pro_Info));
+            this._ProInfoRep.BulkAddOrUpdate<ProInfoBulk,ProInfo>(products,beforeAction: this._ProInfoRep.BeforeAction);
         }
     }
 }

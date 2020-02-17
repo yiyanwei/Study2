@@ -5,13 +5,13 @@ using ZeroOne.Entity;
 
 namespace ZeroOne.Repository
 {
-    public interface IProInfoRep : IBaseRep<ProInfoSearch, Pro_Info>, IBulkAddOrUpdate
+    public interface IProInfoRep : IBaseRep<ProInfoSearch, ProInfo>, IBulkAddOrUpdate
     {
         /// <summary>
         /// 
         /// </summary>
         /// <param name="name"></param>
         /// <returns></returns>
-        Task<Pro_Info> GetProByName(string name);
+        Task<ProInfo> GetProByName(string name);
     }
 }

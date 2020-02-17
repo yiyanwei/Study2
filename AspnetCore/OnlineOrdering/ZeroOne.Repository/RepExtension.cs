@@ -7,7 +7,6 @@ using System.Collections;
 using System.Collections.Generic;
 using SqlSugar;
 using ZeroOne.Entity;
-
 using ZeroOne.Extension;
 
 namespace ZeroOne.Repository
@@ -26,7 +25,43 @@ namespace ZeroOne.Repository
     /// </summary>
     public static class RepExtension
     {
-        public static bool BulkAddOrUpdate<TModel>(this IBulkAddOrUpdate bulk, IList<TModel> models, string tableName, int bulkAddRecords = 1000, bool isSameUpdate = false, string uniqueFieldName = null) where TModel : new()
+        public static void BeforeAction(this IBulkAddOrUpdate bulk, ISqlSugarClient client, Type type)
+        {
+            if (type == null)
+            {
+                throw new Exception("Model类型为空");
+            }
+            //实体类型
+            var properties = type.GetProperties(BindingFlags.Instance | BindingFlags.Public);
+
+            var tableAttribute = type.GetCustomAttribute<SugarTable>();
+            string tempTableName = tableAttribute != null ? tableAttribute.TableName : type.Name;
+
+            StringBuilder sbTempTable = new StringBuilder();
+            //创建数据库表sql字符串
+            sbTempTable.Append($" create table if not exists {tempTableName}(");
+            foreach (var prop in properties)
+            {
+                sbTempTable.Append($" {prop.Name} {GetMySqlDbType(prop.PropertyType)},");
+            }
+            sbTempTable = sbTempTable.Remove(sbTempTable.Length - 1, 1);
+            sbTempTable.Append(" ) ");
+            //创建临时表
+            client.Ado.ExecuteCommand(sbTempTable.ToString());
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <typeparam name="TSource"></typeparam>
+        /// <typeparam name="TTarget"></typeparam>
+        /// <param name="bulk"></param>
+        /// <param name="models"></param>
+        /// <param name="bulkAddRecords"></param>
+        /// <param name="beforeAction"></param>
+        /// <param name="afterAction"></param>
+        /// <returns></returns>
+        public static bool BulkAddOrUpdate<TSource, TTarget>(this IBulkAddOrUpdate bulk, IList<TSource> models, int bulkAddRecords = 1000, Action<ISqlSugarClient, Type> beforeAction = null, Action<ISqlSugarClient, Type, Type, string> afterAction = null) where TSource : IBulkModel, new() where TTarget : new()
         {
             int length = 0;
             if (models == null || models.Count() <= 0)
@@ -38,22 +73,12 @@ namespace ZeroOne.Repository
                 length = models.Count();
             }
 
-            if (string.IsNullOrWhiteSpace(tableName))
-            {
-                throw new Exception("未提供数据库表名");
-            }
-
-            if (isSameUpdate)
-            {
-                if (string.IsNullOrWhiteSpace(uniqueFieldName))
-                {
-                    throw new Exception("在isSameUpdate为true的情况下，未提供唯一键的字段名");
-                }
-            }
-
             var client = bulk.Client;
             //实体类名
-            Type modelType = typeof(TModel);
+            Type modelType = typeof(TSource);
+            var tableAttribute = modelType.GetCustomAttribute<SugarTable>();
+            string tempTableName = tableAttribute != null ? tableAttribute.TableName : modelType.Name;
+
             var properties = modelType.GetProperties(BindingFlags.Instance | BindingFlags.Public);
             if (properties != null && properties.Count() > 0)
             {
@@ -62,23 +87,12 @@ namespace ZeroOne.Repository
                 {
                     //开启事务
                     client.Ado.BeginTran();
-                    string tempTableName = $"{tableName}_{DateTime.Now.ToString("yyyyMMdd")}";
-                    StringBuilder sbTempTable = new StringBuilder();
-                    //创建数据库表sql字符串
-                    sbTempTable.Append($" create temporary table if not exists {tempTableName}(");
-                    IList<string> columnNames = new List<string>();
-                    //List<DbColumnInfo> columns = new List<DbColumnInfo>();
-                    foreach (var prop in properties)
-                    {
-                        //DbColumnInfo column  = new DbColumnInfo()
-                        sbTempTable.Append($" {prop.Name} {GetMySqlDbType(prop.PropertyType)},");
-                        columnNames.Add(prop.Name);
-                    }
-                    sbTempTable = sbTempTable.Remove(sbTempTable.Length - 1, 1);
-                    sbTempTable.Append(" ) ");
-                    //创建临时表
-                    client.Ado.ExecuteCommand(sbTempTable.ToString());
 
+                    //执行批量插入之前是否有操作
+                    beforeAction?.Invoke(client, modelType);
+
+                    //获取所有公共属性名
+                    var columnNames = properties.Select(t => t.Name);
                     int step = 0;
                     bool isExactDivision = (length % bulkAddRecords == 0);
                     //批量插入数据
@@ -90,6 +104,9 @@ namespace ZeroOne.Repository
                     {
                         step = (int)(length / bulkAddRecords) + 1;
                     }
+
+                    //批量标识数据
+                    string bulkIdentityVal = string.Empty;
 
                     int start = 0;
                     int affecedRows = 0;
@@ -117,6 +134,10 @@ namespace ZeroOne.Repository
                                 var prop = properties.First(t => t.Name == columnName);
                                 var propVal = prop.GetValue(models[j]);
                                 vals.Add(GetMySqlDataType(prop.PropertyType, propVal));
+                                if (columnName == nameof(IBulkModel.BulkIdentity) && string.IsNullOrWhiteSpace(bulkIdentityVal))
+                                {
+                                    bulkIdentityVal = vals[vals.Count - 1];
+                                }
                             }
                             //转换成以,分割的值的字符串
                             string strVal = string.Join(",", vals);
@@ -124,30 +145,23 @@ namespace ZeroOne.Repository
                         }
                         insertSql = insertSql.Remove(insertSql.Length - 1, 1);
                         insertSql.Append(";");
-                        affecedRows +=  client.Ado.ExecuteCommand(insertSql.ToString());
+                        affecedRows += client.Ado.ExecuteCommand(insertSql.ToString());
 
                     }
                     //如果插入成功的数据与传入的数据量一致
                     if (affecedRows == length)
                     {
-                        //判断是否直接添加数据到实际数据表中
-                        StringBuilder synchronousData = new StringBuilder();
-                        if (!isSameUpdate)
-                        {
-                            synchronousData.Append($" insert into {tableName} ({string.Join(",", columnNames)}) select {string.Join(",", columnNames)} from {tempTableName}");
-                        }
-                        else
-                        {
-                            synchronousData.Append($" insert into {tableName} ({string.Join(",", columnNames)}) select {string.Join(",", columnNames)} from {tempTableName}");
-                        }
-                        //结束事务
+
+                        //1.数据操作对象，2：操作目标表对象类型，3：临时表对象类型，4：批量操作的批次标识
+                        afterAction?.Invoke(client, modelType, typeof(TTarget), bulkIdentityVal);
+                        //提交事务
                         client.Ado.CommitTran();
                     }
                     else
                     {
                         //回滚事务
                         client.Ado.RollbackTran();
-                    }                    
+                    }
                 }
                 catch (Exception ex)
                 {
@@ -162,7 +176,7 @@ namespace ZeroOne.Repository
             }
             else
             {
-                throw new Exception($"该{nameof(TModel)}类没有可实例化的公共属性");
+                throw new Exception($"该{nameof(TSource)}类没有可实例化的公共属性");
             }
         }
 

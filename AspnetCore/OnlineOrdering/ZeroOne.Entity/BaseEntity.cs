@@ -4,6 +4,28 @@ using SqlSugar;
 namespace ZeroOne.Entity
 {
     /// <summary>
+    /// 批量导入数据
+    /// </summary>
+    public interface IBulkModel
+    {
+        /// <summary>
+        /// 批量标识，判断是什么时候导入的，数据格式 yyyyMMddHHmmssfff
+        /// </summary>
+        string BulkIdentity { get; set; }
+    }
+
+    /// <summary>
+    /// 控制并发处理模型接口
+    /// </summary>
+    public interface IRowVersion
+    {
+        /// <summary>
+        /// 行版本号
+        /// </summary>
+        Guid? RowVersion { get; set; }
+    }
+
+    /// <summary>
     /// 实体基础类
     /// </summary>
     public class BaseEntity
@@ -25,10 +47,6 @@ namespace ZeroOne.Entity
         /// </summary>
         /// <value></value>
         public bool? IsDeleted { get; set; }
-        /// <summary>
-        /// 行版本号
-        /// </summary>
-        public Guid? RowVersion { get; set; }
 
 
         /// <summary>

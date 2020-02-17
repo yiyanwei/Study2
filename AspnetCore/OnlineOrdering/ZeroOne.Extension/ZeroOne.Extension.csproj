@@ -5,7 +5,9 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Folder Include="WX\" />
+    <Compile Remove="WX\**" />
+    <EmbeddedResource Remove="WX\**" />
+    <None Remove="WX\**" />
   </ItemGroup>
 
 </Project>

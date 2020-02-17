@@ -8,13 +8,13 @@ namespace ZeroOne.Application
 {
     public interface IProInfoService
     {
-        Task<Pro_Info> GetProductInfo(Guid id);
+        Task<ProInfo> GetProductInfo(Guid id);
 
-        Task<IList<Pro_Info>> GetProducts();
+        Task<IList<ProInfo>> GetProducts();
 
-        Task<Pro_Info> GetProByName(string name);
+        Task<ProInfo> GetProByName(string name);
 
-        Task<Guid> AddProductInfo(Pro_Info model);
+        Task<Guid> AddProductInfo(ProInfo model);
 
         void ImportData();
     }

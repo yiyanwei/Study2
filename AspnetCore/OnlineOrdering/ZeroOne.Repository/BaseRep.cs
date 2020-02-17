@@ -15,7 +15,7 @@ using ZeroOne.Extension;
 
 namespace ZeroOne.Repository
 {
-    public abstract class BaseRep<TSearchModel, TModel> : IBaseRep<TSearchModel, TModel> where TSearchModel : BaseSearch where TModel : BaseEntity, new()
+    public abstract class BaseRep<TSearchModel, TModel> : IBaseRep<TSearchModel, TModel> where TSearchModel : BaseSearch where TModel : BaseEntity, IRowVersion, new()
     {
         private static readonly object lockObj = new object();
         private ISqlSugarClient _client;
