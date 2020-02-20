@@ -110,7 +110,7 @@ namespace ZeroOne.WebApi
                 var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
                 c.IncludeXmlComments(xmlPath, true);
                 //获取entity的xml文件
-                var entityXmlFile = $"{typeof(BaseEntity).Assembly.GetName().Name}.xml";
+                var entityXmlFile = $"{typeof(BaseEntity<>).Assembly.GetName().Name}.xml";
                 var entityXmlPath = Path.Combine(AppContext.BaseDirectory, entityXmlFile);
                 c.IncludeXmlComments(entityXmlPath);
             });

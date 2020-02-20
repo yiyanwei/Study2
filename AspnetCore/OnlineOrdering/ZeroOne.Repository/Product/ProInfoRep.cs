@@ -6,7 +6,7 @@ using ZeroOne.Entity;
 
 namespace ZeroOne.Repository
 {
-    public class ProInfoRep : BaseRep<ProInfoSearch, ProInfo>, IProInfoRep
+    public class ProInfoRep : BaseRep<ProInfoSearch, ProInfo, Guid>, IProInfoRep
     {
         public ISqlSugarClient Client { get; set; }
         private ISqlSugarClient _client;
@@ -19,7 +19,7 @@ namespace ZeroOne.Repository
         {
             //测试1
             var queryTest1 = this._client.Queryable<ProInfo>();
-            return await queryTest1.Where(x => x.ProName.Contains(name) || x.IsDeleted == true && x.CreateDate > DateTime.Now).FirstAsync();
+            return await queryTest1.Where(x => x.ProName.Contains(name) || x.IsDeleted == true && x.CreationTime > DateTime.Now).FirstAsync();
             // var xx = await queryTest1.FirstAsync();
             // //测试2
             // var queryTest2 = this._client.Queryable<Pro_Info>();

@@ -8,7 +8,7 @@ using ZeroOne.Entity;
 
 namespace ZeroOne.Repository
 {
-    public class ProCategoryRep : BaseRep<ProCategorySearch, ProCategory>, IProCategoryRep
+    public class ProCategoryRep : BaseRep<ProCategorySearch, ProCategory,Guid>, IProCategoryRep
     {
         private ISqlSugarClient _client;
         public ProCategoryRep(ISqlSugarClient client) : base(client)

@@ -1,12 +1,9 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <ItemGroup>
+    <ProjectReference Include="..\..\SqlSugar\SqlSugar.csproj" />
     <ProjectReference Include="..\ZeroOne.Entity\ZeroOne.Entity.csproj" />
     <ProjectReference Include="..\ZeroOne.Extension\ZeroOne.Extension.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <PackageReference Include="sqlSugarCore" Version="5.0.0.11" />
   </ItemGroup>
 
   <PropertyGroup>

@@ -1,17 +1,19 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 15
-VisualStudioVersion = 15.0.26124.0
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.29709.97
 MinimumVisualStudioVersion = 15.0.26124.0
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ZeroOne.Entity", "ZeroOne.Entity\ZeroOne.Entity.csproj", "{674C6C25-DB37-4D77-8A01-D7F003CD5DE4}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ZeroOne.Entity", "ZeroOne.Entity\ZeroOne.Entity.csproj", "{674C6C25-DB37-4D77-8A01-D7F003CD5DE4}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ZeroOne.Repository", "ZeroOne.Repository\ZeroOne.Repository.csproj", "{5BCCCDF2-B61E-4F9C-BA8C-C04FF75FDB35}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ZeroOne.Repository", "ZeroOne.Repository\ZeroOne.Repository.csproj", "{5BCCCDF2-B61E-4F9C-BA8C-C04FF75FDB35}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ZeroOne.Application", "ZeroOne.Application\ZeroOne.Application.csproj", "{06919408-0E95-4E63-A5E7-EC7A6E7854CE}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ZeroOne.Application", "ZeroOne.Application\ZeroOne.Application.csproj", "{06919408-0E95-4E63-A5E7-EC7A6E7854CE}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ZeroOne.Extension", "ZeroOne.Extension\ZeroOne.Extension.csproj", "{0CE5F896-AD50-4BD0-BEED-7DEFF866BEA3}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ZeroOne.Extension", "ZeroOne.Extension\ZeroOne.Extension.csproj", "{0CE5F896-AD50-4BD0-BEED-7DEFF866BEA3}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ZeroOne.WebApi", "ZeroOne.WebApi\ZeroOne.WebApi.csproj", "{6140F1A5-6C4D-47F5-8798-389A18E87035}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ZeroOne.WebApi", "ZeroOne.WebApi\ZeroOne.WebApi.csproj", "{6140F1A5-6C4D-47F5-8798-389A18E87035}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SqlSugar", "..\SqlSugar\SqlSugar.csproj", "{6DCA8D58-0F04-4DCE-942F-CE7706CDF1FC}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -21,9 +23,6 @@ Global
 		Release|Any CPU = Release|Any CPU
 		Release|x64 = Release|x64
 		Release|x86 = Release|x86
-	EndGlobalSection
-	GlobalSection(SolutionProperties) = preSolution
-		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
 		{674C6C25-DB37-4D77-8A01-D7F003CD5DE4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
@@ -86,5 +85,23 @@ Global
 		{6140F1A5-6C4D-47F5-8798-389A18E87035}.Release|x64.Build.0 = Release|Any CPU
 		{6140F1A5-6C4D-47F5-8798-389A18E87035}.Release|x86.ActiveCfg = Release|Any CPU
 		{6140F1A5-6C4D-47F5-8798-389A18E87035}.Release|x86.Build.0 = Release|Any CPU
+		{6DCA8D58-0F04-4DCE-942F-CE7706CDF1FC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6DCA8D58-0F04-4DCE-942F-CE7706CDF1FC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6DCA8D58-0F04-4DCE-942F-CE7706CDF1FC}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{6DCA8D58-0F04-4DCE-942F-CE7706CDF1FC}.Debug|x64.Build.0 = Debug|Any CPU
+		{6DCA8D58-0F04-4DCE-942F-CE7706CDF1FC}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{6DCA8D58-0F04-4DCE-942F-CE7706CDF1FC}.Debug|x86.Build.0 = Debug|Any CPU
+		{6DCA8D58-0F04-4DCE-942F-CE7706CDF1FC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6DCA8D58-0F04-4DCE-942F-CE7706CDF1FC}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6DCA8D58-0F04-4DCE-942F-CE7706CDF1FC}.Release|x64.ActiveCfg = Release|Any CPU
+		{6DCA8D58-0F04-4DCE-942F-CE7706CDF1FC}.Release|x64.Build.0 = Release|Any CPU
+		{6DCA8D58-0F04-4DCE-942F-CE7706CDF1FC}.Release|x86.ActiveCfg = Release|Any CPU
+		{6DCA8D58-0F04-4DCE-942F-CE7706CDF1FC}.Release|x86.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {991E01E3-C56E-4197-BCF5-5334CC0E7361}
 	EndGlobalSection
 EndGlobal

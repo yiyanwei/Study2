@@ -1,9 +1,11 @@
-﻿namespace ZeroOne.Entity
+﻿using System;
+
+namespace ZeroOne.Entity
 {
     /// <summary>
     /// 批量导入产品对象
     /// </summary>
-    public class ProInfoBulk : BaseEntity, IBulkModel
+    public class ProInfoBulk : BaseEntity<Guid>, IBulkModel
     {
         /// <summary>
         /// 产品名称

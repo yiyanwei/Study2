@@ -15,8 +15,9 @@ using ZeroOne.Extension;
 
 namespace ZeroOne.Repository
 {
-    public abstract class BaseRep<TSearchModel, TModel> : IBaseRep<TSearchModel, TModel> where TSearchModel : BaseSearch where TModel : BaseEntity, IRowVersion, new()
+    public abstract class BaseRep<TSearchModel, TModel, TPrimaryKey> : IBaseRep<TSearchModel, TModel, TPrimaryKey> where TSearchModel : BaseSearch where TModel : BaseEntity<TPrimaryKey>, IRowVersion, new()
     {
+
         private static readonly object lockObj = new object();
         private ISqlSugarClient _client;
         public BaseRep(ISqlSugarClient client)
@@ -24,11 +25,53 @@ namespace ZeroOne.Repository
             this._client = client;
         }
 
-        public async Task<TModel> GetModel(Guid id)
+        public async Task<TModel> GetModel(TPrimaryKey id)
         {
             var query = this._client.Queryable<TModel>();
-            return await query.Where(t => t.Id == id).SingleAsync();
+            return await query.Where(GetBaseWhereExpression(id)).Where(t => SqlFunc.IsNull(t.IsDeleted, false) == false).SingleAsync();
         }
+
+        public T IFNULL<T>(T thisValue, T ifNullValue)
+        {
+            throw new NotSupportedException("Can only be used in expressions");
+        }
+
+        private Expression<Func<TModel, bool>> GetBaseWhereExpression(TPrimaryKey id)
+        {
+
+            ParameterExpression paramExp = Expression.Parameter(typeof(TModel), "t");
+            #region 主键值相等
+            //属性表达式
+            Expression propExp = Expression.Property(paramExp, nameof(BaseEntity<TPrimaryKey>.Id));
+            //值表达式
+            Expression valExp = Expression.Constant(id);
+            //相等表达式
+            Expression equalExp = Expression.Equal(propExp, valExp);
+            #endregion
+            #region 未删除
+            //SqlFunc.IsNull<bool>()
+            Expression delPropExp = Expression.Property(paramExp, nameof(IDeleted.IsDeleted));
+            Expression delValExp = Expression.Constant(false);
+            var method = this.GetType().BaseType.GetMethod(nameof(this.IFNULL), BindingFlags.Instance | BindingFlags.Public);
+            ////Expression callExp = Expression.Call(method, delPropExp, delValExp);
+            //var configurationType = typeof(Func<>).MakeGenericType(typeof(bool));
+            //var configurationInstance = Activator.CreateInstance(configurationType);
+            //var configParameter = Expression.Parameter(configurationType, "config");
+
+            //var registrarParameter = Expression.Parameter(typeof(BaseRep<TSearchModel, TModel, TPrimaryKey>), "registrar");
+
+            //var callExp = Expression.Call(method, delPropExp, delValExp);
+            //var callExp = Expression.Call(this.GetType(), "IFNULL", new[] { typeof(bool) }, delPropExp, delValExp);
+            //Expression delEqualExp = Expression.Equal(callExp, delValExp);
+
+            //SqlFunc.IsNull()
+
+            #endregion
+            Expression<Func<TModel, bool>> lambda = Expression.Lambda<Func<TModel, bool>>(equalExp, paramExp);
+            return lambda;
+        }
+
+
 
         /// <summary>
         /// 添加数据实体
@@ -45,28 +88,53 @@ namespace ZeroOne.Repository
             return affectedRows > 0;
         }
 
-        public async Task<bool> DeleteModel(Guid id, Guid rowVersion)
+        public async Task<bool> DeleteModel(TPrimaryKey id, Guid rowVersion)
         {
-            var searchModel = await this._client.Queryable<TModel>().Where(it => it.Id == id && it.RowVersion == rowVersion).FirstAsync();
-            if (searchModel == null)
-            {
-                throw new DBConcurrencyException($"id:{id} 数据已更新，请刷新后重试！");
-            }
+            //var searchModel = await this._client.Queryable<TModel>().Where(it => (BaseEntity<TPrimaryKey>)it == new BaseEntity<TPrimaryKey>() { Id = id } && it.RowVersion == rowVersion).FirstAsync();
+            //if (searchModel == null)
+            //{
+            //    throw new DBConcurrencyException($"id:{id} 数据已更新，请刷新后重试！");
+            //}
+
+            ConcurrentProcess(new TModel() { Id = id, RowVersion = rowVersion });
             Guid newGuid = Guid.NewGuid();
-            int affecedRows = await this._client.Updateable<TModel>().SetColumns(t => new TModel { IsDeleted = true, RowVersion = newGuid }).Where(t => t.Id == id).ExecuteCommandAsync();
+            int affecedRows = await this._client.Updateable<TModel>()
+                .SetColumns(t => new TModel { IsDeleted = true, RowVersion = newGuid })
+                .Where(t => (BaseEntity<TPrimaryKey>)t == new BaseEntity<TPrimaryKey>() { Id = id }).ExecuteCommandAsync();
             return affecedRows > 0;
         }
 
         public async Task<bool> UpdateModel(TModel model)
         {
-            var searchModel = await this._client.Queryable<TModel>().Where(it => it.Id == model.Id && it.RowVersion == model.RowVersion).FirstAsync();
-            if (searchModel == null)
-            {
-                throw new DBConcurrencyException($"id:{model.Id} 数据已更新，请刷新后重试！");
-            }
+            //var searchModel = await this._client.Queryable<TModel>().Where(it => (BaseEntity<TPrimaryKey>)it == (BaseEntity<TPrimaryKey>)model && it.RowVersion == model.RowVersion).FirstAsync();
+            //if (searchModel == null)
+            //{
+            //    throw new DBConcurrencyException($"id:{model.Id} 数据已更新，请刷新后重试！");
+            //}
+            ConcurrentProcess(model);
             model.RowVersion = Guid.NewGuid();
             int affecedRows = await this._client.Updateable(model).IgnoreColumns(true).ExecuteCommandAsync();
             return affecedRows > 0;
+        }
+
+        /// <summary>
+        /// 判断是否并发
+        /// </summary>
+        private async void ConcurrentProcess(TModel model)
+        {
+
+            var searchModel = await this._client.Queryable<TModel>().Where(it => (BaseEntity<TPrimaryKey>)it == (BaseEntity<TPrimaryKey>)model && it.IsDeleted == false).FirstAsync();
+            if (searchModel != null)
+            {
+                if (searchModel.RowVersion != model.RowVersion)
+                {
+                    throw new DBConcurrencyException($"{nameof(model.Id)}:{model.Id} 数据已更新，请刷新后重试！");
+                }
+            }
+            else
+            {
+                throw new Exception($"{nameof(model.Id)}:{model.Id},未查询到该数据或已被删除");
+            }
         }
 
         /// <summary>

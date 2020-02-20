@@ -25,17 +25,46 @@ namespace ZeroOne.Entity
         Guid? RowVersion { get; set; }
     }
 
+    public interface IDeleted
+    {
+        bool? IsDeleted { get; set; }
+
+        /// <summary>
+        /// 删除操作人
+        /// </summary>
+        string DeleterUserId { get; set; }
+
+        /// <summary>
+        /// 删除时间
+        /// </summary>
+        DateTime? DeletionTime { get; set; }
+
+    }
+
+    public interface IUpdated
+    {
+        /// <summary>
+        /// 更新人
+        /// </summary>
+        string LastModifierUserId { get; set; }
+
+        /// <summary>
+        /// 更新时间
+        /// </summary>
+        DateTime? LastModificationTime { get; set; }
+    }
+
     /// <summary>
     /// 实体基础类
     /// </summary>
-    public class BaseEntity
+    public class BaseEntity<TPrimaryKey>: IDeleted, IUpdated
     {
         
         /// <summary>
         /// 主键
         /// </summary>
         [SugarColumn(IsPrimaryKey = true)]
-        public Guid Id { get; set; }
+        public TPrimaryKey Id { get; set; }
 
         /// <summary>
         /// 数据状态 0：正常，1：删除
@@ -48,25 +77,67 @@ namespace ZeroOne.Entity
         /// <value></value>
         public bool? IsDeleted { get; set; }
 
+        /// <summary>
+        /// 删除操作人
+        /// </summary>
+        public string DeleterUserId { get; set; }
+
+        /// <summary>
+        /// 删除时间
+        /// </summary>
+        public DateTime? DeletionTime { get; set; }
 
         /// <summary>
         /// 创建人
         /// </summary>
-        public string CreateUser { get; set; }
+        public string CreatorUserId { get; set; }
 
         /// <summary>
         /// 创建时间
         /// </summary>
-        public DateTime? CreateDate { get; set; }
+        public DateTime? CreationTime { get; set; }
 
         /// <summary>
         /// 更新人
         /// </summary>
-        public string UpdateUser { get; set; }
+        public string LastModifierUserId { get; set; }
 
         /// <summary>
         /// 更新时间
         /// </summary>
-        public DateTime? UpdateDate { get; set; }
+        public DateTime? LastModificationTime { get; set; }
+
+        public override bool Equals(object obj)
+        {
+            if (obj == null || !(obj is BaseEntity<TPrimaryKey>))
+            {
+                return false;
+            }
+            BaseEntity<TPrimaryKey> entity = (BaseEntity<TPrimaryKey>)obj;
+            TPrimaryKey id = this.Id;
+            return id.Equals(entity.Id);
+        }
+        public override int GetHashCode()
+        {
+            TPrimaryKey id = this.Id;
+            return id.GetHashCode();
+        }
+        public override string ToString()
+        {
+            return string.Format("[{0} {1}]", base.GetType().Name, this.Id);
+        }
+
+        public static bool operator ==(BaseEntity<TPrimaryKey> left, BaseEntity<TPrimaryKey> right)
+        {
+            if (object.Equals(left, null))
+            {
+                return object.Equals(right, null);
+            }
+            return left.Equals(right);
+        }
+        public static bool operator !=(BaseEntity<TPrimaryKey> left, BaseEntity<TPrimaryKey> right)
+        {
+            return !(left == right);
+        }
     }
 }

@@ -6,7 +6,7 @@ namespace ZeroOne.Entity
     /// <summary>
     /// 
     /// </summary>
-    public class User_Info : BaseEntity
+    public class User_Info : BaseEntity<Guid>,IRowVersion
     {
         /// <summary>
         /// 
@@ -39,6 +39,6 @@ namespace ZeroOne.Entity
         /// 微信OpenId
         /// </summary>
         public string OpenId { get; set; }
-
+        public Guid? RowVersion { get; set; }
     }
 }
