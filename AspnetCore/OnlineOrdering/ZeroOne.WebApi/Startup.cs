@@ -23,9 +23,82 @@ using NLog.Web;
 using SqlSugar;
 using ZeroOne.Application;
 using ZeroOne.Entity;
+using Microsoft.AspNetCore.Mvc.ApplicationModels;
+using Microsoft.AspNetCore.Mvc.Routing;
+using Microsoft.AspNetCore.Rewrite;
 
 namespace ZeroOne.WebApi
 {
+
+    /// <summary>
+    /// api 路由拦截器（第二步）
+    /// 扩展了MVCoptions
+    /// </summary>
+    public static class MvcOptionsExtensions
+    {
+        /// <summary>
+        /// 扩展方法
+        /// </summary>
+        /// <param name="opts"></param>
+        /// <param name="routeAttribute">自定的前缀内容</param>
+        public static void UseCentralRoutePrefix(this MvcOptions opts, IRouteTemplateProvider routeAttribute)
+        {
+            // 添加我们自定义 实现IApplicationModelConvention的RouteConvention
+            opts.Conventions.Insert(0, new RouteConvention(routeAttribute));
+        }
+
+    }
+
+    /// <summary>
+    /// api 路由拦截器（第一步）
+    /// </summary>
+    public class RouteConvention : IApplicationModelConvention
+    {
+        private readonly AttributeRouteModel _centralPrefix;
+
+        public RouteConvention(IRouteTemplateProvider routeTemplateProvider)
+        {
+            _centralPrefix = new AttributeRouteModel(routeTemplateProvider);
+        }
+
+        //接口的Apply方法
+        public void Apply(ApplicationModel application)
+        {
+            //遍历所有的 Controller
+            foreach (var controller in application.Controllers)
+            {
+                // 已经标记了 RouteAttribute 的 Controller
+                var matchedSelectors = controller.Selectors.Where(x => x.AttributeRouteModel != null).ToList();
+                if (matchedSelectors.Any())
+                {
+                    foreach (var selectorModel in matchedSelectors)
+                    {
+                        // 在 当前路由上 再 添加一个 路由前缀
+                        selectorModel.AttributeRouteModel = AttributeRouteModel.CombineAttributeRouteModel(_centralPrefix,
+                            selectorModel.AttributeRouteModel);
+
+                        // 在 当前路由上 不再 添加任何路由前缀
+                        //selectorModel.AttributeRouteModel = selectorModel.AttributeRouteModel;
+                    }
+                }
+
+                // 没有标记 RouteAttribute 的 Controller
+                var unmatchedSelectors = controller.Selectors.Where(x => x.AttributeRouteModel == null).ToList();
+                if (unmatchedSelectors.Any())
+                {
+                    foreach (var selectorModel in unmatchedSelectors)
+                    {
+                        // 添加一个 路由前缀
+                        //selectorModel.AttributeRouteModel = _centralPrefix;
+
+                        // 不添加前缀(说明：不使用全局路由，重构action，实现自定义、特殊的action路由地址)
+                        selectorModel.AttributeRouteModel = selectorModel.AttributeRouteModel;
+                    }
+                }
+            }
+        }
+    }
+
     public class Startup
     {
         public IWebHostEnvironment Environment { get; set; }
@@ -43,7 +116,7 @@ namespace ZeroOne.WebApi
         {
             services.AddControllers(options =>
             {
-
+                
             }).SetCompatibilityVersion(CompatibilityVersion.Version_3_0);
             //添加服务到服务容器
             services.AddRepository();
@@ -56,6 +129,16 @@ namespace ZeroOne.WebApi
             services.AddSingleton<ISqlSugarClient>(t =>
             {
                 var connConfig = t.GetRequiredService<IOptions<ConnectionConfig>>().Value;
+                var extMethodList = new List<SqlFuncExternal>();
+                extMethodList.Add(new SqlFuncExternal()
+                {
+                    MethodValue = (a, b, c) =>
+                    {
+                        return string.Empty;
+                    },
+                    UniqueMethodName = "IFNULL"
+                });
+                connConfig.ConfigureExternalServices.SqlFuncServices = extMethodList;
                 return new SqlSugarClient(connConfig);
             });
 
@@ -135,6 +218,7 @@ namespace ZeroOne.WebApi
             app.UseAuthentication();
             //启用路由中间件
             app.UseRouting();
+            //如果没有匹配上的路由
 
             app.UseAuthorization();
             //启用swagger中间件
@@ -144,6 +228,16 @@ namespace ZeroOne.WebApi
                 c.SwaggerEndpoint("/swagger/v1/swagger.json", "ApiHelp V1");
             });
 
+            //app.UseRewriter();
+            //app.Use(async (context, next) =>
+            //{
+            //    await next();
+            //    if (context.Response.StatusCode == 404)
+            //    {
+            //        context.Request.Path = "/Home";
+            //        await next();
+            //    }
+            //});
 
             app.UseEndpoints(endpoints =>
             {

@@ -50,7 +50,7 @@ namespace ZeroOne.WebApi.Controllers
         /// </summary>
         /// <returns></returns>
         [HttpGet]
-        public async Task<IList<ProInfo>> GetProducts()
+        public async Task<IList<ProInfo>> GetProducts(ProInfoSearch search)
         {
             return await this._service.GetProducts();
         }

@@ -28,12 +28,7 @@ namespace ZeroOne.Repository
         public async Task<TModel> GetModel(TPrimaryKey id)
         {
             var query = this._client.Queryable<TModel>();
-            return await query.Where(GetBaseWhereExpression(id)).Where(t => SqlFunc.IsNull(t.IsDeleted, false) == false).SingleAsync();
-        }
-
-        public T IFNULL<T>(T thisValue, T ifNullValue)
-        {
-            throw new NotSupportedException("Can only be used in expressions");
+            return await query.Where(GetBaseWhereExpression(id)).Where(t => SqlFunc.IsNull(t.IsDeleted, false) == false).FirstAsync();
         }
 
         private Expression<Func<TModel, bool>> GetBaseWhereExpression(TPrimaryKey id)
@@ -50,21 +45,13 @@ namespace ZeroOne.Repository
             #endregion
             #region 未删除
             //SqlFunc.IsNull<bool>()
-            Expression delPropExp = Expression.Property(paramExp, nameof(IDeleted.IsDeleted));
-            Expression delValExp = Expression.Constant(false);
-            var method = this.GetType().BaseType.GetMethod(nameof(this.IFNULL), BindingFlags.Instance | BindingFlags.Public);
-            ////Expression callExp = Expression.Call(method, delPropExp, delValExp);
-            //var configurationType = typeof(Func<>).MakeGenericType(typeof(bool));
-            //var configurationInstance = Activator.CreateInstance(configurationType);
-            //var configParameter = Expression.Parameter(configurationType, "config");
+            //Expression delPropExp = Expression.Property(paramExp, nameof(IDeleted.IsDeleted));
+            //Expression delValExp = Expression.Constant(false);
 
-            //var registrarParameter = Expression.Parameter(typeof(BaseRep<TSearchModel, TModel, TPrimaryKey>), "registrar");
-
-            //var callExp = Expression.Call(method, delPropExp, delValExp);
-            //var callExp = Expression.Call(this.GetType(), "IFNULL", new[] { typeof(bool) }, delPropExp, delValExp);
-            //Expression delEqualExp = Expression.Equal(callExp, delValExp);
-
-            //SqlFunc.IsNull()
+            //var genenicType = typeof(int);
+            //var methodExp = Expression.Call(Expression.Constant(this), nameof(IFNULL), new Type[] { genenicType }, Expression.Constant(1), Expression.Constant(2));
+            //Expression<Func<int>> expression = Expression.Lambda<Func<int>>(methodExp);
+            //var result = expression.Compile()();
 
             #endregion
             Expression<Func<TModel, bool>> lambda = Expression.Lambda<Func<TModel, bool>>(equalExp, paramExp);
@@ -88,29 +75,29 @@ namespace ZeroOne.Repository
             return affectedRows > 0;
         }
 
+        /// <summary>
+        /// 删除对象
+        /// </summary>
+        /// <param name="id">对象Id</param>
+        /// <param name="rowVersion">版本号</param>
+        /// <returns></returns>
         public async Task<bool> DeleteModel(TPrimaryKey id, Guid rowVersion)
         {
-            //var searchModel = await this._client.Queryable<TModel>().Where(it => (BaseEntity<TPrimaryKey>)it == new BaseEntity<TPrimaryKey>() { Id = id } && it.RowVersion == rowVersion).FirstAsync();
-            //if (searchModel == null)
-            //{
-            //    throw new DBConcurrencyException($"id:{id} 数据已更新，请刷新后重试！");
-            //}
-
             ConcurrentProcess(new TModel() { Id = id, RowVersion = rowVersion });
             Guid newGuid = Guid.NewGuid();
             int affecedRows = await this._client.Updateable<TModel>()
                 .SetColumns(t => new TModel { IsDeleted = true, RowVersion = newGuid })
-                .Where(t => (BaseEntity<TPrimaryKey>)t == new BaseEntity<TPrimaryKey>() { Id = id }).ExecuteCommandAsync();
+                .Where(GetBaseWhereExpression(id)).Where(t => SqlFunc.IsNull(t.IsDeleted, false) == false).ExecuteCommandAsync();
             return affecedRows > 0;
         }
 
+        /// <summary>
+        /// 更新对象
+        /// </summary>
+        /// <param name="model"></param>
+        /// <returns></returns>
         public async Task<bool> UpdateModel(TModel model)
         {
-            //var searchModel = await this._client.Queryable<TModel>().Where(it => (BaseEntity<TPrimaryKey>)it == (BaseEntity<TPrimaryKey>)model && it.RowVersion == model.RowVersion).FirstAsync();
-            //if (searchModel == null)
-            //{
-            //    throw new DBConcurrencyException($"id:{model.Id} 数据已更新，请刷新后重试！");
-            //}
             ConcurrentProcess(model);
             model.RowVersion = Guid.NewGuid();
             int affecedRows = await this._client.Updateable(model).IgnoreColumns(true).ExecuteCommandAsync();
@@ -123,7 +110,7 @@ namespace ZeroOne.Repository
         private async void ConcurrentProcess(TModel model)
         {
 
-            var searchModel = await this._client.Queryable<TModel>().Where(it => (BaseEntity<TPrimaryKey>)it == (BaseEntity<TPrimaryKey>)model && it.IsDeleted == false).FirstAsync();
+            var searchModel = await this._client.Queryable<TModel>().Where(GetBaseWhereExpression(model.Id)).Where(t => SqlFunc.IsNull(t.IsDeleted, false) == false).FirstAsync();
             if (searchModel != null)
             {
                 if (searchModel.RowVersion != model.RowVersion)
