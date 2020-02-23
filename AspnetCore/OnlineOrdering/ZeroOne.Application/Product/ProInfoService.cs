@@ -52,7 +52,7 @@ namespace ZeroOne.Application
             operators.Add(new BaseRepModel(nameof(search.ProName), ECompareOperator.Contains, ELogicalOperatorType.And));
             operators.Add(new BaseRepModel(nameof(search.IsDeleted)));
             operators.Add(new BaseRepModel(nameof(search.DataStatus), ECompareOperator.Contains, ELogicalOperatorType.And));
-            return await this._ProInfoRep.GetModelList(operators, search);
+            return await this._ProInfoRep.GetListAsync(operators, search);
         }
 
         /// <summary>

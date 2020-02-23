@@ -17,12 +17,23 @@ namespace ZeroOne.Repository
 {
     public abstract class BaseRep<TSearchModel, TModel, TPrimaryKey> : IBaseRep<TSearchModel, TModel, TPrimaryKey> where TSearchModel : BaseSearch where TModel : BaseEntity<TPrimaryKey>, IRowVersion, new()
     {
+        protected ISugarQueryable<TModel> Queryable { get; set; }
 
         private static readonly object lockObj = new object();
         private ISqlSugarClient _client;
         public BaseRep(ISqlSugarClient client)
         {
             this._client = client;
+            this.Queryable = _client.Queryable<TModel>();
+        }
+
+        /// <summary>
+        /// 获取所有未删除的数据
+        /// </summary>
+        /// <returns></returns>
+        protected async Task<IList<TModel>> GetListAsync()
+        {
+            return await this.Queryable.Where(t => (bool)SqlFunc.IsNull(t.IsDeleted, false) == false).ToListAsync();
         }
 
         public async Task<TModel> GetModel(TPrimaryKey id)
@@ -301,7 +312,7 @@ namespace ZeroOne.Repository
         /// <typeparam name="TSearchModel"></typeparam>
         /// <typeparam name="TModel"></typeparam>
         /// <returns></returns>
-        public async Task<IList<TModel>> GetModelList(IList<BaseRepModel> items, TSearchModel model)
+        public async Task<IList<TModel>> GetListAsync(IList<BaseRepModel> items, TSearchModel model)
         {
 
             //返回model的类型

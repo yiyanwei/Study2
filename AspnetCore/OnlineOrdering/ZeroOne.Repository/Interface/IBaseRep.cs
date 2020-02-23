@@ -42,6 +42,6 @@ namespace ZeroOne.Repository
         /// <param name="items">查询运算操作，比较运算和逻辑运算</param>
         /// <param name="search">查询的数据</param>
         /// <returns></returns>
-        Task<IList<TModel>> GetModelList(IList<BaseRepModel> items, TSearchModel search);
+        Task<IList<TModel>> GetListAsync(IList<BaseRepModel> items, TSearchModel search);
     }
 }
