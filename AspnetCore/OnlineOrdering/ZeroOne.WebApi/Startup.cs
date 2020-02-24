@@ -26,9 +26,74 @@ using ZeroOne.Entity;
 using Microsoft.AspNetCore.Mvc.ApplicationModels;
 using Microsoft.AspNetCore.Mvc.Routing;
 using Microsoft.AspNetCore.Rewrite;
+using Microsoft.AspNetCore.Mvc.Controllers;
+using Microsoft.AspNetCore.Mvc.Filters;
+using ZeroOne.Extension;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Routing;
 
 namespace ZeroOne.WebApi
 {
+
+    public class GlobalResultAttribute : Attribute
+    {
+        public bool Ignore { get; set; }
+
+        public GlobalResultAttribute(bool ignore = true)
+        {
+            this.Ignore = ignore;
+        }
+    }
+
+    public class GlobalResultFilter : ResultFilterAttribute
+    {
+        // Token: 0x06000069 RID: 105 RVA: 0x00002B0C File Offset: 0x00000D0C
+        public override void OnResultExecuting(ResultExecutingContext context)
+        {
+            if (context.ActionDescriptor is ControllerActionDescriptor)
+            {
+                if (!(context.ActionDescriptor as ControllerActionDescriptor).MethodInfo.CustomAttributes.Any((CustomAttributeData x) => x.AttributeType == typeof(GlobalResultAttribute)))
+                {
+                    IActionResult result = context.Result;
+                    if (result is EmptyResult || result is ObjectResult)
+                    {
+                        IActionResult result2;
+                        if (!(result is EmptyResult))
+                        {
+                            result2 = result;
+                        }
+                        else
+                        {
+                            IActionResult actionResult = new ObjectResult(null);
+                            result2 = actionResult;
+                        }
+                        context.Result = result2;
+                        ObjectResult objectResult = context.Result as ObjectResult;
+                        var genenicType = objectResult.Value?.GetType();
+                        if (!(genenicType == typeof(BaseResponse<>)))
+                        {
+                            var objType = typeof(BaseResponse<>).MakeGenericType(genenicType);
+                            var obj = Activator.CreateInstance(objType);
+                            //数据属性
+                            var dataProp = objType.GetProperty(nameof(BaseResponse<object>.data), BindingFlags.Public | BindingFlags.Instance);
+                            if (dataProp != null)
+                            {
+                                dataProp.SetValue(obj, objectResult.Value);
+                            }
+                            //状态属性
+                            var successProp = objType.GetProperty(nameof(BaseResponse<object>.success), BindingFlags.Public | BindingFlags.Instance);
+                            if (successProp != null)
+                            {
+                                successProp.SetValue(obj, true);
+                            }
+                            objectResult.Value = obj;
+                        }
+                    }
+                }
+            }
+            base.OnResultExecuting(context);
+        }
+    }
 
     /// <summary>
     /// api 路由拦截器（第二步）
@@ -116,7 +181,7 @@ namespace ZeroOne.WebApi
         {
             services.AddControllers(options =>
             {
-                
+                options.Filters.Add(typeof(GlobalResultFilter));
             }).SetCompatibilityVersion(CompatibilityVersion.Version_3_0);
             //添加服务到服务容器
             services.AddRepository();
@@ -228,6 +293,12 @@ namespace ZeroOne.WebApi
                 c.SwaggerEndpoint("/swagger/v1/swagger.json", "ApiHelp V1");
             });
 
+            //var routes = new RouteBuilder(app)
+            //{
+            //    DefaultHandler = app.ApplicationServices.GetRequiredService<MvcRouteHandler>()
+            //};
+
+            
             //app.UseRewriter();
             //app.Use(async (context, next) =>
             //{
@@ -237,6 +308,10 @@ namespace ZeroOne.WebApi
             //        context.Request.Path = "/Home";
             //        await next();
             //    }
+            //});
+
+            //app.UseMvc(options => {
+                
             //});
 
             app.UseEndpoints(endpoints =>
