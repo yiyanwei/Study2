@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Text;
+using Newtonsoft.Json;
 
 namespace ZeroOne.Extension
 {
@@ -33,6 +33,8 @@ namespace ZeroOne.Extension
         /// <summary>
         /// 父级值
         /// </summary>
+        [JsonIgnore]
+        
         public TValue ParentValue { get; set; }
     }
 

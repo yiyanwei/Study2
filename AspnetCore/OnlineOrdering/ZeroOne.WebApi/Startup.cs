@@ -31,6 +31,7 @@ using Microsoft.AspNetCore.Mvc.Filters;
 using ZeroOne.Extension;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
+using Microsoft.AspNetCore.Mvc.Formatters;
 
 namespace ZeroOne.WebApi
 {
@@ -181,8 +182,18 @@ namespace ZeroOne.WebApi
         {
             services.AddControllers(options =>
             {
+                //优先使用客户端指定的数据格式，资源的表述
+                options.RespectBrowserAcceptHeader = true;
+                //添加xml数据格式的输出
+                options.OutputFormatters.Add(new XmlSerializerOutputFormatter());
+
                 options.Filters.Add(typeof(GlobalResultFilter));
-            }).SetCompatibilityVersion(CompatibilityVersion.Version_3_0);
+            })
+            .SetCompatibilityVersion(CompatibilityVersion.Version_3_0)
+            .AddNewtonsoftJson(options =>
+            {
+                //options.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore;
+            });
             //添加服务到服务容器
             services.AddRepository();
             services.AddTransient<IProInfoService, ProInfoService>();
@@ -266,7 +277,8 @@ namespace ZeroOne.WebApi
             //添加日志容器服务
             services.AddLogging(logger =>
             {
-                logger.AddNLog($"nlog.{Environment.EnvironmentName}.config");
+                logger.AddNLog($"nlog.config");
+                //logger.AddNLog($"nlog.{Environment.EnvironmentName}.config");
             });
         }
 
@@ -298,7 +310,7 @@ namespace ZeroOne.WebApi
             //    DefaultHandler = app.ApplicationServices.GetRequiredService<MvcRouteHandler>()
             //};
 
-            
+
             //app.UseRewriter();
             //app.Use(async (context, next) =>
             //{
@@ -311,7 +323,7 @@ namespace ZeroOne.WebApi
             //});
 
             //app.UseMvc(options => {
-                
+
             //});
 
             app.UseEndpoints(endpoints =>

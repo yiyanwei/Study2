@@ -21,34 +21,11 @@
 </template>
 
 <script>
-import http from "../../common/http/vueresource.ts";
-//使用http工具
-Vue.use(http);
 export default {
   data() {
     return {
       form: {
         procateoptions: [
-          {
-            value: "选项1",
-            label: "黄金糕"
-          },
-          {
-            value: "选项2",
-            label: "双皮奶"
-          },
-          {
-            value: "选项3",
-            label: "蚵仔煎"
-          },
-          {
-            value: "选项4",
-            label: "龙须面"
-          },
-          {
-            value: "选项5",
-            label: "北京烤鸭"
-          }
         ],
         procatename: ""
       }
@@ -59,10 +36,11 @@ export default {
   },
   methods:{
       initData(){
+          var api = 'http://127.0.0.1:8888/api/ProCategory/GetDropDownListAsync';
           
       },
       onSubmit(){
-
+        
       }
   }
 };
