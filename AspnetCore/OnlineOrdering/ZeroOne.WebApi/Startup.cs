@@ -4,7 +4,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Reflection;
-using System.Net.NetworkInformation;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.HttpsPolicy;
@@ -23,147 +22,14 @@ using NLog.Web;
 using SqlSugar;
 using ZeroOne.Application;
 using ZeroOne.Entity;
-using Microsoft.AspNetCore.Mvc.ApplicationModels;
-using Microsoft.AspNetCore.Mvc.Routing;
-using Microsoft.AspNetCore.Rewrite;
-using Microsoft.AspNetCore.Mvc.Controllers;
 using Microsoft.AspNetCore.Mvc.Filters;
 using ZeroOne.Extension;
-using Microsoft.AspNetCore.Http;
+using ZeroOne.Extension.Global;
 using Microsoft.AspNetCore.Routing;
-using Microsoft.AspNetCore.Mvc.Formatters;
 
 namespace ZeroOne.WebApi
 {
 
-    public class GlobalResultAttribute : Attribute
-    {
-        public bool Ignore { get; set; }
-
-        public GlobalResultAttribute(bool ignore = true)
-        {
-            this.Ignore = ignore;
-        }
-    }
-
-    public class GlobalResultFilter : ResultFilterAttribute
-    {
-        // Token: 0x06000069 RID: 105 RVA: 0x00002B0C File Offset: 0x00000D0C
-        public override void OnResultExecuting(ResultExecutingContext context)
-        {
-            if (context.ActionDescriptor is ControllerActionDescriptor)
-            {
-                if (!(context.ActionDescriptor as ControllerActionDescriptor).MethodInfo.CustomAttributes.Any((CustomAttributeData x) => x.AttributeType == typeof(GlobalResultAttribute)))
-                {
-                    IActionResult result = context.Result;
-                    if (result is EmptyResult || result is ObjectResult)
-                    {
-                        IActionResult result2;
-                        if (!(result is EmptyResult))
-                        {
-                            result2 = result;
-                        }
-                        else
-                        {
-                            IActionResult actionResult = new ObjectResult(null);
-                            result2 = actionResult;
-                        }
-                        context.Result = result2;
-                        ObjectResult objectResult = context.Result as ObjectResult;
-                        var genenicType = objectResult.Value?.GetType();
-                        if (!(genenicType == typeof(BaseResponse<>)))
-                        {
-                            var objType = typeof(BaseResponse<>).MakeGenericType(genenicType);
-                            var obj = Activator.CreateInstance(objType);
-                            //数据属性
-                            var dataProp = objType.GetProperty(nameof(BaseResponse<object>.data), BindingFlags.Public | BindingFlags.Instance);
-                            if (dataProp != null)
-                            {
-                                dataProp.SetValue(obj, objectResult.Value);
-                            }
-                            //状态属性
-                            var successProp = objType.GetProperty(nameof(BaseResponse<object>.success), BindingFlags.Public | BindingFlags.Instance);
-                            if (successProp != null)
-                            {
-                                successProp.SetValue(obj, true);
-                            }
-                            objectResult.Value = obj;
-                        }
-                    }
-                }
-            }
-            base.OnResultExecuting(context);
-        }
-    }
-
-    /// <summary>
-    /// api 路由拦截器（第二步）
-    /// 扩展了MVCoptions
-    /// </summary>
-    public static class MvcOptionsExtensions
-    {
-        /// <summary>
-        /// 扩展方法
-        /// </summary>
-        /// <param name="opts"></param>
-        /// <param name="routeAttribute">自定的前缀内容</param>
-        public static void UseCentralRoutePrefix(this MvcOptions opts, IRouteTemplateProvider routeAttribute)
-        {
-            // 添加我们自定义 实现IApplicationModelConvention的RouteConvention
-            opts.Conventions.Insert(0, new RouteConvention(routeAttribute));
-        }
-
-    }
-
-    /// <summary>
-    /// api 路由拦截器（第一步）
-    /// </summary>
-    public class RouteConvention : IApplicationModelConvention
-    {
-        private readonly AttributeRouteModel _centralPrefix;
-
-        public RouteConvention(IRouteTemplateProvider routeTemplateProvider)
-        {
-            _centralPrefix = new AttributeRouteModel(routeTemplateProvider);
-        }
-
-        //接口的Apply方法
-        public void Apply(ApplicationModel application)
-        {
-            //遍历所有的 Controller
-            foreach (var controller in application.Controllers)
-            {
-                // 已经标记了 RouteAttribute 的 Controller
-                var matchedSelectors = controller.Selectors.Where(x => x.AttributeRouteModel != null).ToList();
-                if (matchedSelectors.Any())
-                {
-                    foreach (var selectorModel in matchedSelectors)
-                    {
-                        // 在 当前路由上 再 添加一个 路由前缀
-                        selectorModel.AttributeRouteModel = AttributeRouteModel.CombineAttributeRouteModel(_centralPrefix,
-                            selectorModel.AttributeRouteModel);
-
-                        // 在 当前路由上 不再 添加任何路由前缀
-                        //selectorModel.AttributeRouteModel = selectorModel.AttributeRouteModel;
-                    }
-                }
-
-                // 没有标记 RouteAttribute 的 Controller
-                var unmatchedSelectors = controller.Selectors.Where(x => x.AttributeRouteModel == null).ToList();
-                if (unmatchedSelectors.Any())
-                {
-                    foreach (var selectorModel in unmatchedSelectors)
-                    {
-                        // 添加一个 路由前缀
-                        //selectorModel.AttributeRouteModel = _centralPrefix;
-
-                        // 不添加前缀(说明：不使用全局路由，重构action，实现自定义、特殊的action路由地址)
-                        selectorModel.AttributeRouteModel = selectorModel.AttributeRouteModel;
-                    }
-                }
-            }
-        }
-    }
 
     public class Startup
     {
@@ -182,10 +48,10 @@ namespace ZeroOne.WebApi
         {
             services.AddControllers(options =>
             {
-                //优先使用客户端指定的数据格式，资源的表述
-                options.RespectBrowserAcceptHeader = true;
-                //添加xml数据格式的输出
-                options.OutputFormatters.Add(new XmlSerializerOutputFormatter());
+                ////优先使用客户端指定的数据格式，资源的表述
+                //options.RespectBrowserAcceptHeader = true;
+                ////添加xml数据格式的输出
+                //options.OutputFormatters.Add(new XmlSerializerOutputFormatter());
 
                 options.Filters.Add(typeof(GlobalResultFilter));
             })
@@ -194,6 +60,12 @@ namespace ZeroOne.WebApi
             {
                 //options.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore;
             });
+
+            services.Configure<RouteOptions>(config => {
+                config.ConstraintMap.Add("enum", typeof(EnumConstraint));
+                config.ConstraintMap.Add(nameof(GetUrlParamToObjConstraint), typeof(GetUrlParamToObjConstraint));
+            });
+
             //添加服务到服务容器
             services.AddRepository();
             services.AddTransient<IProInfoService, ProInfoService>();

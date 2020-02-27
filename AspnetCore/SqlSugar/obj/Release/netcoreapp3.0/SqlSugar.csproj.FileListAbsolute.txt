@@ -1,8 +1,0 @@
-E:\Study\AspnetCore\SqlSugar\bin\Release\netcoreapp3.0\SqlSugar.deps.json
-E:\Study\AspnetCore\SqlSugar\bin\Release\netcoreapp3.0\SqlSugar.dll
-E:\Study\AspnetCore\SqlSugar\bin\Release\netcoreapp3.0\SqlSugar.pdb
-E:\Study\AspnetCore\SqlSugar\obj\Release\netcoreapp3.0\SqlSugar.csprojAssemblyReference.cache
-E:\Study\AspnetCore\SqlSugar\obj\Release\netcoreapp3.0\SqlSugar.AssemblyInfoInputs.cache
-E:\Study\AspnetCore\SqlSugar\obj\Release\netcoreapp3.0\SqlSugar.AssemblyInfo.cs
-E:\Study\AspnetCore\SqlSugar\obj\Release\netcoreapp3.0\SqlSugar.dll
-E:\Study\AspnetCore\SqlSugar\obj\Release\netcoreapp3.0\SqlSugar.pdb
