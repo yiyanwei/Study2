@@ -38,3 +38,6 @@ https://blog.csdn.net/u011212394/article/details/90375106  mysql数据批量操�
 
 https://blog.csdn.net/u011127019/article/details/91954356   计算经纬度
 https://blog.csdn.net/baidu_38404101/article/details/79623190
+
+http://www.gpsspg.com/distance.htm
+http://www.gpsspg.com/maps.htm

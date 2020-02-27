@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using ZeroOne.Extension;
+using ZeroOne.Extension.Model;
 using ZeroOne.Repository;
 
 namespace ZeroOne.Application

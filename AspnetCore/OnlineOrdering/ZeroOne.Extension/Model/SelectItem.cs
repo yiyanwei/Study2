@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using Newtonsoft.Json;
 
-namespace ZeroOne.Extension
+namespace ZeroOne.Extension.Model
 {
     /// <summary>
     /// 选择项

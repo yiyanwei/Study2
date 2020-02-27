@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using ZeroOne.Application;
 using ZeroOne.Entity;
-using ZeroOne.Extension;
+using ZeroOne.Extension.Model;
 
 namespace ZeroOne.WebApi.Controllers
 {

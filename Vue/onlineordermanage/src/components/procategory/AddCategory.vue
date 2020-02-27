@@ -32,12 +32,13 @@ export default {
     };
   },
   mounted:function(){
-
+      
   },
   methods:{
       initData(){
           var api = 'http://127.0.0.1:8888/api/ProCategory/GetDropDownListAsync';
-          
+          var options = 
+          this.$http.get(api,null,options)
       },
       onSubmit(){
         

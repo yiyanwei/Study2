@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 
 using ZeroOne.Entity;
-using ZeroOne.Extension;
+using ZeroOne.Extension.Model;
 
 namespace ZeroOne.Repository
 {
