@@ -219,13 +219,18 @@ namespace ZeroOne.Extension
         }
 
         /// <summary>
-        /// 将excel表格中的值转换成目标类型值
+        /// 值转换成目标类型值
         /// </summary>
-        /// <param name="obj"></param>
-        /// <param name="type"></param>
+        /// <param name="obj">需转换的值</param>
+        /// <param name="type">转换结果类型</param>
         /// <returns></returns>
-        public static object CellConvertToObject(this object obj, Type type)
+        public static object ChangeDataType(this object obj, Type type)
         {
+            if (obj.GetType() == type)
+            {
+                return obj;
+            }
+
             if (type == typeof(string))
             {
                 return obj.ToString();

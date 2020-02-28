@@ -6,10 +6,12 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Controllers;
 using Microsoft.AspNetCore.Mvc.Filters;
 
+using ZeroOne.Extension;
+
 namespace ZeroOne.Extension.Global
 {
     public class Global415Filter : ResultFilterAttribute
-    {
+    {               
         public override void OnResultExecuting(ResultExecutingContext context)
         {
             //判断是否返回 415 http状态码
@@ -46,7 +48,7 @@ namespace ZeroOne.Extension.Global
                                     {
                                         if (queryItem.Value.Count == 1)
                                         {
-                                            match.Item2.SetValue(match.Item1, queryItem.Value[0]);
+                                            match.Item2.SetValue(match.Item1, queryItem.Value[0].ChangeDataType(match.Item2.PropertyType));
                                         }
                                     }
                                 }
