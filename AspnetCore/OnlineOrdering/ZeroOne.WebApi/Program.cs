@@ -26,7 +26,10 @@ namespace ZeroOne.WebApi
             LocatingPoint start = new LocatingPoint(32.1934050000, 119.4428390000);
             LocatingPoint end = new LocatingPoint(32.1899910000, 119.4680730000);
             Console.WriteLine(new LocatingLine().GetDistance(start, end));
+            Console.WriteLine(Math.PI);
 
+            LocatingPoint start2 = new LocatingPoint(32.20440944, 119.45583541);
+            Console.WriteLine(start2.GetDistance(48.49918, 124.8857));
             CreateHostBuilder(args).Build().Run();
         }
 

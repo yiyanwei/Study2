@@ -35,8 +35,10 @@ namespace ZeroOne.Extension.Model
         }
 
 
-        //地球半径，单位米
-        private const double EARTH_RADIUS = 6378137;
+        //地球赤道半径，单位米
+        //private const double EARTH_RADIUS = 6378137;
+        //地球平均半径，单位米
+        private const double EARTH_RADIUS = 6371000;
 
         /// <summary>
         /// 计算两点位置的距离，返回两点的距离，单位 米

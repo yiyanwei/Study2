@@ -20,7 +20,7 @@ namespace ZeroOne.Extension.Global
 
     public class GlobalResultFilter : ResultFilterAttribute
     {
-        // Token: 0x06000069 RID: 105 RVA: 0x00002B0C File Offset: 0x00000D0C
+        // Token
         public override void OnResultExecuting(ResultExecutingContext context)
         {
             if (context.ActionDescriptor is ControllerActionDescriptor)

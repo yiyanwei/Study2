@@ -52,7 +52,7 @@ namespace ZeroOne.WebApi
                 //options.RespectBrowserAcceptHeader = true;
                 ////添加xml数据格式的输出
                 //options.OutputFormatters.Add(new XmlSerializerOutputFormatter());
-
+                options.Filters.Add(typeof(Global415Filter));
                 options.Filters.Add(typeof(GlobalResultFilter));
             })
             .SetCompatibilityVersion(CompatibilityVersion.Version_3_0)
@@ -62,8 +62,8 @@ namespace ZeroOne.WebApi
             });
 
             services.Configure<RouteOptions>(config => {
-                config.ConstraintMap.Add("enum", typeof(EnumConstraint));
-                config.ConstraintMap.Add(nameof(GetUrlParamToObjConstraint), typeof(GetUrlParamToObjConstraint));
+                //config.ConstraintMap.Add("enum", typeof(EnumConstraint));
+                //config.ConstraintMap.Add(nameof(GetUrlParamToObjConstraint), typeof(GetUrlParamToObjConstraint));
             });
 
             //添加服务到服务容器
@@ -197,6 +197,10 @@ namespace ZeroOne.WebApi
             //app.UseMvc(options => {
 
             //});
+
+            //处理404请求
+            //app.UseMiddleware<Global404Middleware>();
+            
 
             app.UseEndpoints(endpoints =>
             {

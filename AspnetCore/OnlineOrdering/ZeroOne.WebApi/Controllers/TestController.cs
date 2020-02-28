@@ -14,13 +14,13 @@ namespace ZeroOne.WebApi.Controllers
     public class TestController : ControllerBase
     {
         // GET: api/Test
-        [HttpGet("{bool:enum(" + nameof(ZeroOne.Extension.Global) + "." + nameof(BoolEnum) + ")}")]
+        [HttpGet("Get")]
         public string Get(BoolEnum @bool)
         {
             return "bool: " + @bool;
         }
 
-        [HttpGet("GetSomething?{param}")]
+        [HttpGet("GetSomething")]
         public string GetSomething(ProInfo model)
         {
             string name = "zhangsan";

@@ -1,0 +1,15 @@
+﻿set @lat = 32.204409;
+set @lng = 119.455835;
+set @pi = 3.141592653589793;
+set @EARTH_RADIUS = 6371000;
+set @semicycle = CONVERT(180,DECIMAL(20,15));
+
+select  CONVERT(@lat * @pi / @semicycle,DECIMAL(20,15)) as radLat1,
+				CONVERT(@lng * @pi / @semicycle,DECIMAL(20,15)) as radLng1,
+				CONVERT((CONVERT(lat,DECIMAL(20,15))) * @pi / @semicycle,DECIMAL(20,15)) as radLat2,
+				CONVERT((CONVERT(lng,DECIMAL(20,15))) * @pi / @semicycle,DECIMAL(20,15)) as radLng2,
+				(CONVERT(@lat * @pi / @semicycle,DECIMAL(20,15)) - CONVERT((CONVERT(lat,DECIMAL(20,15))) * @pi / @semicycle,DECIMAL(20,15))) as a,
+				(CONVERT(@lng * @pi / @semicycle,DECIMAL(20,15)) - CONVERT((CONVERT(lng,DECIMAL(20,15))) * @pi / @semicycle,DECIMAL(20,15))) as b,
+2 * ASIN(SQRT(POW(SIN((CONVERT(@lat * @pi / @semicycle,DECIMAL(20,15)) - CONVERT((CONVERT(lat,DECIMAL(20,15))) * @pi / @semicycle,DECIMAL(20,15))) / 2), 2) + COS(CONVERT(@lat * @pi / @semicycle,DECIMAL(20,15))) * COS(CONVERT((CONVERT(lat,DECIMAL(20,15))) * @pi / @semicycle,DECIMAL(20,15))) * POW(SIN((CONVERT(@lng * @pi / @semicycle,DECIMAL(20,15)) - CONVERT((CONVERT(lng,DECIMAL(20,15))) * @pi / @semicycle,DECIMAL(20,15))) / 2), 2))) * @EARTH_RADIUS
+				from repairinfo 
+				where  IFNULL(lat,'')!='' and IFNULL(lng,'')!='';
