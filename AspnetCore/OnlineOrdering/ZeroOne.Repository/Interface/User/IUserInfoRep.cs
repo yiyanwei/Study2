@@ -7,8 +7,8 @@ using ZeroOne.Entity;
 
 namespace ZeroOne.Repository
 {
-    public interface IUserInfoRep : IBaseRep<BaseUserSearch, User_Info,Guid>
+    public interface IUserInfoRep : IBaseRep<BaseUserSearch, UserInfo,Guid>
     {
-        Task<User_Info> GetUserByAccount(string account, string pwd);
+        Task<UserInfo> UserLogin(UserLoginRequest request);
     }
 }

@@ -9,6 +9,7 @@ using Newtonsoft.Json;
 using ZeroOne.Extension;
 using NLog.Web;
 using NLog;
+using ZeroOne.Extension.Model;
 
 namespace ZeroOne.WebApi
 {
@@ -37,9 +38,8 @@ namespace ZeroOne.WebApi
             BaseResponse<object> response = new BaseResponse<object>()
             {
                 success = false,
-                errMsg="没有访问权限"
-                //errorCode = nameof(ErrorCode.E10004).GetCode().ToString(),
-                //errorMessage = ErrorCode.E10004
+                errCode = nameof(ErrorCode.E10001).GetCode(),
+                errMsg = ErrorCode.E10001
             };
             var logger = LogManager.GetCurrentClassLogger();
             logger.Info(JsonConvert.SerializeObject(response));

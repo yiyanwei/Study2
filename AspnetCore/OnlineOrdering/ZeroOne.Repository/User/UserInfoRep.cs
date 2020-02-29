@@ -6,7 +6,7 @@ using SqlSugar;
 using ZeroOne.Entity;
 namespace ZeroOne.Repository
 {
-    public class UserInfoRep : BaseRep<BaseUserSearch, User_Info,Guid>, IUserInfoRep
+    public class UserInfoRep : BaseRep<BaseUserSearch, UserInfo,Guid>, IUserInfoRep
     {
         private ISqlSugarClient _client;
         public UserInfoRep(ISqlSugarClient client) : base(client)
@@ -14,9 +14,9 @@ namespace ZeroOne.Repository
             this._client = client;
         }
 
-        public async Task<User_Info> GetUserByAccount(string account, string pwd)
+        public async Task<UserInfo> UserLogin(UserLoginRequest request)
         {
-            return await this._client.Queryable<User_Info>().Where(t => t.MobileNum == account && t.Password == pwd && t.IsDeleted == false).FirstAsync();
+            return await this._client.Queryable<UserInfo>().Where(t => t.MobileNum == request.Account && t.Password == request.Password && t.IsDeleted == false).FirstAsync();
         }
     }
 }

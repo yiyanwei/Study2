@@ -4,14 +4,15 @@ Vue.use(Vuex);
 
 //vuex 数据对象
 var state={
-    Authorization:localStorage.getItem('Authorization')?localStorage.getItem('Authorization'):''
+    token:localStorage.getItem('token')?localStorage.getItem('token'):'',
+    tokenType:localStorage.getItem('tokenType')?localStorage.getItem('tokenType'):''
 };
 
 //vuex 方法对象
 var mutations={
-    changeLogin(user){
-        state.Authorization = user.Authorization;
-        localStorage.setItem('Authorization',user.Authorization);
+    changeLogin(state,user){
+        localStorage.setItem('token',user.access_token);
+        localStorage.setItem('tokenType',user.token_type);
     }
 };
 

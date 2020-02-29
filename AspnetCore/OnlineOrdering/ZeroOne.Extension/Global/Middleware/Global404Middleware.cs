@@ -30,7 +30,7 @@ namespace ZeroOne.Extension.Global
         }
 
 
-        private async Task HandleExceptionAsync(HttpContext context, Exception e)
+        private async Task HandleExceptionAsync(HttpContext context, Exception ex)
         {
             
         }

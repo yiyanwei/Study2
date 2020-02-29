@@ -14,16 +14,9 @@ namespace ZeroOne.Application
         {
             this._rep = rep;
         }
-        public Task<User_Info> GetUserByAccount(string account, string pwd)
+        public Task<UserInfo> UserLogin(UserLoginRequest request)
         {
-            if (!string.IsNullOrWhiteSpace(account) && !string.IsNullOrWhiteSpace(pwd))
-            {
-                return this._rep.GetUserByAccount(account.Trim(), pwd);
-            }
-            else
-            {
-                throw new Exception("账号或密码为空");
-            }
+            return this._rep.UserLogin(request);
         }
     }
 }

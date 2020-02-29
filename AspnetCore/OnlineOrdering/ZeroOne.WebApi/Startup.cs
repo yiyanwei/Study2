@@ -41,7 +41,7 @@ namespace ZeroOne.WebApi
             Environment = env;
         }
 
-
+        private static string globalCorsName = "Global";
 
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
@@ -59,6 +59,11 @@ namespace ZeroOne.WebApi
             .AddNewtonsoftJson(options =>
             {
                 //options.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore;
+            });
+
+            //允许跨域访问
+            services.AddCors(options => {
+                options.AddPolicy(globalCorsName, builder => builder.WithOrigins("http://localhost:8080").AllowAnyMethod().AllowAnyHeader());
             });
 
             services.Configure<RouteOptions>(config => {
@@ -162,6 +167,8 @@ namespace ZeroOne.WebApi
                 app.UseDeveloperExceptionPage();
             }
 
+            app.UseCors(globalCorsName);
+
             app.UseHttpsRedirection();
             //启用身份验证中间件
             app.UseAuthentication();
@@ -175,32 +182,7 @@ namespace ZeroOne.WebApi
             app.UseSwaggerUI(c =>
             {
                 c.SwaggerEndpoint("/swagger/v1/swagger.json", "ApiHelp V1");
-            });
-
-            //var routes = new RouteBuilder(app)
-            //{
-            //    DefaultHandler = app.ApplicationServices.GetRequiredService<MvcRouteHandler>()
-            //};
-
-
-            //app.UseRewriter();
-            //app.Use(async (context, next) =>
-            //{
-            //    await next();
-            //    if (context.Response.StatusCode == 404)
-            //    {
-            //        context.Request.Path = "/Home";
-            //        await next();
-            //    }
-            //});
-
-            //app.UseMvc(options => {
-
-            //});
-
-            //处理404请求
-            //app.UseMiddleware<Global404Middleware>();
-            
+            });          
 
             app.UseEndpoints(endpoints =>
             {

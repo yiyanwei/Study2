@@ -31,13 +31,12 @@ namespace ZeroOne.WebApi.Controllers
         /// <summary>
         /// 登录之后获取有效凭证token
         /// </summary>
-        /// <param name="userAccount">用户账号</param>
-        /// <param name="pwd">用户密码</param>
+        /// <param name="request">登录请求对象</param>
         /// <returns></returns>
-        private async Task<object> GetToken(string userAccount, string pwd)
+        private async Task<object> GetToken(UserLoginRequest request)
         {
 
-            User_Info model = await this._service.GetUserByAccount(userAccount, pwd);
+            UserInfo model = await this._service.UserLogin(request);
 
             if (model != null)
             {
@@ -85,9 +84,9 @@ namespace ZeroOne.WebApi.Controllers
 
         [AllowAnonymous]
         [HttpPost("UserLogin")]
-        public async Task<object> UserLogin(string account, string pwd)
+        public async Task<object> UserLogin(UserLoginRequest request)
         {
-            return await this.GetToken(account, pwd);
+            return await this.GetToken(request);
         }
     }
 }

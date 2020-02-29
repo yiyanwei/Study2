@@ -5,13 +5,15 @@ using System.Collections.Generic;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Controllers;
 using Microsoft.AspNetCore.Mvc.Filters;
-
 using ZeroOne.Extension;
 
 namespace ZeroOne.Extension.Global
 {
+    /// <summary>
+    /// 415 过滤器
+    /// </summary>
     public class Global415Filter : ResultFilterAttribute
-    {               
+    {
         public override void OnResultExecuting(ResultExecutingContext context)
         {
             //判断是否返回 415 http状态码
@@ -46,9 +48,22 @@ namespace ZeroOne.Extension.Global
                                 {
                                     foreach (var match in matchs)
                                     {
+                                        //key对应单个值
                                         if (queryItem.Value.Count == 1)
                                         {
                                             match.Item2.SetValue(match.Item1, queryItem.Value[0].ChangeDataType(match.Item2.PropertyType));
+                                        }
+                                        //key对应多个值
+                                        else if (queryItem.Value.Count > 1)
+                                        {
+                                            if (match.Item2.PropertyType == typeof(IEnumerable<>))
+                                            {
+                                                var genericTypes = match.Item2.PropertyType.GetGenericArguments();
+                                                if (genericTypes?.Count() > 0)
+                                                {
+                                                    match.Item2.SetValue(match.Item1, queryItem.Value.ChangeCollectionDataType(genericTypes[0]));
+                                                }
+                                            }
                                         }
                                     }
                                 }
@@ -56,7 +71,7 @@ namespace ZeroOne.Extension.Global
                         }
                     }
                     //执行结果
-                    var actionResult = action.MethodInfo.Invoke(context.Controller, keyValuePairs!= null && keyValuePairs.Keys != null ? keyValuePairs.Keys.ToArray() : null);
+                    var actionResult = action.MethodInfo.Invoke(context.Controller, keyValuePairs != null && keyValuePairs.Keys != null ? keyValuePairs.Keys.ToArray() : null);
                     //执行成功
                     result.StatusCode = 200;
                     result.Value = actionResult;

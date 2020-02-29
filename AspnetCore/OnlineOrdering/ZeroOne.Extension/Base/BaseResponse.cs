@@ -9,7 +9,7 @@ namespace ZeroOne.Extension
         public BaseResponse() { }
 
         public string errMsg { get; set; }
-        public string errCode { get; set; }
+        public int errCode { get; set; }
         public bool success { get; set; }
         public T data { get; set; }
     }

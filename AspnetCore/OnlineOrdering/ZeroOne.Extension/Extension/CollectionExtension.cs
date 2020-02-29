@@ -41,5 +41,17 @@ namespace ZeroOne.Extension
                 }
             }
         }
+
+        /// <summary>
+        /// 将集合对象转换成IEnumerable<object>对象
+        /// </summary>
+        /// <typeparam name="T">类型参数</typeparam>
+        /// <param name="collection">源集合对象</param>
+        /// <param name="targetType">目标类型</param>
+        /// <returns></returns>
+        public static IEnumerable<object> ChangeCollectionDataType<T>(this IEnumerable<T> collection, Type targetType)
+        {
+            return collection.Select(t => t.ChangeDataType(targetType));
+        }
     }
 }
