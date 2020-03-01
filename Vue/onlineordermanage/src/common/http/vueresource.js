@@ -97,9 +97,40 @@ function post(url, data, success, error) {
     }
   });
 }
+
+/*put方式请求数据*/
+function put(url,data,success,error){
+  var api = rootApi + url;
+  Vue.http.put(api, JSON.stringify(data)).then((resInfo) => {
+    if (success && typeof success === "function") {
+      success(resInfo.data);
+    }
+  }, (errInfo) => {
+    if (error && typeof error === "function") {
+      error(errInfo);
+    }
+  });
+}
+
+/* delete请求 */
+function del(url,data,success,error){
+  var api = rootApi + url;
+  Vue.http.delete(api, data).then((resInfo) => {
+    if (success && typeof success === "function") {
+      success(resInfo.data);
+    }
+  }, (errInfo) => {
+    if (error && typeof error === "function") {
+      error(errInfo);
+    }
+  });
+}
+
 //暴露几个函数
 export default {
   login,
   get,
-  post
+  post,
+  put,
+  del
 }
