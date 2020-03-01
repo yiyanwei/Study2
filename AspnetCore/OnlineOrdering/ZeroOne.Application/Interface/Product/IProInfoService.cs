@@ -14,7 +14,7 @@ namespace ZeroOne.Application
 
         Task<ProInfo> GetProByName(string name);
 
-        Task<Guid> AddProductInfo(ProInfo model);
+        Task<ProInfo> AddProductInfo(ProInfo model);
 
         void ImportData();
     }

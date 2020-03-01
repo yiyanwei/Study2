@@ -41,6 +41,5 @@ namespace ZeroOne.Entity
         /// 微信OpenId
         /// </summary>
         public string OpenId { get; set; }
-        public Guid? RowVersion { get; set; }
     }
 }

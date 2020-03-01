@@ -21,24 +21,17 @@ namespace ZeroOne.Application
 
         public async Task<ProInfo> GetProductInfo(Guid id)
         {
-            return await this._ProInfoRep.GetModel(id);
+            return await this._ProInfoRep.GetEntityAsync(id);
         }
 
-        public async Task<Guid> AddProductInfo(ProInfo model)
+        public async Task<ProInfo> AddProductInfo(ProInfo model)
         {
             if (model == null)
             {
                 throw new Exception("数据为null");
             }
             model.Id = Guid.NewGuid();
-            if( await this._ProInfoRep.AddModel(model))
-            {
-                return model.Id;
-            }
-            else
-            {
-                throw new Exception("数据添加失败");
-            }
+            return await this._ProInfoRep.AddEntityAsync(model);
         }
 
         public async Task<IList<ProInfo>> GetProducts()

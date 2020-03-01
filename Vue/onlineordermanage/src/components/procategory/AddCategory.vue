@@ -3,7 +3,7 @@
     <el-form-item label="父级分类">
       <div class="block">
         <el-cascader
-          v-model="form.procategoryId"
+          v-model="form.ParentId"
           :options="form.procateoptions"
           :props="{ checkStrictly: true,emitPath:false }"
           clearable
@@ -11,7 +11,7 @@
       </div>
     </el-form-item>
     <el-form-item label="分类名称">
-      <el-input v-model="form.procatename"></el-input>
+      <el-input v-model="form.CategoryName"></el-input>
     </el-form-item>
     <el-form-item>
       <el-button type="primary" @click="onSubmit">添加</el-button>
@@ -27,7 +27,8 @@ export default {
     return {
       form: {
         procateoptions: [],
-        procategoryId: ""
+        ParentId: '',
+        CategoryName:''
       }
     };
   },
@@ -46,7 +47,24 @@ export default {
       });
     },
     onSubmit() {
-      //http.post()
+      var api = '/ProCategory/Add';
+      var data = {
+        ParentId : this.form.ParentId,
+        CategoryName : this.form.CategoryName
+      }
+      http.post(api,data,response=>{
+        if (response.success)
+        {
+          this.$message({
+            message: '产品分类添加成功',
+            type: 'success'
+          });
+        }
+        else
+        {
+          this.$message.error(response.errMsg);
+        }
+      });
     }
   }
 };

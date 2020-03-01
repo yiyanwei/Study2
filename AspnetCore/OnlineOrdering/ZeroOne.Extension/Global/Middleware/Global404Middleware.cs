@@ -7,32 +7,32 @@ using System.Threading.Tasks;
 
 namespace ZeroOne.Extension.Global
 {
-    public class Global404Middleware
-    {
-        private readonly RequestDelegate next;
-        private ILogger<Global404Middleware> logger;
-        public Global404Middleware(RequestDelegate next, ILogger<Global404Middleware> logger)
-        {
-            this.next = next;
-            this.logger = logger;
-        }
+    //public class Global404Middleware
+    //{
+    //    private readonly RequestDelegate next;
+    //    private ILogger<Global404Middleware> logger;
+    //    public Global404Middleware(RequestDelegate next, ILogger<Global404Middleware> logger)
+    //    {
+    //        this.next = next;
+    //        this.logger = logger;
+    //    }
 
-        public async Task Invoke(HttpContext context)
-        {
-            try
-            {
-                await next.Invoke(context);
-            }
-            catch (Exception ex)
-            {
-                await HandleExceptionAsync(context, ex);
-            }
-        }
+    //    public async Task Invoke(HttpContext context)
+    //    {
+    //        try
+    //        {
+    //            await next.Invoke(context);
+    //        }
+    //        catch (Exception ex)
+    //        {
+    //            await HandleExceptionAsync(context, ex);
+    //        }
+    //    }
 
 
-        private async Task HandleExceptionAsync(HttpContext context, Exception ex)
-        {
+    //    private async Task HandleExceptionAsync(HttpContext context, Exception ex)
+    //    {
             
-        }
-    }
+    //    }
+    //}
 }

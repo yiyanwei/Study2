@@ -15,37 +15,37 @@ using ZeroOne.Extension;
 
 namespace ZeroOne.Repository
 {
-    public abstract class BaseRep<TSearchModel, TModel, TPrimaryKey> : IBaseRep<TSearchModel, TModel, TPrimaryKey> where TSearchModel : BaseSearch where TModel : BaseEntity<TPrimaryKey>, IRowVersion, new()
+    public abstract class BaseRep<TSearchModel, TEntity, TPrimaryKey> : IBaseRep<TSearchModel, TEntity, TPrimaryKey> where TSearchModel : BaseSearch where TEntity : BaseEntity<TPrimaryKey>, IRowVersion, new()
     {
-        protected ISugarQueryable<TModel> Queryable { get; set; }
+        protected ISugarQueryable<TEntity> Queryable { get; set; }
 
         private static readonly object lockObj = new object();
         private ISqlSugarClient _client;
         public BaseRep(ISqlSugarClient client)
         {
             this._client = client;
-            this.Queryable = _client.Queryable<TModel>();
+            this.Queryable = _client.Queryable<TEntity>();
         }
 
         /// <summary>
         /// 获取所有未删除的数据
         /// </summary>
         /// <returns></returns>
-        protected async Task<IList<TModel>> GetListAsync()
+        protected async Task<IList<TEntity>> GetListAsync()
         {
             return await this.Queryable.Where(t => (bool)SqlFunc.IsNull(t.IsDeleted, false) == false).ToListAsync();
         }
 
-        public async Task<TModel> GetModel(TPrimaryKey id)
+        public async Task<TEntity> GetEntityAsync(TPrimaryKey id)
         {
-            var query = this._client.Queryable<TModel>();
+            var query = this._client.Queryable<TEntity>();
             return await query.Where(GetBaseWhereExpression(id)).Where(t => SqlFunc.IsNull(t.IsDeleted, false) == false).FirstAsync();
         }
 
-        private Expression<Func<TModel, bool>> GetBaseWhereExpression(TPrimaryKey id)
+        private Expression<Func<TEntity, bool>> GetBaseWhereExpression(TPrimaryKey id)
         {
 
-            ParameterExpression paramExp = Expression.Parameter(typeof(TModel), "t");
+            ParameterExpression paramExp = Expression.Parameter(typeof(TEntity), "t");
             #region 主键值相等
             //属性表达式
             Expression propExp = Expression.Property(paramExp, nameof(BaseEntity<TPrimaryKey>.Id));
@@ -65,7 +65,7 @@ namespace ZeroOne.Repository
             //var result = expression.Compile()();
 
             #endregion
-            Expression<Func<TModel, bool>> lambda = Expression.Lambda<Func<TModel, bool>>(equalExp, paramExp);
+            Expression<Func<TEntity, bool>> lambda = Expression.Lambda<Func<TEntity, bool>>(equalExp, paramExp);
             return lambda;
         }
 
@@ -76,14 +76,13 @@ namespace ZeroOne.Repository
         /// </summary>
         /// <param name="model">数据实体</param>
         /// <returns></returns>
-        public async Task<bool> AddModel(TModel model)
+        public async Task<TEntity> AddEntityAsync(TEntity model)
         {
             if (!model.RowVersion.HasValue)
             {
                 model.RowVersion = Guid.Empty;
             }
-            int affectedRows = await this._client.Insertable<TModel>(model).ExecuteCommandAsync();
-            return affectedRows > 0;
+            return await this._client.Insertable<TEntity>(model).ExecuteReturnEntityAsync();
         }
 
         /// <summary>
@@ -92,46 +91,59 @@ namespace ZeroOne.Repository
         /// <param name="id">对象Id</param>
         /// <param name="rowVersion">版本号</param>
         /// <returns></returns>
-        public async Task<bool> DeleteModel(TPrimaryKey id, Guid rowVersion)
+        public async Task<bool> DeleteByIdAsync(TPrimaryKey id, Guid rowVersion, string userId = null)
         {
-            ConcurrentProcess(new TModel() { Id = id, RowVersion = rowVersion });
+            ConcurrentProcess(new TEntity() { Id = id, RowVersion = rowVersion });
             Guid newGuid = Guid.NewGuid();
-            int affecedRows = await this._client.Updateable<TModel>()
-                .SetColumns(t => new TModel { IsDeleted = true, RowVersion = newGuid })
-                .Where(GetBaseWhereExpression(id)).Where(t => SqlFunc.IsNull(t.IsDeleted, false) == false).ExecuteCommandAsync();
+            int affecedRows = await this._client.Updateable<TEntity>()
+                .SetColumns(t => new TEntity { IsDeleted = true,DeleterUserId = userId,DeletionTime = DateTime.Now, RowVersion = newGuid })
+                .Where(t=>t.Id.Equals(id)&& SqlFunc.IsNull(t.IsDeleted, false) == false).ExecuteCommandAsync();
             return affecedRows > 0;
         }
 
         /// <summary>
-        /// 更新对象
+        /// 更新对象（不为空）
         /// </summary>
-        /// <param name="model"></param>
+        /// <param name="entity">更新对象</param>
         /// <returns></returns>
-        public async Task<bool> UpdateModel(TModel model)
+        public async Task<bool> UpdateEntityNotNullAsync(TEntity entity)
         {
-            ConcurrentProcess(model);
-            model.RowVersion = Guid.NewGuid();
-            int affecedRows = await this._client.Updateable(model).IgnoreColumns(true).ExecuteCommandAsync();
+            ConcurrentProcess(entity);
+            entity.RowVersion = Guid.NewGuid();
+            int affecedRows = await this._client.Updateable(entity).IgnoreColumns(true).ExecuteCommandAsync();
+            return affecedRows > 0;
+        }
+
+        /// <summary>
+        /// 更新对象（所有）
+        /// </summary>
+        /// <param name="entity">更新对象</param>
+        /// <returns></returns>
+        public async Task<bool> UpdateEntityAsync(TEntity entity)
+        {
+            ConcurrentProcess(entity);
+            entity.RowVersion = Guid.NewGuid();
+            int affecedRows = await this._client.Updateable(entity).ExecuteCommandAsync();
             return affecedRows > 0;
         }
 
         /// <summary>
         /// 判断是否并发
         /// </summary>
-        private async void ConcurrentProcess(TModel model)
+        private async void ConcurrentProcess(TEntity entity)
         {
-
-            var searchModel = await this._client.Queryable<TModel>().Where(GetBaseWhereExpression(model.Id)).Where(t => SqlFunc.IsNull(t.IsDeleted, false) == false).FirstAsync();
+            //GetBaseWhereExpression(model.Id)
+            var searchModel = await this._client.Queryable<TEntity>().Where(t => t.Id.Equals(entity.Id) && SqlFunc.IsNull(t.IsDeleted, false) == false).FirstAsync();
             if (searchModel != null)
             {
-                if (searchModel.RowVersion != model.RowVersion)
+                if (searchModel.RowVersion != entity.RowVersion)
                 {
-                    throw new DBConcurrencyException($"{nameof(model.Id)}:{model.Id} 数据已更新，请刷新后重试！");
+                    throw new DBConcurrencyException($"{nameof(entity.Id)}:{entity.Id} 数据已更新，请刷新后重试！");
                 }
             }
             else
             {
-                throw new Exception($"{nameof(model.Id)}:{model.Id},未查询到该数据或已被删除");
+                throw new Exception($"{nameof(entity.Id)}:{entity.Id},未查询到该数据或已被删除");
             }
         }
 
@@ -187,7 +199,7 @@ namespace ZeroOne.Repository
         {
 
             //返回model的类型
-            var modelType = typeof(TModel);
+            var modelType = typeof(TEntity);
             //获取model类型
             var searchModelType = model.GetType();
 
@@ -312,11 +324,11 @@ namespace ZeroOne.Repository
         /// <typeparam name="TSearchModel"></typeparam>
         /// <typeparam name="TModel"></typeparam>
         /// <returns></returns>
-        public async Task<IList<TModel>> GetListAsync(IList<BaseRepModel> items, TSearchModel model)
+        public async Task<IList<TEntity>> GetListAsync(IList<BaseRepModel> items, TSearchModel model)
         {
 
             //返回model的类型
-            var modelType = typeof(TModel);
+            var modelType = typeof(TEntity);
 
             //lambda类型参数别名
             ParameterExpression paramExpr = Expression.Parameter(modelType, "it");
@@ -436,21 +448,21 @@ namespace ZeroOne.Repository
                 #endregion
                 if (tempExpression != null)
                 {
-                    var lambdaExpression = Expression.Lambda<Func<TModel, bool>>(tempExpression, new ParameterExpression[] { paramExpr });
-                    var query = this._client.Queryable<TModel>().Where(lambdaExpression);
+                    var lambdaExpression = Expression.Lambda<Func<TEntity, bool>>(tempExpression, new ParameterExpression[] { paramExpr });
+                    var query = this._client.Queryable<TEntity>().Where(lambdaExpression);
                     var keyValues = query.ToSql();
                     return await query.ToListAsync();
                 }
             }
-            return new List<TModel>();
+            return new List<TEntity>();
         }
 
-        public async Task<IList<TModel>> GetModelList(List<Tuple<IList<BaseRepModel>, ELogicalOperatorType>> groups, TSearchModel model)
+        public async Task<IList<TEntity>> GetModelList(List<Tuple<IList<BaseRepModel>, ELogicalOperatorType>> groups, TSearchModel model)
         {
             if (groups != null && groups.Count > 0)
             {
                 //返回model的类型
-                var modelType = typeof(TModel);
+                var modelType = typeof(TEntity);
 
                 //lambda类型参数别名
                 ParameterExpression paramExpr = Expression.Parameter(modelType, "it");
@@ -489,11 +501,11 @@ namespace ZeroOne.Repository
                 //判断最终的表达式是否为空
                 if (totalExpression != null)
                 {
-                    var lambdaExpression = Expression.Lambda<Func<TModel, bool>>(totalExpression, new ParameterExpression[] { paramExpr });
-                    return await this._client.Queryable<TModel>().Where(lambdaExpression).ToListAsync();
+                    var lambdaExpression = Expression.Lambda<Func<TEntity, bool>>(totalExpression, new ParameterExpression[] { paramExpr });
+                    return await this._client.Queryable<TEntity>().Where(lambdaExpression).ToListAsync();
                 }
             }
-            return new List<TModel>();
+            return new List<TEntity>();
         }
     }
 }

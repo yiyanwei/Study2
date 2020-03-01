@@ -18,11 +18,6 @@ namespace ZeroOne.Entity
         }
 
         /// <summary>
-        /// 行版本号
-        /// </summary>
-        public Guid? RowVersion { get; set; }
-
-        /// <summary>
         /// 产品名称
         /// </summary>
         public string ProName { get; set; }

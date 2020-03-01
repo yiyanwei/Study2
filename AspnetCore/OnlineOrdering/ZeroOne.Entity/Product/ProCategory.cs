@@ -7,7 +7,7 @@ namespace ZeroOne.Entity
     /// 产品类别
     /// </summary>
     [SugarTable("pro_category")]
-    public class ProCategory:BaseEntity<Guid>,IRowVersion
+    public class ProCategory:BaseEntity<Guid>
     {
         /// <summary>
         /// 
@@ -25,6 +25,5 @@ namespace ZeroOne.Entity
         /// 父级分类Id
         /// </summary>
         public Guid ParentId { get; set; }
-        public Guid? RowVersion { get; set; }
     }
 }
