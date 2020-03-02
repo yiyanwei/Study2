@@ -10,22 +10,22 @@ using ZeroOne.Extension.Global;
 
 namespace ZeroOne.WebApi.Controllers
 {
-    [Route("api/[controller]")]
-    [ApiController]
-    public class TestController : ControllerBase
-    {
-        // GET: api/Test
-        [HttpGet("Get")]
-        public string Get(BoolEnum @bool)
-        {
-            return "bool: " + @bool;
-        }
+    //[Route("api/[controller]")]
+    //[ApiController]
+    //public class TestController : ControllerBase
+    //{
+    //    // GET: api/Test
+    //    [HttpGet("Get")]
+    //    public string Get(BoolEnum @bool)
+    //    {
+    //        return "bool: " + @bool;
+    //    }
 
-        [HttpGet("GetSomething")]
-        public string GetSomething(ProInfo model)
-        {
-            string name = "zhangsan";
-            return name;
-        }
-    }
+    //    [HttpGet("GetSomething")]
+    //    public string GetSomething(ProInfo model)
+    //    {
+    //        string name = "zhangsan";
+    //        return name;
+    //    }
+    //}
 }

@@ -6,10 +6,10 @@ using ZeroOne.Repository;
 
 namespace ZeroOne.Application
 {
-    public class ProInfoService : IProInfoService
+    public class ProInfoService : BaseService<ProInfo, Guid>, IProInfoService
     {
         private IProInfoRep _ProInfoRep;
-        public ProInfoService(IProInfoRep proInfoRep)
+        public ProInfoService(IProInfoRep proInfoRep) : base(proInfoRep)
         {
             this._ProInfoRep = proInfoRep;
         }
@@ -19,10 +19,10 @@ namespace ZeroOne.Application
             return await this._ProInfoRep.GetProByName(name);
         }
 
-        public async Task<ProInfo> GetProductInfo(Guid id)
-        {
-            return await this._ProInfoRep.GetEntityAsync(id);
-        }
+        //public async Task<ProInfo> GetProductInfo(Guid id)
+        //{
+        //    return await this._ProInfoRep.GetByIdAsync(id);
+        //}
 
         public async Task<ProInfo> AddProductInfo(ProInfo model)
         {
@@ -58,15 +58,16 @@ namespace ZeroOne.Application
             string bulkVal = DateTime.Now.ToString("yyyyMMddHHmmssfff");
             for (int i = 0; i < 666; i++)
             {
-                product = new ProInfoBulk() {
+                product = new ProInfoBulk()
+                {
                     Id = Guid.NewGuid(),
                     ProName = "产品" + (i + 1),
-                    ProCode = (i+1).ToString(),
+                    ProCode = (i + 1).ToString(),
                     BulkIdentity = bulkVal
                 };
                 products.Add(product);
             }
-            this._ProInfoRep.BulkAddOrUpdate<ProInfoBulk,ProInfo>(products,beforeAction: this._ProInfoRep.BeforeAction);
+            this._ProInfoRep.BulkAddOrUpdate<ProInfoBulk, ProInfo>(products, beforeAction: this._ProInfoRep.BeforeAction);
         }
     }
 }

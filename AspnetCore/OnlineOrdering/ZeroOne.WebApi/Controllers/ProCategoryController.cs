@@ -15,8 +15,15 @@ namespace ZeroOne.WebApi.Controllers
     [Route("api/[controller]")]
     [ApiController]
     [Authorize]
-    public class ProCategoryController : CustomController
+    public class ProCategoryController : CustomController<ProCategory,Guid,ProCategoryAddRequest,ProCategoryEditRequest,ProCategoryResult>
     {
+        private IProCategoryService Service
+        {
+            get
+            {
+                return (IProCategoryService)this.service;
+            }
+        }
         /// <summary>
         /// 服务注入
         /// </summary>
@@ -32,36 +39,10 @@ namespace ZeroOne.WebApi.Controllers
         [HttpGet("GetDropDownListAsync")]
         public async Task<IList<SelectItem<string, Guid>>> GetDropDownListAsync()
         {
-            var result = await service.GetSelectItems();
+            var result = await Service.GetSelectItems();
             return result;
         }
 
-        /// <summary>
-        /// 添加产品分类
-        /// </summary>
-        /// <param name="request">产品分类请求对象</param>
-        /// <returns></returns>
-        [HttpPost("Add")]
-        public async Task<ProCategory> Add(ProCategoryAddRequest request)
-        {
-            request.CreatorUserId = UserId;
-            return await service.AddEntityAsync(request);
-        }
-
-        /// <summary>
-        /// 更新产品分类
-        /// </summary>
-        /// <param name="request">请求对象</param>
-        /// <returns></returns>
-        [HttpPut("Edit")]
-        public async Task Edit(ProCategoryEditRequest request)
-        {
-            request.LastModifierUserId = UserId;
-            var result = await service.UpdateEntityAsync(request);
-            if (!result)
-            {
-                throw new Exception("");
-            }
-        }
+   
     }
 }

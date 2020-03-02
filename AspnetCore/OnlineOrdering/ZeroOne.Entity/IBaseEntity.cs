@@ -45,7 +45,7 @@ namespace ZeroOne.Entity
     /// <summary>
     /// 更新数据接口
     /// </summary>
-    public interface IUpdated
+    public interface IUpdated : IRowVersion
     {
         /// <summary>
         /// 更新人
@@ -79,7 +79,7 @@ namespace ZeroOne.Entity
     /// </summary>
     /// <typeparam name="TPrimarykey"></typeparam>
     public interface IEntity<TPrimarykey>
-    { 
+    {
         TPrimarykey Id { get; set; }
     }
 
@@ -95,11 +95,15 @@ namespace ZeroOne.Entity
         /// <summary>
         /// 更新操作人
         /// </summary>
-        public string LastModifierUserId {get;set; }
+        public string LastModifierUserId { get; set; }
         /// <summary>
         /// 更新时间
         /// </summary>
-        public DateTime? LastModificationTime {get;set; }
+        public DateTime? LastModificationTime { get; set; }
+        /// <summary>
+        /// 操作版本号
+        /// </summary>
+        public Guid? RowVersion { get; set; }
     }
 
     /// <summary>
@@ -120,4 +124,15 @@ namespace ZeroOne.Entity
         /// </summary>
         public DateTime? CreationTime { get; set; }
     }
+
+    public interface IAddRequest : IAdd
+    {
+
+    }
+
+    public interface IEditRequest : IUpdated
+    {
+
+    }
+
 }

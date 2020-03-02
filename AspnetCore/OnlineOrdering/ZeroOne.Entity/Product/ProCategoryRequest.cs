@@ -8,7 +8,7 @@ namespace ZeroOne.Entity
     /// <summary>
     /// 产品分类新增请求对象
     /// </summary>
-    public class ProCategoryAddRequest : AddEntity, IEntity<Guid>, IAdd
+    public class ProCategoryAddRequest : AddEntity, IAddRequest, IEntity<Guid>
     {
         public ProCategoryAddRequest() : base()
         {
@@ -32,7 +32,7 @@ namespace ZeroOne.Entity
     /// <summary>
     /// 产品分类编辑请求对象
     /// </summary>
-    public class ProCategoryEditRequest : UpdateEntity, IEntity<Guid>, IUpdated
+    public class ProCategoryEditRequest : UpdateEntity, IEntity<Guid>, IEditRequest
     {
         /// <summary>
         /// 分类名称

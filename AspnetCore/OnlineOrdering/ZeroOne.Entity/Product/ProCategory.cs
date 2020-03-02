@@ -7,13 +7,14 @@ namespace ZeroOne.Entity
     /// 产品类别
     /// </summary>
     [SugarTable("pro_category")]
-    public class ProCategory:BaseEntity<Guid>
+    public class ProCategory: BaseEntity<Guid>
     {
         /// <summary>
         /// 
         /// </summary>
         public ProCategory()
         {
+
         }
 
         /// <summary>

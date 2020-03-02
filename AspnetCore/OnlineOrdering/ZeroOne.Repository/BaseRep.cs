@@ -36,10 +36,16 @@ namespace ZeroOne.Repository
             return await this.Queryable.Where(t => (bool)SqlFunc.IsNull(t.IsDeleted, false) == false).ToListAsync();
         }
 
-        public async Task<TEntity> GetEntityAsync(TPrimaryKey id)
+        public async Task<TResponse> GetResultByIdAsync<TResponse>(TPrimaryKey id) where TResponse : class, IResult,new()
         {
             var query = this._client.Queryable<TEntity>();
-            return await query.Where(GetBaseWhereExpression(id)).Where(t => SqlFunc.IsNull(t.IsDeleted, false) == false).FirstAsync();
+            return await query.Where(t => t.Id.Equals(id) && SqlFunc.IsNull(t.IsDeleted, false) == false).Select(t => t.Map<TResponse>()).FirstAsync();
+        }
+
+        public async Task<TEntity> GetEntityByIdAsync(TPrimaryKey id)
+        {
+            var query = this._client.Queryable<TEntity>();
+            return await query.Where(t => t.Id.Equals(id) && SqlFunc.IsNull(t.IsDeleted, false) == false).FirstAsync();
         }
 
         private Expression<Func<TEntity, bool>> GetBaseWhereExpression(TPrimaryKey id)
@@ -96,8 +102,8 @@ namespace ZeroOne.Repository
             ConcurrentProcess(new TEntity() { Id = id, RowVersion = rowVersion });
             Guid newGuid = Guid.NewGuid();
             int affecedRows = await this._client.Updateable<TEntity>()
-                .SetColumns(t => new TEntity { IsDeleted = true,DeleterUserId = userId,DeletionTime = DateTime.Now, RowVersion = newGuid })
-                .Where(t=>t.Id.Equals(id)&& SqlFunc.IsNull(t.IsDeleted, false) == false).ExecuteCommandAsync();
+                .SetColumns(t => new TEntity { IsDeleted = true, DeleterUserId = userId, DeletionTime = DateTime.Now, RowVersion = newGuid })
+                .Where(t => t.Id.Equals(id) && SqlFunc.IsNull(t.IsDeleted, false) == false).ExecuteCommandAsync();
             return affecedRows > 0;
         }
 

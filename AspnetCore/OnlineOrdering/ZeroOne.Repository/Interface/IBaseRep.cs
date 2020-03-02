@@ -8,11 +8,19 @@ namespace ZeroOne.Repository
     public interface IBaseRep<TEntity, TPrimaryKey> where TEntity : BaseEntity<TPrimaryKey>
     {
         /// <summary>
-        /// 获取实体对象
+        /// 获取结果对象
         /// </summary>
         /// <param name="id">主键Id</param>
         /// <returns></returns>
-        Task<TEntity> GetEntityAsync(TPrimaryKey id);
+        Task<TResponse> GetResultByIdAsync<TResponse>(TPrimaryKey id) where TResponse : class, IResult, new();
+
+        /// <summary>
+        /// 获取实体对象
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
+        Task<TEntity> GetEntityByIdAsync(TPrimaryKey id);
+
         /// <summary>
         /// 添加对象
         /// </summary>
