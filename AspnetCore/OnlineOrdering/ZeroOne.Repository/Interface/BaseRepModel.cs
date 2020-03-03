@@ -3,7 +3,7 @@ using System.ComponentModel;
 namespace ZeroOne.Repository
 {
     /// <summary>
-    /// 
+    /// 数据库基础查询类型
     /// </summary>
     public class BaseRepModel
     {
@@ -11,6 +11,13 @@ namespace ZeroOne.Repository
         {
             this.Key = key;
             this.CompareOperator = ECompareOperator.Equal;
+            this.LogicalOperatorType = ELogicalOperatorType.And;
+        }
+
+        public BaseRepModel(string key, ECompareOperator compareOperator)
+        {
+            this.Key = key;
+            this.CompareOperator = compareOperator;
             this.LogicalOperatorType = ELogicalOperatorType.And;
         }
 

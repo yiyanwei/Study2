@@ -51,7 +51,8 @@ namespace ZeroOne.Repository
         Task<bool> UpdateEntityAsync(TEntity entity);
     }
 
-    public interface IBaseRep<TSearchModel, TEntity, TPrimaryKey> : IBaseRep<TEntity, TPrimaryKey> where TSearchModel : BaseSearch where TEntity : BaseEntity<TPrimaryKey>
+    public interface IBaseRep<TEntity, TPrimaryKey, TSearch> : IBaseRep<TEntity, TPrimaryKey>
+        where TSearch : BaseSearch where TEntity : BaseEntity<TPrimaryKey>
     {
         /// <summary>
         /// 获取TModel对象的列表
@@ -59,6 +60,6 @@ namespace ZeroOne.Repository
         /// <param name="items">查询运算操作，比较运算和逻辑运算</param>
         /// <param name="search">查询的数据</param>
         /// <returns></returns>
-        Task<IList<TEntity>> GetListAsync(IList<BaseRepModel> items, TSearchModel search);
+        Task<IList<TEntity>> GetEntityListAsync(IList<BaseRepModel> items, TSearch search);
     }
 }

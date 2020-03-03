@@ -1,17 +1,35 @@
 using System;
+using System.Linq;
 using System.Collections.Generic;
+using System.Reflection;
 using System.Threading.Tasks;
 using ZeroOne.Entity;
 using ZeroOne.Repository;
 
 namespace ZeroOne.Application
 {
-    public class ProInfoService : BaseService<ProInfo, Guid>, IProInfoService
+    public class ProInfoService : BaseService<ProInfo, Guid, ProInfoSearch>, IProInfoService
     {
         private IProInfoRep _ProInfoRep;
-        public ProInfoService(IProInfoRep proInfoRep) : base(proInfoRep)
+        private IProCategoryRep ProCategoryRep;
+        public ProInfoService(IProInfoRep proInfoRep, IProCategoryRep proCategoryRep) : base(proInfoRep)
         {
             this._ProInfoRep = proInfoRep;
+            this.ProCategoryRep = proCategoryRep;
+        }
+
+        public async override Task<TResult> FormatResult<TResult>(TResult result)
+        {
+            if (result != null && result is ProInfoResult)
+            {
+                var convertResult = result as ProInfoResult;
+                //获取产品分类的信息
+                if (convertResult.CategoryId.HasValue)
+                {
+                    convertResult.ProCategory = await this.ProCategoryRep.GetEntityByIdAsync(convertResult.CategoryId.Value);
+                }
+            }
+            return result;
         }
 
         public async Task<ProInfo> GetProByName(string name)
@@ -34,19 +52,6 @@ namespace ZeroOne.Application
             return await this._ProInfoRep.AddEntityAsync(model);
         }
 
-        public async Task<IList<ProInfo>> GetProducts()
-        {
-            IList<BaseRepModel> operators = new List<BaseRepModel>();
-            ProInfoSearch search = new ProInfoSearch();
-            search.ProName = "红富";
-            search.IsDeleted = false;
-            search.DataStatus = new List<int>(new int[] { 2 });
-
-            operators.Add(new BaseRepModel(nameof(search.ProName), ECompareOperator.Contains, ELogicalOperatorType.And));
-            operators.Add(new BaseRepModel(nameof(search.IsDeleted)));
-            operators.Add(new BaseRepModel(nameof(search.DataStatus), ECompareOperator.Contains, ELogicalOperatorType.And));
-            return await this._ProInfoRep.GetListAsync(operators, search);
-        }
 
         /// <summary>
         /// 测试导入数据
@@ -68,6 +73,11 @@ namespace ZeroOne.Application
                 products.Add(product);
             }
             this._ProInfoRep.BulkAddOrUpdate<ProInfoBulk, ProInfo>(products, beforeAction: this._ProInfoRep.BeforeAction);
+        }
+
+        protected override IList<BaseRepModel> GetBaseRepBySearch(ProInfoSearch search)
+        {
+            throw new NotImplementedException();
         }
     }
 }

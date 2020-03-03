@@ -14,20 +14,19 @@ namespace ZeroOne.WebApi.Controllers
     [Route("api/[controller]")]
     [ApiController]
     [Authorize]
-    public class ProInfoController : CustomController<ProInfo,Guid, ProInfoAddRequest,ProInfoEditRequest, ProInfoResult>
+    public class ProInfoController : CustomController<ProInfo, Guid, ProInfoAddRequest, ProInfoEditRequest, ProInfoResult, ProInfoSearch>
     {
-        public ProInfoController(IProInfoService service):base(service)
-        {            
-            this.service = service;
+        /// <summary>
+        /// 具体的服务接口
+        /// </summary>
+        private IProInfoService Service;
+
+        public ProInfoController(IProInfoService service) : base(service)
+        {
+            this.Service = service;
         }
 
-        private IProInfoService Service
-        {
-            get
-            {
-                return (IProInfoService)this.service;
-            }
-        }
+  
 
         ///// <summary>
         ///// 根据产品名称获取产品信息（模糊查询）

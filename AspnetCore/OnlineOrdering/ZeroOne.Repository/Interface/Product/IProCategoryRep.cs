@@ -10,7 +10,7 @@ namespace ZeroOne.Repository
     /// <summary>
     /// 产品类别仓储接口
     /// </summary>
-    public interface IProCategoryRep:IBaseRep<ProCategorySearch,ProCategory,Guid>
+    public interface IProCategoryRep:IBaseRep<ProCategory,Guid, ProCategorySearch>
     {
         /// <summary>
         /// 获取产品分类下拉列表

@@ -22,6 +22,11 @@ namespace ZeroOne.WebApi.Controllers
         public CustomController(IBaseService<TEntity, TPrimaryKey> service)
         {
             this.service = service;
+            var claim = User.Claims.FirstOrDefault(t => t.Type == JwtClaimTypes.Id);
+            if (claim != null)
+            {
+                UserId = claim.Value;
+            }
         }
 
         /// <summary>
@@ -96,7 +101,6 @@ namespace ZeroOne.WebApi.Controllers
         {
             return await service.GetEntityByIdAsync(id);
         }
-
     }
 
     public class CustomController<TEntity, TPrimaryKey, TAddRequest, TEditRequest, TResult> : CustomController<TEntity, TPrimaryKey, TAddRequest, TEditRequest>
@@ -105,24 +109,10 @@ namespace ZeroOne.WebApi.Controllers
     where TEditRequest : IEditRequest, IEntity<TPrimaryKey>
     where TResult : class, IResult, new()
     {
-        /// <summary>
-        /// 格式化单个结果格式函数
-        /// </summary>
-        private static Dictionary<string, Func<TResult, TResult>> ControllerFormatFuncs;
 
-        static CustomController()
-        {
-            ControllerFormatFuncs = new Dictionary<string, Func<TResult, TResult>>();
-        }
-
-
-        public CustomController(IBaseService<TEntity, TPrimaryKey> service, Func<TResult, TResult> formatFunc = null) : base(service)
+        public CustomController(IBaseService<TEntity, TPrimaryKey> service) : base(service)
         {
             this.service = service;
-            if (!ControllerFormatFuncs.ContainsKey(this.GetType().Name))
-            {
-                ControllerFormatFuncs.Add(this.GetType().Name, formatFunc);
-            }
         }
 
         /// <summary>
@@ -134,11 +124,34 @@ namespace ZeroOne.WebApi.Controllers
         public async Task<TResult> GetResultById(TPrimaryKey id)
         {
             var result = await service.GetResultByIdAsync<TResult>(id);
-            if (!ControllerFormatFuncs.ContainsKey(this.GetType().Name))
-            {
-                result = ControllerFormatFuncs[this.GetType().Name](result);
-            }
             return result;
+        }
+    }
+
+    public class CustomController<TEntity, TPrimaryKey, TAddRequest, TEditRequest, TResult, TSearch> : CustomController<TEntity, TPrimaryKey, TAddRequest, TEditRequest, TResult>
+    where TEntity : BaseEntity<TPrimaryKey>
+    where TAddRequest : IAddRequest, IEntity<TPrimaryKey>
+    where TEditRequest : IEditRequest, IEntity<TPrimaryKey>
+    where TResult : class, IResult, new()
+    where TSearch : BaseSearch
+    {
+
+        protected new IBaseService<TEntity, TPrimaryKey, TSearch> service;
+
+        public CustomController(IBaseService<TEntity, TPrimaryKey, TSearch> service) : base(service)
+        {
+            this.service = service;
+        }
+
+        /// <summary>
+        /// 获取实体对象列表
+        /// </summary>
+        /// <param name="search">查询对象</param>
+        /// <returns></returns>
+        [HttpGet("GetEntityList")]
+        public async Task<IList<TEntity>> GetEntityList(TSearch search)
+        {
+            return await this.service.GetEntitiesAsync(search);
         }
     }
 }

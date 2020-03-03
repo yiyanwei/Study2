@@ -4,18 +4,8 @@ using System.Text;
 
 namespace ZeroOne.Entity
 {
-    public interface IProInfoResult : IResult
+    public class ProInfoSearchResult : Result
     {
-
-    }
-
-    public class ProInfoResult : BaseEntity<Guid>, IProInfoResult
-    {
-        /// <summary>
-        /// 产品分类Id
-        /// </summary>
-        public Guid? CategoryId { get; set; }
-
         /// <summary>
         /// 产品名称
         /// </summary>
@@ -35,15 +25,5 @@ namespace ZeroOne.Entity
         /// 产品图片地址
         /// </summary>
         public string ProImg { get; set; }
-
-        /// <summary>
-        /// 产品的基本单位
-        /// </summary>
-        public string ProBaseUnit { get; set; }
-
-        /// <summary>
-        /// 产品分类对象
-        /// </summary>
-        public ProCategory ProCategory { get; set; }
     }
 }

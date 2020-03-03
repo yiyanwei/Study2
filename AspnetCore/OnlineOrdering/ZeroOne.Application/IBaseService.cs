@@ -48,4 +48,16 @@ namespace ZeroOne.Application
         /// <returns></returns>
         Task<TEntity> GetEntityByIdAsync(TPrimaryKey id);
     }
+
+    public interface IBaseService<TEntity, TPrimaryKey, TSearch> : IBaseService<TEntity, TPrimaryKey>
+        where TEntity : BaseEntity<TPrimaryKey>
+        where TSearch : BaseSearch
+    {
+        /// <summary>
+        /// 查询对象
+        /// </summary>
+        /// <param name="search"></param>
+        /// <returns></returns>
+        Task<IList<TEntity>> GetEntitiesAsync(TSearch search);
+    }
 }

@@ -8,8 +8,9 @@ using ZeroOne.Repository;
 
 namespace ZeroOne.Application
 {
-    public class ProCategoryService : BaseService<ProCategory, Guid>, IProCategoryService
+    public class ProCategoryService : BaseService<ProCategory, Guid, ProCategorySearch>, IProCategoryService
     {
+
         private IProCategoryRep Rep;
         public ProCategoryService(IProCategoryRep rep) : base(rep)
         {
@@ -31,6 +32,11 @@ namespace ZeroOne.Application
         {
             var entity = reqeust.Map<ProCategory>();
             return await this.Rep.UpdateEntityNotNullAsync(entity);
+        }
+
+        protected override IList<BaseRepModel> GetBaseRepBySearch(ProCategorySearch search)
+        {
+            throw new NotImplementedException();
         }
 
         //public async Task<bool> DeleteAsync(Guid? id, string userId)

@@ -8,7 +8,20 @@ namespace ZeroOne.Entity
     /// </summary>
     public class ProInfoSearch : BaseSearch
     {
+        /// <summary>
+        /// 产品名称
+        /// </summary>
         public string ProName{get;set;}
+
+        /// <summary>
+        /// 产品编码
+        /// </summary>
+        public string ProCode { get; set; }
+
+        /// <summary>
+        /// 产品分类Id
+        /// </summary>
+        public Guid? CategoryId { get; set; }
 
     }
 }

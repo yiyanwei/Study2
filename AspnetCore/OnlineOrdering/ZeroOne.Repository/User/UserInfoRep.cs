@@ -6,7 +6,7 @@ using SqlSugar;
 using ZeroOne.Entity;
 namespace ZeroOne.Repository
 {
-    public class UserInfoRep : BaseRep<BaseUserSearch, UserInfo,Guid>, IUserInfoRep
+    public class UserInfoRep : BaseRep<UserInfo, Guid, BaseUserSearch>, IUserInfoRep
     {
         private ISqlSugarClient _client;
         public UserInfoRep(ISqlSugarClient client) : base(client)

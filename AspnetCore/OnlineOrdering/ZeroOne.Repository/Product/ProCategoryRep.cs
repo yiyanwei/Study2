@@ -11,15 +11,11 @@ using ZeroOne.Extension.Model;
 
 namespace ZeroOne.Repository
 {
-    public class ProCategoryRep : BaseRep<ProCategorySearch, ProCategory, Guid>, IProCategoryRep
+    public class ProCategoryRep : BaseRep<ProCategory, Guid, ProCategorySearch>, IProCategoryRep
     {
-        private ISqlSugarClient _client;
         public ProCategoryRep(ISqlSugarClient client) : base(client)
         {
-            this._client = client;
-            //methodof
 
-            //Expression.Property()
         }
 
         public async Task<IList<SelectItem<string, Guid>>> GetSelectItems()

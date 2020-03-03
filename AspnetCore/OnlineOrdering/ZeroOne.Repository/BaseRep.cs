@@ -15,12 +15,26 @@ using ZeroOne.Extension;
 
 namespace ZeroOne.Repository
 {
-    public abstract class BaseRep<TSearchModel, TEntity, TPrimaryKey> : IBaseRep<TSearchModel, TEntity, TPrimaryKey> where TSearchModel : BaseSearch where TEntity : BaseEntity<TPrimaryKey>, IRowVersion, new()
+    public abstract class BaseRep<TEntity, TPrimaryKey, TSearch> : IBaseRep<TEntity, TPrimaryKey, TSearch>
+        where TSearch : BaseSearch
+        where TEntity : BaseEntity<TPrimaryKey>, IRowVersion, new()
     {
+        /// <summary>
+        /// 如果需要格式化结果，则重写该方法
+        /// </summary>
+        /// <typeparam name="TResult">类型参数</typeparam>
+        /// <param name="result">格式化的结果</param>
+        /// <returns></returns>
+        public virtual TResult FormatResult<TResult>(TResult result) where TResult : class, IResult, new()
+        {
+            //result.GetType().GetProperties(BindingFlags.Public | BindingFlags.Instance).Where(t => t.PropertyType.IsClass);
+            return result;
+        }
+
         protected ISugarQueryable<TEntity> Queryable { get; set; }
 
         private static readonly object lockObj = new object();
-        private ISqlSugarClient _client;
+        protected ISqlSugarClient _client;
         public BaseRep(ISqlSugarClient client)
         {
             this._client = client;
@@ -36,12 +50,24 @@ namespace ZeroOne.Repository
             return await this.Queryable.Where(t => (bool)SqlFunc.IsNull(t.IsDeleted, false) == false).ToListAsync();
         }
 
-        public async Task<TResponse> GetResultByIdAsync<TResponse>(TPrimaryKey id) where TResponse : class, IResult,new()
+        /// <summary>
+        /// 根据Id获取对应的结果对象
+        /// </summary>
+        /// <typeparam name="TResult">结果对象类型</typeparam>
+        /// <param name="id"></param>
+        /// <returns></returns>
+        public async Task<TResult> GetResultByIdAsync<TResult>(TPrimaryKey id) where TResult : class, IResult, new()
         {
             var query = this._client.Queryable<TEntity>();
-            return await query.Where(t => t.Id.Equals(id) && SqlFunc.IsNull(t.IsDeleted, false) == false).Select(t => t.Map<TResponse>()).FirstAsync();
+            var result = await query.Where(t => t.Id.Equals(id) && SqlFunc.IsNull(t.IsDeleted, false) == false).Select(t => t.Map<TResult>()).FirstAsync();
+            return this.FormatResult(result);
         }
 
+        /// <summary>
+        /// 根据id返回数据库对象
+        /// </summary>
+        /// <param name="id">对象id</param>
+        /// <returns></returns>
         public async Task<TEntity> GetEntityByIdAsync(TPrimaryKey id)
         {
             var query = this._client.Queryable<TEntity>();
@@ -80,15 +106,15 @@ namespace ZeroOne.Repository
         /// <summary>
         /// 添加数据实体
         /// </summary>
-        /// <param name="model">数据实体</param>
+        /// <param name="entity">数据实体</param>
         /// <returns></returns>
-        public async Task<TEntity> AddEntityAsync(TEntity model)
+        public async Task<TEntity> AddEntityAsync(TEntity entity)
         {
-            if (!model.RowVersion.HasValue)
+            if (!entity.RowVersion.HasValue)
             {
-                model.RowVersion = Guid.Empty;
+                entity.RowVersion = Guid.Empty;
             }
-            return await this._client.Insertable<TEntity>(model).ExecuteReturnEntityAsync();
+            return await this._client.Insertable<TEntity>(entity).ExecuteReturnEntityAsync();
         }
 
         /// <summary>
@@ -196,12 +222,12 @@ namespace ZeroOne.Repository
         }
 
         /// <summary>
-        /// 
+        /// 获取查询最终表达式
         /// </summary>
-        /// <param name="items"></param>
+        /// <param name="items">数据库查询的运算对象集合</param>
         /// <param name="model"></param>
         /// <returns></returns>
-        private Expression GetExpressionResult(IList<BaseRepModel> items, TSearchModel model, ParameterExpression paramExpr)
+        private Expression GetExpressionResult(IList<BaseRepModel> items, TSearch model, ParameterExpression paramExpr)
         {
 
             //返回model的类型
@@ -230,17 +256,16 @@ namespace ZeroOne.Repository
                     continue;
                 }
                 propTypeName = property.PropertyType.FullName;
-                //判断是泛型IEnumerable<>
+                //判断是否实现了IEnumerable<>的集合对象
                 if (property.PropertyType != typeof(string) && property.PropertyType.GetInterfaces().Any(x => typeof(IEnumerable<>) == (x.IsGenericType ? x.GetGenericTypeDefinition() : x)))
                 {
                     PropertyInfo compareProp = modelType.GetProperty(item.Key);
 
                     MethodInfo containsMethod = this.GetMethodByGenericArgType(property.PropertyType.GetGenericArguments()[0]);
                     //判断属性值是否为Nullable类型值
-                    //var parentTypes = compareProp.PropertyType.GetGenericTypeDefinition();
                     if (compareProp.PropertyType.GetGenericTypeDefinition() == typeof(Nullable<>))
                     {
-                        var valProp = compareProp.PropertyType.GetProperty("Value");
+                        var valProp = compareProp.PropertyType.GetProperty(nameof(Nullable<int>.Value));
                         var valExpression = Expression.Property(Expression.Property(paramExpr, compareProp), valProp);
                         var searchPropertyExpression = Expression.Property(Expression.Constant(model, searchModelType), property);
                         childExpression = Expression.Call(containsMethod, searchPropertyExpression, valExpression);
@@ -324,13 +349,13 @@ namespace ZeroOne.Repository
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="items"></param>
+        /// <param name="items">数据库基础查询对象集合</param>
         /// <param name="model"></param>
         /// <param name="client"></param>
-        /// <typeparam name="TSearchModel"></typeparam>
-        /// <typeparam name="TModel"></typeparam>
+        /// <typeparam name="TSearchModel">查询对象</typeparam>
+        /// <typeparam name="TEntity"></typeparam>
         /// <returns></returns>
-        public async Task<IList<TEntity>> GetListAsync(IList<BaseRepModel> items, TSearchModel model)
+        public async Task<IList<TEntity>> GetEntityListAsync(IList<BaseRepModel> items, TSearch model)
         {
 
             //返回model的类型
@@ -463,7 +488,13 @@ namespace ZeroOne.Repository
             return new List<TEntity>();
         }
 
-        public async Task<IList<TEntity>> GetModelList(List<Tuple<IList<BaseRepModel>, ELogicalOperatorType>> groups, TSearchModel model)
+        /// <summary>
+        /// 获取数据对象集合
+        /// </summary>
+        /// <param name="groups">分组查询条件</param>
+        /// <param name="model">查询对象</param>
+        /// <returns></returns>
+        public async Task<IList<TEntity>> GetEntityListByWhereGroupAsync(List<Tuple<IList<BaseRepModel>, ELogicalOperatorType>> groups, TSearch model)
         {
             if (groups != null && groups.Count > 0)
             {

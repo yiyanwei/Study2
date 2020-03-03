@@ -6,7 +6,15 @@ namespace ZeroOne.Entity
     /// <summary>
     /// 查询基础类
     /// </summary>
-    public class BaseSearch
+    public abstract class BaseSearch
+    {
+           
+    }
+
+    /// <summary>
+    /// 基本数据查询
+    /// </summary>
+    public class BaseInfoSearch: BaseSearch
     {
         /// <summary>
         /// 是否删除

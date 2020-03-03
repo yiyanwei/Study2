@@ -6,7 +6,7 @@ using ZeroOne.Extension.Model;
 
 namespace ZeroOne.Application
 {
-    public interface IProCategoryService : IBaseService<ProCategory, Guid>
+    public interface IProCategoryService : IBaseService<ProCategory, Guid, ProCategorySearch>
     {
         /// <summary>
         /// 获取产品分类下拉列表

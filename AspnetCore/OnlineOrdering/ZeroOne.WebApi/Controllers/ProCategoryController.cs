@@ -15,7 +15,7 @@ namespace ZeroOne.WebApi.Controllers
     [Route("api/[controller]")]
     [ApiController]
     [Authorize]
-    public class ProCategoryController : CustomController<ProCategory,Guid,ProCategoryAddRequest,ProCategoryEditRequest,ProCategoryResult>
+    public class ProCategoryController : CustomController<ProCategory, Guid, ProCategoryAddRequest, ProCategoryEditRequest, ProCategoryResult, ProCategorySearch>
     {
         private IProCategoryService Service
         {
@@ -43,6 +43,6 @@ namespace ZeroOne.WebApi.Controllers
             return result;
         }
 
-   
+
     }
 }
