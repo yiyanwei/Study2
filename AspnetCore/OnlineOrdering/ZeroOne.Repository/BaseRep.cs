@@ -15,10 +15,22 @@ using ZeroOne.Extension;
 
 namespace ZeroOne.Repository
 {
-    public abstract class BaseRep<TEntity, TPrimaryKey, TSearch> : IBaseRep<TEntity, TPrimaryKey, TSearch>
-        where TSearch : BaseSearch
+
+    public abstract class BaseRep<TEntity, TPrimaryKey> : IBaseRep<TEntity, TPrimaryKey>
         where TEntity : BaseEntity<TPrimaryKey>, IRowVersion, new()
     {
+
+
+        protected ISugarQueryable<TEntity> Queryable { get; set; }
+
+        private static readonly object lockObj = new object();
+        protected ISqlSugarClient _client;
+        public BaseRep(ISqlSugarClient client)
+        {
+            this._client = client;
+            this.Queryable = _client.Queryable<TEntity>();
+        }
+
         /// <summary>
         /// 如果需要格式化结果，则重写该方法
         /// </summary>
@@ -29,16 +41,6 @@ namespace ZeroOne.Repository
         {
             //result.GetType().GetProperties(BindingFlags.Public | BindingFlags.Instance).Where(t => t.PropertyType.IsClass);
             return result;
-        }
-
-        protected ISugarQueryable<TEntity> Queryable { get; set; }
-
-        private static readonly object lockObj = new object();
-        protected ISqlSugarClient _client;
-        public BaseRep(ISqlSugarClient client)
-        {
-            this._client = client;
-            this.Queryable = _client.Queryable<TEntity>();
         }
 
         /// <summary>
@@ -184,7 +186,7 @@ namespace ZeroOne.Repository
         /// </summary>
         /// <param name="type">泛型类型参数的类型</param>
         /// <returns></returns>
-        private MethodInfo GetMethodByGenericArgType(Type type)
+        protected MethodInfo GetMethodByGenericArgType(Type type)
         {
             MethodInfo method = null;
             if (type != null)
@@ -219,6 +221,23 @@ namespace ZeroOne.Repository
                 }
             }
             return method;
+        }
+    }
+
+    public abstract class BaseRep<TEntity, TPrimaryKey, TSearch> : BaseRep<TEntity, TPrimaryKey>, IBaseRep<TEntity, TPrimaryKey, TSearch>
+        where TSearch : BaseSearch
+        where TEntity : BaseEntity<TPrimaryKey>, IRowVersion, new()
+    {
+        /// <summary>
+        /// 如果需要格式化结果，则重写该方法
+        /// </summary>
+        /// <typeparam name="TResult">类型参数</typeparam>
+        /// <param name="result">格式化的结果</param>
+        /// <returns></returns>
+
+        public BaseRep(ISqlSugarClient client) : base(client)
+        {
+
         }
 
         /// <summary>
@@ -332,11 +351,11 @@ namespace ZeroOne.Repository
                     }
                     else
                     {
-                        if (item.LogicalOperatorType == ELogicalOperatorType.And)
+                        if (item.LogicalOperatorType == ELogicalOperator.And)
                         {
                             tempExpression = Expression.AndAlso(tempExpression, childExpression);
                         }
-                        else if (item.LogicalOperatorType == ELogicalOperatorType.Or)
+                        else if (item.LogicalOperatorType == ELogicalOperator.Or)
                         {
                             tempExpression = Expression.OrElse(tempExpression, childExpression);
                         }
@@ -494,7 +513,7 @@ namespace ZeroOne.Repository
         /// <param name="groups">分组查询条件</param>
         /// <param name="model">查询对象</param>
         /// <returns></returns>
-        public async Task<IList<TEntity>> GetEntityListByWhereGroupAsync(List<Tuple<IList<BaseRepModel>, ELogicalOperatorType>> groups, TSearch model)
+        public async Task<IList<TEntity>> GetEntityListByWhereGroupAsync(List<Tuple<IList<BaseRepModel>, ELogicalOperator>> groups, TSearch model)
         {
             if (groups != null && groups.Count > 0)
             {
@@ -522,12 +541,12 @@ namespace ZeroOne.Repository
                             else
                             {
                                 //判断是否与运算
-                                if (group.Item2 == ELogicalOperatorType.And)
+                                if (group.Item2 == ELogicalOperator.And)
                                 {
                                     totalExpression = Expression.AndAlso(totalExpression, tempExpression);
                                 }
                                 //判断是否或运算
-                                else if (group.Item2 == ELogicalOperatorType.Or)
+                                else if (group.Item2 == ELogicalOperator.Or)
                                 {
                                     totalExpression = Expression.OrElse(totalExpression, tempExpression);
                                 }
@@ -544,5 +563,101 @@ namespace ZeroOne.Repository
             }
             return new List<TEntity>();
         }
+
+        public async Task<TSearchResult> SearchResultAsync<TResult, TSearchResult>(TSearch search)
+            where TResult : IResult
+            where TSearchResult : BaseSearchResult<TResult>
+        {
+            Dictionary<Type, IList<PropertyInfo>> dicTypeProps = new Dictionary<Type, IList<PropertyInfo>>();
+            //当前对象的类型，也就是主表对象类型
+            var entityType = typeof(TEntity);
+            //获取所有配置了关联信息的类型对象
+            var resultType = typeof(TResult);
+            //配置未关联属性
+            var totalProps = resultType.GetProperties(BindingFlags.Public | BindingFlags.Instance);
+
+            var myProps = totalProps.Where(t => t.GetCustomAttribute<JoinTableAttribute>() == null).ToList();
+            dicTypeProps.Add(entityType, myProps);
+
+            //配置关联表属性
+            var joinTableProps = totalProps.Where(t => t.GetCustomAttribute<JoinTableAttribute>() != null);
+
+            //Tuple<PropertyInfo, PropertyInfo>  Item1:TSearchResult的当前TEntity的属性，Item2：目标类型的属性
+            Dictionary<Type, Tuple<EJoinType, IList<Tuple<PropertyInfo, PropertyInfo>>>> dicJoinTables = new Dictionary<Type, Tuple<EJoinType, IList<Tuple<PropertyInfo, PropertyInfo>>>>();
+            foreach (var prop in joinTableProps)
+            {
+                var joinTableAttribute = prop.GetCustomAttribute<JoinTableAttribute>();
+
+                //处理当前属性对应的目标对象的属性
+                if (!dicTypeProps.Keys.Contains(joinTableAttribute.EntityType))
+                {
+                    var tempList = new List<PropertyInfo>();
+                    dicTypeProps.Add(joinTableAttribute.EntityType, tempList);
+                }
+                PropertyInfo tempProp = null;
+                string propName = prop.Name;
+                if (!string.IsNullOrWhiteSpace(joinTableAttribute.DestProp))
+                {
+                    propName = joinTableAttribute.DestProp;
+                }
+                tempProp = joinTableAttribute.EntityType.GetProperty(propName, BindingFlags.Public | BindingFlags.Instance);
+                dicTypeProps[joinTableAttribute.EntityType].Add(tempProp);
+
+
+                //处理关联关系
+                if (!dicJoinTables.Keys.Contains(joinTableAttribute.EntityType))
+                {
+                    IList<Tuple<PropertyInfo, PropertyInfo>> propMappingList = new List<Tuple<PropertyInfo, PropertyInfo>>();
+                    Tuple<EJoinType, IList<Tuple<PropertyInfo, PropertyInfo>>> tempTuple =
+                        new Tuple<EJoinType, IList<Tuple<PropertyInfo, PropertyInfo>>>(joinTableAttribute.JoinType, propMappingList);
+                }
+
+                var myJoinProp = totalProps.FirstOrDefault(t => t.Name.ToLower() == joinTableAttribute.MyJoinProp.Trim().ToLower());
+                if (myJoinProp == null)
+                {
+                    throw new Exception("");
+                }
+                var joinProp = joinTableAttribute.EntityType.GetProperty(joinTableAttribute.JoinProp, BindingFlags.Public | BindingFlags.Instance);
+                if (joinProp == null)
+                {
+                    throw new Exception("");
+                }
+
+                var propTuple = new Tuple<PropertyInfo, PropertyInfo>(myJoinProp, joinProp);
+                dicJoinTables[joinTableAttribute.EntityType].Item2.Add(propTuple);
+            }
+
+            var paramExps = dicJoinTables.Select((t, i) => new KeyValuePair<Type, ParameterExpression>(t.Key, Expression.Parameter(t.Key, $"t{i + 1}"))).ToArray();
+
+
+
+            var searchType = search.GetType();
+            var searchProps = searchType.GetProperties(BindingFlags.Public | BindingFlags.Instance).Where(t => !t.PropertyType.IsClass);
+
+            IList<Expression> whereExpList = new List<Expression>();
+            foreach (var prop in searchProps)
+            {
+                var val = prop.GetValue(search);
+                if (val != null)
+                {
+                    var equal = Expression.Equal(Expression.Property(paramExps.FirstOrDefault(t => t.Key == entityType).Value, entityType.GetProperty(prop.Name)), Expression.Constant(val));
+                    whereExpList.Add(equal);
+                }
+            }
+
+            
+
+            //this._client.Queryable<>
+
+            return null;
+        }
+    }
+
+    public abstract class BaseRep<TEntity, TPrimaryKey, TSearch, TSearchResult> : BaseRep<TEntity, TPrimaryKey, TSearch>
+                where TSearch : BaseSearch
+        where TEntity : BaseEntity<TPrimaryKey>, IRowVersion, new()
+    {
+        public BaseRep(ISqlSugarClient client) : base(client)
+        { }
     }
 }

@@ -25,5 +25,11 @@ namespace ZeroOne.Entity
         /// 产品图片地址
         /// </summary>
         public string ProImg { get; set; }
+
+        [JoinTable(nameof(CategoryId), typeof(ProCategory), nameof(ProCategory.Id), EJoinType.InnerJoin)]
+        public string CategoryName { get; set; }
+
+        
+        public Guid? CategoryId { get; set; }
     }
 }

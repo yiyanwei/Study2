@@ -52,7 +52,8 @@ namespace ZeroOne.Repository
     }
 
     public interface IBaseRep<TEntity, TPrimaryKey, TSearch> : IBaseRep<TEntity, TPrimaryKey>
-        where TSearch : BaseSearch where TEntity : BaseEntity<TPrimaryKey>
+        where TSearch : BaseSearch
+        where TEntity : BaseEntity<TPrimaryKey>
     {
         /// <summary>
         /// 获取TModel对象的列表
@@ -62,4 +63,13 @@ namespace ZeroOne.Repository
         /// <returns></returns>
         Task<IList<TEntity>> GetEntityListAsync(IList<BaseRepModel> items, TSearch search);
     }
+
+    //public interface IBaseRep<TEntity, TPrimaryKey, TSearch,TResult> : IBaseRep<TEntity, TPrimaryKey, TSearch>
+    //    where TEntity : BaseEntity<TPrimaryKey>
+    //    where TSearch : BaseSearch
+    //    where 
+    //    where TSearchResult : BaseResult<>
+    //{
+
+    //}
 }
