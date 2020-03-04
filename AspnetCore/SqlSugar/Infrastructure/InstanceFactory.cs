@@ -45,6 +45,7 @@ namespace SqlSugar
                 ISugarQueryable<T, T2> result = CreateInstance<T, T2, ISugarQueryable<T, T2>>(className);
                 return result;
             }
+
         }
         public static ISugarQueryable<T, T2, T3> GetQueryable<T, T2, T3>(ConnectionConfig currentConnectionConfig)
         {

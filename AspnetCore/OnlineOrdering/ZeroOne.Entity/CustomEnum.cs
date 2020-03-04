@@ -12,7 +12,8 @@ namespace ZeroOne.Entity
         /// </summary>
         InnerJoin = 1,
         LeftJoin = 2,
-        FullJoin = 3
+        RightJoin = 3,
+        FullJoin = 4
     }
 
     /// <summary>

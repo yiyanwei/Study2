@@ -123,6 +123,8 @@ namespace SqlSugar
             this.CreateQueryJoin(joinExpression, types, queryable);
             return queryable;
         }
+
+
         public virtual ISugarQueryable<T, T2> Queryable<T, T2>(Expression<Func<T, T2, JoinQueryInfos>> joinExpression)
         {
             InitMappingInfo<T, T2>();

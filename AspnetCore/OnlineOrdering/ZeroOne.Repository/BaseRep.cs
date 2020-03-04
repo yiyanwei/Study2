@@ -564,6 +564,9 @@ namespace ZeroOne.Repository
             return new List<TEntity>();
         }
 
+
+
+
         public async Task<TSearchResult> SearchResultAsync<TResult, TSearchResult>(TSearch search)
             where TResult : IResult
             where TSearchResult : BaseSearchResult<TResult>
@@ -580,7 +583,7 @@ namespace ZeroOne.Repository
             dicTypeProps.Add(entityType, myProps);
 
             //配置关联表属性
-            var joinTableProps = totalProps.Where(t => t.GetCustomAttribute<JoinTableAttribute>() != null);
+            var joinTableProps = totalProps.Where(t => t.GetCustomAttribute<JoinTableAttribute>() != null).OrderBy(t => t.GetCustomAttribute<JoinTableAttribute>().JoinType);
 
             //Tuple<PropertyInfo, PropertyInfo>  Item1:TSearchResult的当前TEntity的属性，Item2：目标类型的属性
             Dictionary<Type, Tuple<EJoinType, IList<Tuple<PropertyInfo, PropertyInfo>>>> dicJoinTables = new Dictionary<Type, Tuple<EJoinType, IList<Tuple<PropertyInfo, PropertyInfo>>>>();
@@ -627,9 +630,7 @@ namespace ZeroOne.Repository
                 dicJoinTables[joinTableAttribute.EntityType].Item2.Add(propTuple);
             }
 
-            var paramExps = dicJoinTables.Select((t, i) => new KeyValuePair<Type, ParameterExpression>(t.Key, Expression.Parameter(t.Key, $"t{i + 1}"))).ToArray();
-
-
+            var paramExps = dicTypeProps.Select((t, i) => new KeyValuePair<Type, ParameterExpression>(t.Key, Expression.Parameter(t.Key, $"t{i + 1}"))).ToArray();
 
             var searchType = search.GetType();
             var searchProps = searchType.GetProperties(BindingFlags.Public | BindingFlags.Instance).Where(t => !t.PropertyType.IsClass);
@@ -645,12 +646,42 @@ namespace ZeroOne.Repository
                 }
             }
 
+            IList<Type> joinTypes = new List<Type>();
             
+            foreach (var item in dicJoinTables)
+            {
+                joinTypes.Add(typeof(JoinType));
+                joinTypes.Add(typeof(bool));
 
-            //this._client.Queryable<>
+                if (item.Value.Item1 == EJoinType.InnerJoin)
+                {
+                    Expression.Constant(JoinType.Inner);
+                }
+                else if (item.Value.Item1 == EJoinType.LeftJoin)
+                {
+                    Expression.Constant(JoinType.Left);
+                }
+                else if (item.Value.Item1 == EJoinType.RightJoin)
+                {
+                    Expression.Constant(JoinType.Right);
+                }
+                
+                foreach(var tupleProp in item.Value.Item2)
+                {
+                  //Expression.Property(  tupleProp.Item1
+                }
+            }
+
+            //typeof(JoinQueryInfos).GetConstructor()
+            
+            //Expression.New()
+
+            //this._client.Queryable<UserInfo, ProInfo, ProCategory>((t1, t2, t3) => new JoinQueryInfos(JoinType.Left, true)).Where((t1, t2, t3) =>)
 
             return null;
         }
+
+
     }
 
     public abstract class BaseRep<TEntity, TPrimaryKey, TSearch, TSearchResult> : BaseRep<TEntity, TPrimaryKey, TSearch>
