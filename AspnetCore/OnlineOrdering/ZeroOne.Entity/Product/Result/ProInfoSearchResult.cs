@@ -26,7 +26,11 @@ namespace ZeroOne.Entity
         /// </summary>
         public string ProImg { get; set; }
 
-        [JoinTable(nameof(CategoryId), typeof(ProCategory), nameof(ProCategory.Id), EJoinType.InnerJoin)]
+        /// <summary>
+        /// 分类名称
+        /// </summary>
+        [MainTableRelation(typeof(ProCategory), EJoinType.InnerJoin)]
+        [JoinTableRelation(nameof(ProCategory.Id),typeof(ProInfo),nameof(ProInfo.CategoryId))]
         public string CategoryName { get; set; }
 
         

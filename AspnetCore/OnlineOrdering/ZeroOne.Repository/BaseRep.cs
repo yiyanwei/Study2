@@ -579,108 +579,346 @@ namespace ZeroOne.Repository
             //配置未关联属性
             var totalProps = resultType.GetProperties(BindingFlags.Public | BindingFlags.Instance);
 
-            var myProps = totalProps.Where(t => t.GetCustomAttribute<JoinTableAttribute>() == null).ToList();
+            var myProps = totalProps.Where(t => t.GetCustomAttribute<MainTableRelationAttribute>() == null).ToList();
             dicTypeProps.Add(entityType, myProps);
 
             //配置关联表属性
-            var joinTableProps = totalProps.Where(t => t.GetCustomAttribute<JoinTableAttribute>() != null).OrderBy(t => t.GetCustomAttribute<JoinTableAttribute>().JoinType);
+            var joinTableProps = totalProps.Where(t => t.GetCustomAttribute<MainTableRelationAttribute>() != null).OrderBy(t => t.GetCustomAttribute<MainTableRelationAttribute>().JoinType);
 
             //Tuple<PropertyInfo, PropertyInfo>  Item1:TSearchResult的当前TEntity的属性，Item2：目标类型的属性
-            Dictionary<Type, Tuple<EJoinType, IList<Tuple<PropertyInfo, PropertyInfo>>>> dicJoinTables = new Dictionary<Type, Tuple<EJoinType, IList<Tuple<PropertyInfo, PropertyInfo>>>>();
+            //Dictionary<Tuple<Type,Type>, Tuple<EJoinType, IList<Tuple<PropertyInfo, PropertyInfo>>>> dicJoinTables = new Dictionary<Tuple<Type, Type>, Tuple<EJoinType, IList<Tuple<PropertyInfo, PropertyInfo>>>>();
+
+            //Dictionary<Type, ParameterExpression> dicTypeParams = new Dictionary<Type, ParameterExpression>();
+            IList<Type> types = new List<Type>();
+            //添加默认的当前Entity
+            types.Add(typeof(TEntity));
+
+            Dictionary<Type, Tuple<EJoinType, IList<KeyValuePair<PropertyInfo, PropertyInfo>>, IList<Tuple<PropertyInfo, Type, PropertyInfo, ECompareOperator, ELogicalOperator>>>> dicTypePropMappings =
+                new Dictionary<Type, Tuple<EJoinType, IList<KeyValuePair<PropertyInfo, PropertyInfo>>, IList<Tuple<PropertyInfo, Type, PropertyInfo, ECompareOperator, ELogicalOperator>>>>();
             foreach (var prop in joinTableProps)
             {
-                var joinTableAttribute = prop.GetCustomAttribute<JoinTableAttribute>();
+
+                var mainTableRelation = prop.GetCustomAttribute<MainTableRelationAttribute>();
+                if (!types.Contains(mainTableRelation.EntityType))
+                {
+                    types.Add(mainTableRelation.EntityType);
+                }
+                if (!dicTypePropMappings.Keys.Contains(mainTableRelation.EntityType))
+                {
+                    dicTypePropMappings.Add(mainTableRelation.EntityType, new Tuple<EJoinType, IList<KeyValuePair<PropertyInfo, PropertyInfo>>, IList<Tuple<PropertyInfo, Type, PropertyInfo, ECompareOperator, ELogicalOperator>>>(
+                    mainTableRelation.JoinType, new List<KeyValuePair<PropertyInfo, PropertyInfo>>(), new List<Tuple<PropertyInfo, Type, PropertyInfo, ECompareOperator, ELogicalOperator>>()));
+                }
+
+                IList<KeyValuePair<PropertyInfo, PropertyInfo>> destPropList = dicTypePropMappings[mainTableRelation.EntityType].Item2;
+                IList<Tuple<PropertyInfo, Type, PropertyInfo, ECompareOperator, ELogicalOperator>> joinTableRelList = dicTypePropMappings[mainTableRelation.EntityType].Item3;
+                string destPropName = prop.Name;
+                if (!string.IsNullOrEmpty(mainTableRelation.DestPropName))
+                {
+                    destPropName = mainTableRelation.DestPropName;
+                }
+                //var currentProp = prop;
+                var destProp = mainTableRelation.EntityType.GetProperty(destPropName, BindingFlags.Instance | BindingFlags.Public);
+                if (!(destPropList.Where(t => t.Value == destProp)?.Count() > 0))
+                {
+                    destPropList.Add(new KeyValuePair<PropertyInfo, PropertyInfo>(prop, destProp));
+                }
+
+
+                //获取当前属性所有的关联关系
+                var joinTableRels = prop.GetCustomAttributes<JoinTableRelationAttribute>();
+                foreach (var item in joinTableRels)
+                {
+                    if (!types.Contains(item.DestEntityType))
+                    {
+                        types.Add(item.DestEntityType);
+                    }
+
+                    var currProp = mainTableRelation.EntityType.GetProperty(item.PropName, BindingFlags.Instance | BindingFlags.Public);
+                    var destRelProp = item.DestEntityType.GetProperty(item.DestRelPropName, BindingFlags.Instance | BindingFlags.Public);
+                    if (!(joinTableRelList.Where(t => t.Item1 == currProp && t.Item2 == item.DestEntityType && t.Item3 == destRelProp)?.Count() > 0))
+                    {
+                        joinTableRelList.Add(new Tuple<PropertyInfo, Type, PropertyInfo, ECompareOperator, ELogicalOperator>
+                            (currProp, item.DestEntityType, destRelProp, item.CompareOperator, item.LogicalOperator));
+                    }
+                }
 
                 //处理当前属性对应的目标对象的属性
-                if (!dicTypeProps.Keys.Contains(joinTableAttribute.EntityType))
-                {
-                    var tempList = new List<PropertyInfo>();
-                    dicTypeProps.Add(joinTableAttribute.EntityType, tempList);
-                }
-                PropertyInfo tempProp = null;
-                string propName = prop.Name;
-                if (!string.IsNullOrWhiteSpace(joinTableAttribute.DestProp))
-                {
-                    propName = joinTableAttribute.DestProp;
-                }
-                tempProp = joinTableAttribute.EntityType.GetProperty(propName, BindingFlags.Public | BindingFlags.Instance);
-                dicTypeProps[joinTableAttribute.EntityType].Add(tempProp);
+                //if (!dicTypeProps.Keys.Contains(joinTableAttribute.EntityType))
+                //{
+                //    var tempList = new List<PropertyInfo>();
+                //    dicTypeProps.Add(joinTableAttribute.EntityType, tempList);
+                //}
+                //PropertyInfo tempProp = null;
+                //string propName = prop.Name;
+                //if (!string.IsNullOrWhiteSpace(joinTableAttribute.DestProp))
+                //{
+                //    propName = joinTableAttribute.DestProp;
+                //}
+                //tempProp = joinTableAttribute.EntityType.GetProperty(propName, BindingFlags.Public | BindingFlags.Instance);
+                //dicTypeProps[joinTableAttribute.EntityType].Add(tempProp);
 
 
                 //处理关联关系
-                if (!dicJoinTables.Keys.Contains(joinTableAttribute.EntityType))
-                {
-                    IList<Tuple<PropertyInfo, PropertyInfo>> propMappingList = new List<Tuple<PropertyInfo, PropertyInfo>>();
-                    Tuple<EJoinType, IList<Tuple<PropertyInfo, PropertyInfo>>> tempTuple =
-                        new Tuple<EJoinType, IList<Tuple<PropertyInfo, PropertyInfo>>>(joinTableAttribute.JoinType, propMappingList);
-                }
+                //if (!dicJoinTables.Keys.Contains(joinTableAttribute.EntityType))
+                //{
+                //    IList<Tuple<PropertyInfo, PropertyInfo>> propMappingList = new List<Tuple<PropertyInfo, PropertyInfo>>();
+                //    Tuple<EJoinType, IList<Tuple<PropertyInfo, PropertyInfo>>> tempTuple =
+                //        new Tuple<EJoinType, IList<Tuple<PropertyInfo, PropertyInfo>>>(joinTableAttribute.JoinType, propMappingList);
+                //}
 
-                var myJoinProp = totalProps.FirstOrDefault(t => t.Name.ToLower() == joinTableAttribute.MyJoinProp.Trim().ToLower());
-                if (myJoinProp == null)
-                {
-                    throw new Exception("");
-                }
-                var joinProp = joinTableAttribute.EntityType.GetProperty(joinTableAttribute.JoinProp, BindingFlags.Public | BindingFlags.Instance);
-                if (joinProp == null)
-                {
-                    throw new Exception("");
-                }
+                //var myJoinProp = totalProps.FirstOrDefault(t => t.Name.ToLower() == joinTableAttribute.LeftJoinProp.Trim().ToLower());
+                //if (myJoinProp == null)
+                //{
+                //    throw new Exception("");
+                //}
+                //var joinProp = joinTableAttribute.EntityType.GetProperty(joinTableAttribute.JoinProp, BindingFlags.Public | BindingFlags.Instance);
+                //if (joinProp == null)
+                //{
+                //    throw new Exception("");
+                //}
 
-                var propTuple = new Tuple<PropertyInfo, PropertyInfo>(myJoinProp, joinProp);
-                dicJoinTables[joinTableAttribute.EntityType].Item2.Add(propTuple);
+                //var propTuple = new Tuple<PropertyInfo, PropertyInfo>(myJoinProp, joinProp);
+                //dicJoinTables[joinTableAttribute.EntityType].Item2.Add(propTuple);
             }
 
-            var paramExps = dicTypeProps.Select((t, i) => new KeyValuePair<Type, ParameterExpression>(t.Key, Expression.Parameter(t.Key, $"t{i + 1}"))).ToArray();
+            //生成类型对象参数表达式
+            var paramExps = types.Select((t, i) => new KeyValuePair<Type, ParameterExpression>(t, Expression.Parameter(t, $"t{i + 1}"))).ToArray();
 
-            var searchType = search.GetType();
-            var searchProps = searchType.GetProperties(BindingFlags.Public | BindingFlags.Instance).Where(t => !t.PropertyType.IsClass);
-
-            IList<Expression> whereExpList = new List<Expression>();
-            foreach (var prop in searchProps)
+            //IList<Type> joinTypes = new List<Type>();
+            //IList<Expression> joinExpList = new List<Expression>();
+            IList<KeyValuePair<Type, Expression>> joinList = new List<KeyValuePair<Type, Expression>>();
+            foreach (var item in dicTypePropMappings)
             {
-                var val = prop.GetValue(search);
-                if (val != null)
-                {
-                    var equal = Expression.Equal(Expression.Property(paramExps.FirstOrDefault(t => t.Key == entityType).Value, entityType.GetProperty(prop.Name)), Expression.Constant(val));
-                    whereExpList.Add(equal);
-                }
-            }
+                //joinTypes.Add(typeof(JoinType));
 
-            IList<Type> joinTypes = new List<Type>();
-            
-            foreach (var item in dicJoinTables)
-            {
-                joinTypes.Add(typeof(JoinType));
-                joinTypes.Add(typeof(bool));
+                //joinTypes.Add(typeof(bool));
 
+                Expression joinFieldExp = null;
                 if (item.Value.Item1 == EJoinType.InnerJoin)
                 {
-                    Expression.Constant(JoinType.Inner);
+                    //joinExpList.Add(Expression.Constant(JoinType.Inner));
+                    joinFieldExp = Expression.Constant(JoinType.Inner);
                 }
                 else if (item.Value.Item1 == EJoinType.LeftJoin)
                 {
-                    Expression.Constant(JoinType.Left);
+                    //joinExpList.Add(Expression.Constant(JoinType.Left));
+                    joinFieldExp = Expression.Constant(JoinType.Left);
                 }
                 else if (item.Value.Item1 == EJoinType.RightJoin)
                 {
-                    Expression.Constant(JoinType.Right);
+                    //joinExpList.Add(Expression.Constant(JoinType.Right));
+                    joinFieldExp = Expression.Constant(JoinType.Right);
                 }
-                
-                foreach(var tupleProp in item.Value.Item2)
+                else
                 {
-                  //Expression.Property(  tupleProp.Item1
+                    throw new Exception("");
                 }
+                //join类型
+                joinList.Add(new KeyValuePair<Type, Expression>(typeof(JoinType), joinFieldExp));
+
+
+                Expression tempTotal = null;
+                foreach (var tuple in item.Value.Item3)
+                {
+                    var left = Expression.Property(paramExps.FirstOrDefault(t => t.Key == item.Key).Value, tuple.Item1);
+                    var right = Expression.Property(paramExps.FirstOrDefault(t => t.Key == tuple.Item2).Value, tuple.Item3);
+
+                    Expression compareExp = null;
+                    //比较运算
+                    if (tuple.Item4 == ECompareOperator.Equal)
+                    {
+                        compareExp = Expression.Equal(left, right);
+                    }
+                    else if (tuple.Item4 == ECompareOperator.NotEqual)
+                    {
+                        compareExp = Expression.NotEqual(left, right);
+                    }
+                    else if (tuple.Item4 == ECompareOperator.GreaterThan)
+                    {
+                        compareExp = Expression.GreaterThan(left, right);
+                    }
+                    else if (tuple.Item4 == ECompareOperator.GreaterThanOrEqual)
+                    {
+                        compareExp = Expression.GreaterThanOrEqual(left, right);
+                    }
+                    else if (tuple.Item4 == ECompareOperator.LessThan)
+                    {
+                        compareExp = Expression.LessThan(left, right);
+                    }
+                    else if (tuple.Item4 == ECompareOperator.LessThanOrEqual)
+                    {
+                        compareExp = Expression.LessThanOrEqual(left, right);
+                    }
+                    else
+                    {
+                        throw new Exception("");
+                    }
+
+                    //逻辑运算
+                    if (tuple.Item5 == ELogicalOperator.None)
+                    {
+                        if (tempTotal == null)
+                        {
+                            tempTotal = compareExp;
+                        }
+                        else
+                        {
+                            throw new Exception("");
+                        }
+                    }
+                    else if (tuple.Item5 == ELogicalOperator.And)
+                    {
+                        if (tempTotal != null)
+                        {
+                            tempTotal = Expression.AndAlso(tempTotal, compareExp);
+                        }
+                        else
+                        {
+                            throw new Exception("");
+                        }
+                    }
+                    else if (tuple.Item5 == ELogicalOperator.Or)
+                    {
+                        if (tempTotal != null)
+                        {
+                            tempTotal = Expression.OrElse(tempTotal, compareExp);
+                        }
+                        else
+                        {
+                            throw new Exception("");
+                        }
+                    }
+                    else
+                    {
+                        throw new Exception("");
+                    }
+                }
+                //表达式最终true
+                joinList.Add(new KeyValuePair<Type, Expression>(typeof(bool), tempTotal));
             }
 
-            //typeof(JoinQueryInfos).GetConstructor()
-            
-            //Expression.New()
+            //根据参数获取JoinQueryInfos的构造函数
+            var constructor = typeof(JoinQueryInfos).GetConstructor(joinList.Select(t => t.Key).ToArray());
+            //最终的Queryable的参数
+            Expression joinExp = Expression.Lambda(Expression.New(constructor, joinList.Select(t => t.Value)), paramExps.Select(t => t.Value));
+            //查询方法
+            var queryableMethod = this._client.GetType().GetMethod(nameof(this._client.Queryable)).MakeGenericMethod(types.ToArray());
+            queryableMethod.Invoke(this._client, new object[] { joinExp });
 
-            //this._client.Queryable<UserInfo, ProInfo, ProCategory>((t1, t2, t3) => new JoinQueryInfos(JoinType.Left, true)).Where((t1, t2, t3) =>)
+            if (search != null)
+            {
+                IList<DbOperationAttribute> dbOperations = new List<DbOperationAttribute>();
+                var searchProps = search.GetType().GetProperties(BindingFlags.Public | BindingFlags.Instance);
+                object val = null;
+                DbOperationAttribute attribute = null;
+                foreach (var prop in searchProps)
+                {
+                    val = prop.GetValue(search);
+                    if (val != null)
+                    {
+                        attribute = prop.GetCustomAttribute<DbOperationAttribute>();
+                        if (attribute == null)
+                        {
+                            attribute = new DbOperationAttribute(typeof(TEntity), prop.Name);
+                        }
+                        else
+                        {
+                            if (attribute.EntityType == null) { attribute.EntityType = typeof(TEntity); }
+                            if (string.IsNullOrEmpty(attribute.PropName)) { attribute.PropName = prop.Name; }
+                        }
+                        attribute.Prop = attribute.EntityType.GetProperty(attribute.PropName, BindingFlags.Public | BindingFlags.Instance);
+                        attribute.Value = val;
+                        dbOperations.Add(attribute);
+                    }
+                }
+
+                //配置了DbOperationAttribute特性的属性
+                //var dbOperationProps = searchProps.Where(t => t.GetCustomAttribute<DbOperationAttribute>() != null);
+                //foreach (var operationProp in dbOperationProps)
+                //{ 
+
+                //}
+            }
+
+            //this._client.Queryable<ProInfo, ProCategory, UserInfo>((t1, t2, t3) =>
+            //new JoinQueryInfos(JoinType.Inner, t1.CategoryId == t2.Id, JoinType.Left, t2.CreatorUserId == t3.Id.ToString()))
+            //    .Where((t1, t2, t3) => t1.IsDeleted == false && t2.IsDeleted == false).Select()
 
             return null;
         }
 
+
+        private Expression GetWhereExpression(IList<DbOperationAttribute> operAttrs, IList<KeyValuePair<Type, ParameterExpression>> keyValues)
+        {
+            var groups = operAttrs.GroupBy(t => t.GroupKey);
+            Dictionary<int?, Expression> dicGroupExps = new Dictionary<int?, Expression>();
+            foreach (var groupItem in groups)
+            {
+                Expression totalExp = null;
+                int count = groupItem.Count();
+                if (count > 0)
+                {
+                    var items = groupItem.OrderBy(t => t.LogicalOperator).ToList();
+                    for (var i = 0; i < count; i++)
+                    {
+                        Expression compareExp = null;
+                        var current = items[i];
+                        //比较运算
+                        Expression left = Expression.Property(keyValues.First(t => t.Key == current.EntityType).Value, current.Prop);
+                        Expression right = Expression.Constant(current.Value);
+                        if (current.CompareOperator == ECompareOperator.Equal)
+                        {
+                            compareExp = Expression.Equal(left, right);
+                        }
+                        else if (current.CompareOperator == ECompareOperator.NotEqual)
+                        {
+                            compareExp = Expression.NotEqual(left, right);
+                        }
+                        else if (current.CompareOperator == ECompareOperator.GreaterThan)
+                        {
+                            compareExp = Expression.GreaterThan(left, right);
+                        }
+                        else if (current.CompareOperator == ECompareOperator.GreaterThanOrEqual)
+                        {
+                            compareExp = Expression.GreaterThanOrEqual(left, right);
+                        }
+                        else if (current.CompareOperator == ECompareOperator.LessThan)
+                        {
+                            compareExp = Expression.LessThan(left, right);
+                        }
+                        else if (current.CompareOperator == ECompareOperator.LessThanOrEqual)
+                        {
+                            compareExp = Expression.LessThanOrEqual(left, right);
+                        }
+                        else
+                        {
+                            throw new Exception("");
+                        }
+                        if (i == 0)
+                        {
+                            totalExp = compareExp;
+                        }
+                        else
+                        {
+                            if (current.LogicalOperator == ELogicalOperator.None || current.LogicalOperator == ELogicalOperator.And)
+                            {
+                                totalExp = Expression.AndAlso(totalExp, compareExp);
+                            }
+                            else
+                            {
+                                totalExp = Expression.OrElse(totalExp, compareExp);
+                            }
+                        }
+                    }
+                }
+                else
+                {
+                    throw new Exception("");
+                }
+                dicGroupExps.Add(groupItem.Key, totalExp);
+            }
+            return null;
+        }
 
     }
 

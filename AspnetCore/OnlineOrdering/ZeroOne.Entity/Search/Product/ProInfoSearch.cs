@@ -23,5 +23,8 @@ namespace ZeroOne.Entity
         /// </summary>
         public Guid? CategoryId { get; set; }
 
+        [DbOperation()]
+        public string CategoryName { get; set; }
+
     }
 }
