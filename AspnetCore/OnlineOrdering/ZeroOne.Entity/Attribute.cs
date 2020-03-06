@@ -97,6 +97,8 @@ namespace ZeroOne.Entity
 
         public int? ParentGroupKey { get; set; }
 
+        public ELogicalOperator ParentLogicalOperator { get; set; }
+
         public PropertyInfo Prop { get; set; }
 
         public object Value { get; set; }
@@ -105,18 +107,21 @@ namespace ZeroOne.Entity
         {
             this.CompareOperator = ECompareOperator.Equal;
             this.LogicalOperator = ELogicalOperator.And;
+            this.ParentLogicalOperator = ELogicalOperator.And;
         }
 
         public DbOperationAttribute(ECompareOperator compareOperator)
         {
             this.CompareOperator = compareOperator;
             this.LogicalOperator = ELogicalOperator.And;
+            this.ParentLogicalOperator = ELogicalOperator.And;
         }
 
         public DbOperationAttribute(ECompareOperator compareOperator, ELogicalOperator logicalOperator)
         {
             this.CompareOperator = compareOperator;
             this.LogicalOperator = logicalOperator;
+            this.ParentLogicalOperator = ELogicalOperator.And;
         }
 
 
@@ -130,6 +135,7 @@ namespace ZeroOne.Entity
             this.PropName = propName;
             this.GroupKey = groupKey;
             this.ParentGroupKey = parentGroupKey;
+            this.ParentLogicalOperator = ELogicalOperator.And;
         }
     }
 }

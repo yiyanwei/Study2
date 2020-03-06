@@ -854,6 +854,26 @@ namespace ZeroOne.Repository
             Dictionary<int?, Expression> dicGroupExps = new Dictionary<int?, Expression>();
             foreach (var groupItem in groups)
             {
+                int? parentGroupKey = null;
+                var parentGroupKeys = groupItem.Select(t => t.ParentGroupKey).Distinct().ToList();
+                if (parentGroupKeys.Count > 1)
+                {
+                    parentGroupKey = parentGroupKeys.First(t => t != null);
+                }
+                else
+                {
+                    parentGroupKey = parentGroupKeys[0];
+                }
+
+                //默认And
+                ELogicalOperator parentLogicalOperator = ELogicalOperator.And;
+                var parentLogicalOperators = groupItem.Select(t => t.ParentLogicalOperator).Distinct().ToList();
+                //存在取第一个
+                if (parentLogicalOperators.Count > 0)
+                {
+                    parentLogicalOperator = parentLogicalOperators[0];
+                }
+
                 Expression totalExp = null;
                 int count = groupItem.Count();
                 if (count > 0)
