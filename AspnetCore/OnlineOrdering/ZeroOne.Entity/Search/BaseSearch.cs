@@ -11,6 +11,29 @@ namespace ZeroOne.Entity
            
     }
 
+    public interface IPageSearch
+    {
+        public int PageIndex { get; set; }
+
+        public int PageSize { get; set; }
+    }
+
+    /// <summary>
+    /// 分页基础查询对象
+    /// </summary>
+    public class BasePageSearch : BaseSearch, IPageSearch
+    {
+        /// <summary>
+        /// 页索引
+        /// </summary>
+        public int PageIndex { get; set; }
+        /// <summary>
+        /// 页大小
+        /// </summary>
+        public int PageSize { get; set; }
+    }
+
+
     /// <summary>
     /// 基本数据查询
     /// </summary>

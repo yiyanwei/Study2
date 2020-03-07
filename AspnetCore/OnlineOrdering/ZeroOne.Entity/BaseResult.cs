@@ -22,6 +22,11 @@ namespace ZeroOne.Entity
 
     }
 
+    public class BaseSearchResult<TResult>
+    {
+        public IList<TResult> Items { get; set; }
+    }
+
     public class BaseResult<TPrimaryKey> : Result, IBaseResult<TPrimaryKey>
     {
         public TPrimaryKey Id { get; set; }

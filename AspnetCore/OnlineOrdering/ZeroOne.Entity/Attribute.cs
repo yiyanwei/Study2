@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq.Expressions;
 using System.Reflection;
 
 namespace ZeroOne.Entity
@@ -33,6 +34,10 @@ namespace ZeroOne.Entity
         /// </summary>
         public string PropName { get; set; }
         /// <summary>
+        /// 当前类型属性
+        /// </summary>
+        public PropertyInfo Property { get; set; }
+        /// <summary>
         /// 算术比较运算符
         /// </summary>
         public ECompareOperator CompareOperator { get; set; }
@@ -41,22 +46,47 @@ namespace ZeroOne.Entity
         /// </summary>
         public Type DestEntityType { get; set; }
         /// <summary>
-        /// 目标关联字段
+        /// 目标关联字段名称
         /// </summary>
         public string DestRelPropName { get; set; }
+        /// <summary>
+        /// 目标类型属性
+        /// </summary>
+        public PropertyInfo DestProperty { get; set; }
         /// <summary>
         /// 逻辑运算符
         /// </summary>
         public ELogicalOperator LogicalOperator { get; set; }
 
+        /// <summary>
+        /// 如果不是两个关联表比较，与值比较
+        /// </summary>
+        public object PropValue { get; set; }
+        /// <summary>
+        /// 如果不是两个关联表比较，目标值比较
+        /// </summary>
+        public object DestPropValue { get; set; }
+
         public JoinTableRelationAttribute(string propName, Type destEntityType, string destRelPropName,
-            ECompareOperator compareOperator = ECompareOperator.Equal, ELogicalOperator logicalOperator = ELogicalOperator.None)
+            ECompareOperator compareOperator = ECompareOperator.Equal, ELogicalOperator logicalOperator = ELogicalOperator.None,object propVal = null,object destPropVal = null)
         {
             this.PropName = propName;
             this.DestEntityType = destEntityType;
             this.DestRelPropName = destRelPropName;
             this.CompareOperator = compareOperator;
             this.LogicalOperator = logicalOperator;
+            this.PropValue = propVal;
+            this.DestPropValue = destPropVal;
+        }
+    }
+
+    public class EntityPropNameAttribute:Attribute
+    {
+
+        public string PropName { get; set; }
+        public EntityPropNameAttribute(string propName)
+        {
+            this.PropName = propName;
         }
     }
 
@@ -77,6 +107,25 @@ namespace ZeroOne.Entity
             this.EntityType = entityType;
             this.JoinType = joinType;
             this.DestPropName = destPropName;
+        }
+    }
+
+    public class DbOperationGroupExpression
+    {
+        public int? GroupKey { get; set; }
+
+        public ELogicalOperator ParentLogicalOperator { get; set; }
+
+        public int? ParentGroupKey { get; set; }
+
+        public Expression TotalExpression { get; set; }
+
+        public DbOperationGroupExpression(int? groupKey, ELogicalOperator parentLogicalOper, int? parentGroupKey, Expression totalExp)
+        {
+            this.GroupKey = groupKey;
+            this.ParentLogicalOperator = parentLogicalOper;
+            this.ParentGroupKey = parentGroupKey;
+            this.TotalExpression = totalExp;
         }
     }
 

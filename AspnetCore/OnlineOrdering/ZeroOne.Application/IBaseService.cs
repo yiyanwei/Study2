@@ -59,5 +59,29 @@ namespace ZeroOne.Application
         /// <param name="search"></param>
         /// <returns></returns>
         Task<IList<TEntity>> GetEntitiesAsync(TSearch search);
+
+        /// <summary>
+        /// 获取最终结果
+        /// </summary>
+        /// <typeparam name="TResult">结果类型</typeparam>
+        /// <typeparam name="TSearchResult">查询结果类型</typeparam>
+        /// <param name="search">查询对象</param>
+        /// <returns></returns>
+        Task<TSearchResult> SearchResultAsync<TResult, TSearchResult>(TSearch search)
+              where TResult : IResult, new()
+            where TSearchResult : BaseSearchResult<TResult>, new();
+
+        /// <summary>
+        /// 获取最终分页结果
+        /// </summary>
+        /// <typeparam name="TPageSearch">分页查询类型参数</typeparam>
+        /// <typeparam name="TResult">集合里的成员对象类型</typeparam>
+        /// <typeparam name="TPageSearchResult">包括总页数以及分页的结果对象集合</typeparam>
+        /// <param name="pageSearch">查询对象</param>
+        /// <returns></returns>
+        Task<TPageSearchResult> SearchPageResultAsync<TPageSearch, TResult, TPageSearchResult>(TPageSearch pageSearch)
+           where TPageSearch : BaseSearch, IPageSearch
+           where TResult : IResult, new()
+           where TPageSearchResult : PageSearchResult<TResult>, new();
     }
 }

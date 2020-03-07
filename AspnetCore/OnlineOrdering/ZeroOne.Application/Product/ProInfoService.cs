@@ -18,7 +18,7 @@ namespace ZeroOne.Application
             this.ProCategoryRep = proCategoryRep;
         }
 
-        public async override Task<TResult> FormatResult<TResult>(TResult result)
+        public override TResult FormatResult<TResult>(TResult result)
         {
             if (result != null && result is ProInfoResult)
             {
@@ -26,7 +26,7 @@ namespace ZeroOne.Application
                 //获取产品分类的信息
                 if (convertResult.CategoryId.HasValue)
                 {
-                    convertResult.ProCategory = await this.ProCategoryRep.GetEntityByIdAsync(convertResult.CategoryId.Value);
+                    convertResult.ProCategory = this.ProCategoryRep.GetEntityById(convertResult.CategoryId.Value);
                 }
             }
             return result;
@@ -37,10 +37,6 @@ namespace ZeroOne.Application
             return await this._ProInfoRep.GetProByName(name);
         }
 
-        //public async Task<ProInfo> GetProductInfo(Guid id)
-        //{
-        //    return await this._ProInfoRep.GetByIdAsync(id);
-        //}
 
         public async Task<ProInfo> AddProductInfo(ProInfo model)
         {

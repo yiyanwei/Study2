@@ -26,56 +26,17 @@ namespace ZeroOne.WebApi.Controllers
             this.Service = service;
         }
 
-  
+        /// <summary>
+        /// 获取分页数据
+        /// </summary>
+        /// <param name="pageSearch"></param>
+        /// <returns></returns>
+        [HttpGet("SearchPageList")]
+        public async Task<PageSearchResult<ProInfoSearchResult>> SearchPageList(ProInfoPageSearch pageSearch)
+        {
+            return await this.Service.SearchPageResultAsync<ProInfoPageSearch, ProInfoSearchResult, PageSearchResult<ProInfoSearchResult>>(pageSearch);
+        }
 
-        ///// <summary>
-        ///// 根据产品名称获取产品信息（模糊查询）
-        ///// </summary>
-        ///// <param name="name">产品名称</param>
-        ///// <returns></returns>
-        //[HttpGet("GetProByName/{name}")]
-        //public async Task<ProInfo> GetProByName(string name)
-        //{
-        //    return await this.Service.GetProByName(name);
-        //}
 
-        ///// <summary>
-        ///// 根据产品Id获取产品信息
-        ///// </summary>
-        ///// <param name="id">产品Id</param>
-        ///// <returns></returns>
-        //[HttpGet("GetProduct/{id}")]
-        //public async Task<ProInfo> GetProduct(string id)
-        //{
-        //    return await this.Service.GetProductInfo(Guid.Parse(id));
-        //}
-
-        ///// <summary>
-        ///// 根据查询条件获取符合的产品信息
-        ///// </summary>
-        ///// <returns></returns>
-        //[HttpGet]
-        //public async Task<IList<ProInfo>> GetProducts(ProInfoSearch search)
-        //{
-        //    return await this.Service.GetProducts();
-        //}
-
-        ///// <summary>
-        ///// 添加产品
-        ///// </summary>
-        ///// <param name="product">产品对象</param>
-        ///// <returns></returns>
-        //[HttpPost]
-        //public async Task<ActionResult<ProInfo>> AddProduct(ProInfo product)
-        //{
-        //    var proId = await this.Service.AddProductInfo(product);
-        //    return CreatedAtAction(nameof(GetProduct), new { id = proId.ToString() }, product);
-        //}
-
-        //[HttpGet("ImportData")]
-        //public void ImportData()
-        //{
-        //    this.Service.ImportData();
-        //}
     }
 }

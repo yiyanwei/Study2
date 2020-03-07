@@ -8,10 +8,9 @@ namespace ZeroOne.Repository
 {
     public class UserInfoRep : BaseRep<UserInfo, Guid, BaseUserSearch>, IUserInfoRep
     {
-        private ISqlSugarClient _client;
         public UserInfoRep(ISqlSugarClient client) : base(client)
         {
-            this._client = client;
+
         }
 
         public async Task<UserInfo> UserLogin(UserLoginRequest request)

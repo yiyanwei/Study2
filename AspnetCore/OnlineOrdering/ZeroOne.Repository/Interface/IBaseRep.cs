@@ -17,9 +17,16 @@ namespace ZeroOne.Repository
         /// <summary>
         /// 获取实体对象
         /// </summary>
-        /// <param name="id"></param>
+        /// <param name="id">对象id</param>
         /// <returns></returns>
         Task<TEntity> GetEntityByIdAsync(TPrimaryKey id);
+
+        /// <summary>
+        /// 获取实体对象
+        /// </summary>
+        /// <param name="id">对象Id</param>
+        /// <returns></returns>
+        TEntity GetEntityById(TPrimaryKey id);
 
         /// <summary>
         /// 添加对象
@@ -62,6 +69,30 @@ namespace ZeroOne.Repository
         /// <param name="search">查询的数据</param>
         /// <returns></returns>
         Task<IList<TEntity>> GetEntityListAsync(IList<BaseRepModel> items, TSearch search);
+
+        /// <summary>
+        /// 获取最终结果
+        /// </summary>
+        /// <typeparam name="TResult">结果类型</typeparam>
+        /// <typeparam name="TSearchResult">查询结果类型</typeparam>
+        /// <param name="search">查询对象</param>
+        /// <returns></returns>
+        Task<TSearchResult> SearchResultAsync<TResult, TSearchResult>(TSearch search)
+                where TResult : IResult, new()
+                where TSearchResult : BaseSearchResult<TResult>, new();
+
+        /// <summary>
+        /// 获取最终分页结果
+        /// </summary>
+        /// <typeparam name="TPageSearch">分页查询类型参数</typeparam>
+        /// <typeparam name="TResult">集合里的成员对象类型</typeparam>
+        /// <typeparam name="TPageSearchResult">包括总页数以及分页的结果对象集合</typeparam>
+        /// <param name="pageSearch">查询对象</param>
+        /// <returns></returns>
+        Task<TPageSearchResult> SearchPageResultAsync<TPageSearch, TResult, TPageSearchResult>(TPageSearch pageSearch)
+            where TPageSearch : BaseSearch, IPageSearch
+            where TResult : IResult, new()
+            where TPageSearchResult : PageSearchResult<TResult>, new();
     }
 
     //public interface IBaseRep<TEntity, TPrimaryKey, TSearch,TResult> : IBaseRep<TEntity, TPrimaryKey, TSearch>

@@ -27,4 +27,10 @@ namespace ZeroOne.Entity
         public string CategoryName { get; set; }
 
     }
+
+    public class ProInfoPageSearch : ProInfoSearch, IPageSearch
+    {
+        public int PageIndex { get;set; }
+        public int PageSize { get;set; }
+    }
 }
