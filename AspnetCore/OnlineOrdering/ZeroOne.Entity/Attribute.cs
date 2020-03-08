@@ -66,9 +66,14 @@ namespace ZeroOne.Entity
         /// 如果不是两个关联表比较，目标值比较
         /// </summary>
         public object DestPropValue { get; set; }
+        /// <summary>
+        /// 主表的属性
+        /// </summary>
+        public string MainTableAttrPropName { get; set; }
 
         public JoinTableRelationAttribute(string propName, Type destEntityType, string destRelPropName,
-            ECompareOperator compareOperator = ECompareOperator.Equal, ELogicalOperator logicalOperator = ELogicalOperator.None,object propVal = null,object destPropVal = null)
+            ECompareOperator compareOperator = ECompareOperator.Equal, ELogicalOperator logicalOperator = ELogicalOperator.And, 
+            object propVal = null, object destPropVal = null,string mainTableAttrPropName = null)
         {
             this.PropName = propName;
             this.DestEntityType = destEntityType;
@@ -77,10 +82,11 @@ namespace ZeroOne.Entity
             this.LogicalOperator = logicalOperator;
             this.PropValue = propVal;
             this.DestPropValue = destPropVal;
+            this.MainTableAttrPropName = mainTableAttrPropName;
         }
     }
 
-    public class EntityPropNameAttribute:Attribute
+    public class EntityPropNameAttribute : Attribute
     {
 
         public string PropName { get; set; }
@@ -101,12 +107,15 @@ namespace ZeroOne.Entity
 
         public string DestPropName { get; set; }
 
+        public bool IsTogetherSampleType { get; set; }
 
-        public MainTableRelationAttribute(Type entityType, EJoinType joinType = EJoinType.InnerJoin, string destPropName = null)
+
+        public MainTableRelationAttribute(Type entityType, EJoinType joinType = EJoinType.InnerJoin, string destPropName = null, bool isTogetherSampleType = true)
         {
             this.EntityType = entityType;
             this.JoinType = joinType;
             this.DestPropName = destPropName;
+            this.IsTogetherSampleType = isTogetherSampleType;
         }
     }
 
@@ -134,6 +143,8 @@ namespace ZeroOne.Entity
     /// </summary>
     public class DbOperationAttribute : Attribute
     {
+        public string JoinPropName { get; set; }
+
         public ECompareOperator CompareOperator { get; set; }
 
         public ELogicalOperator LogicalOperator { get; set; }
@@ -175,9 +186,10 @@ namespace ZeroOne.Entity
 
 
         public DbOperationAttribute(Type entityType, string propName = null,
-             int? groupKey = null, int? parentGroupKey = null, ECompareOperator compareOperator = ECompareOperator.Equal,
+             int? groupKey = null, int? parentGroupKey = null, string joinPropName = null, ECompareOperator compareOperator = ECompareOperator.Equal,
              ELogicalOperator logicalOperator = ELogicalOperator.And, ELogicalOperator parentLogicalOperator = ELogicalOperator.And)
         {
+            this.JoinPropName = joinPropName;
             this.CompareOperator = compareOperator;
             this.LogicalOperator = logicalOperator;
             this.EntityType = entityType;

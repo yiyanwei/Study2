@@ -571,6 +571,67 @@ namespace ZeroOne.Repository
         }
 
 
+        /// <summary>
+        /// 获取最终结果
+        /// </summary>
+        /// <typeparam name="TResult">结果类型</typeparam>
+        /// <typeparam name="TSearchResult">查询结果类型</typeparam>
+        /// <param name="search">查询对象</param>
+        /// <returns></returns>
+        public async Task<TSearchResult> SearchResultAsync<TResult, TSearchResult>(TSearch search)
+            where TResult : IResult, new()
+            where TSearchResult : BaseSearchResult<TResult>, new()
+        {
+            //获取最终查询对象
+            var selectMethodResult = this.GetSelectResult<TResult, TSearchResult>(search);
+            var listMethod = selectMethodResult.GetType().GetMethod("ToListAsync");
+            //获取最终结果对象
+            object resultList = listMethod.Invoke(selectMethodResult, null);
+
+            //返回分页查询对象
+            TSearchResult searchResult = new TSearchResult();
+            if (resultList is Task<List<TResult>>)
+            {
+                var taskResult = resultList as Task<List<TResult>>;
+                searchResult.Items = await taskResult;
+            }
+            return searchResult;
+        }
+
+        /// <summary>
+        /// 获取最终分页结果
+        /// </summary>
+        /// <typeparam name="TPageSearch">分页查询类型参数</typeparam>
+        /// <typeparam name="TResult">集合里的成员对象类型</typeparam>
+        /// <typeparam name="TPageSearchResult">包括总页数以及分页的结果对象集合</typeparam>
+        /// <param name="pageSearch">查询对象</param>
+        /// <returns></returns>
+        public async Task<TPageSearchResult> SearchPageResultAsync<TPageSearch, TResult, TPageSearchResult>(TPageSearch pageSearch)
+            where TPageSearch : BaseSearch, IPageSearch
+            where TResult : IResult, new()
+            where TPageSearchResult : PageSearchResult<TResult>, new()
+        {
+            //获取最终查询对象
+            var selectMethodResult = this.GetSelectResult<TResult, TPageSearchResult>(pageSearch);
+
+            object resultList = null;
+            int totalCount = 0;
+            var pagetListMethod = selectMethodResult.GetType().GetMethod("ToPageListAsync", new Type[] { typeof(int), typeof(int), typeof(int) });
+            //获取最终结果对象
+            resultList = pagetListMethod.Invoke(selectMethodResult, new object[] { pageSearch.PageIndex, pageSearch.PageSize, totalCount });
+
+            //返回分页查询对象
+            TPageSearchResult pageSearchResult = new TPageSearchResult();
+            if (resultList is Task<List<TResult>>)
+            {
+                var taskResult = resultList as Task<List<TResult>>;
+                pageSearchResult.Items = await taskResult;
+                pageSearchResult.TotalCount = totalCount;
+            }
+            return pageSearchResult;
+
+        }
+
         private object GetSelectResult<TResult, TSearchResult>(BaseSearch search)
             where TResult : IResult, new()
             where TSearchResult : BaseSearchResult<TResult>
@@ -587,39 +648,70 @@ namespace ZeroOne.Repository
             dicTypeProps.Add(entityType, myProps);
 
             //配置关联表属性
-            var joinTableProps = totalProps.Where(t => t.GetCustomAttribute<MainTableRelationAttribute>() != null).OrderBy(t => t.GetCustomAttribute<MainTableRelationAttribute>().JoinType);
-
+            var mainTableProps = totalProps.Where(t => t.GetCustomAttribute<MainTableRelationAttribute>() != null).OrderBy(t => t.GetCustomAttribute<MainTableRelationAttribute>().JoinType);
+            //
             //Tuple<PropertyInfo, PropertyInfo>  Item1:TSearchResult的当前TEntity的属性，Item2：目标类型的属性
             //Dictionary<Tuple<Type,Type>, Tuple<EJoinType, IList<Tuple<PropertyInfo, PropertyInfo>>>> dicJoinTables = new Dictionary<Tuple<Type, Type>, Tuple<EJoinType, IList<Tuple<PropertyInfo, PropertyInfo>>>>();
 
             //Dictionary<Type, ParameterExpression> dicTypeParams = new Dictionary<Type, ParameterExpression>();
-            IList<Type> types = new List<Type>();
+            //IList<Type> types = new List<Type>();
             //添加默认的当前Entity
-            types.Add(entityType);
+            //types.Add(entityType);
 
-            Dictionary<Type, Tuple<EJoinType, IList<KeyValuePair<PropertyInfo, PropertyInfo>>, IList<JoinTableRelationAttribute>>> dicTypePropMappings =
-                new Dictionary<Type, Tuple<EJoinType, IList<KeyValuePair<PropertyInfo, PropertyInfo>>, IList<JoinTableRelationAttribute>>>();
-            foreach (var prop in joinTableProps)
+            //mainTableProps.Where(t => t.GetCustomAttribute<MainTableRelationAttribute>().IsTogetherSampleType == true).Select(t=>t.GetCustomAttribute<MainTableRelationAttribute>())
+            IList<Tuple<int, Type, bool>> orderEntityTypeAndIsSamples = new List<Tuple<int, Type, bool>>();
+
+
+            Dictionary<KeyValuePair<int, Type>, Tuple<EJoinType, IList<KeyValuePair<PropertyInfo, PropertyInfo>>, IList<JoinTableRelationAttribute>>> dicTypePropMappings =
+                new Dictionary<KeyValuePair<int, Type>, Tuple<EJoinType, IList<KeyValuePair<PropertyInfo, PropertyInfo>>, IList<JoinTableRelationAttribute>>>();
+            int i = 2;
+            int start = i;
+
+            //foreach (var prop in mainTableProps)
+            //{
+            //    var mainTableRelation = prop.GetCustomAttribute<MainTableRelationAttribute>();
+            //}
+
+            //用来属性查找Join表
+            Dictionary<string, int> dicMainTablePropMapOrder = new Dictionary<string, int>();
+
+            foreach (var prop in mainTableProps)
             {
 
                 var mainTableRelation = prop.GetCustomAttribute<MainTableRelationAttribute>();
-                if (!types.Contains(mainTableRelation.EntityType))
+                if (mainTableRelation.IsTogetherSampleType == false || orderEntityTypeAndIsSamples.Where(t => t.Item2 == mainTableRelation.EntityType && t.Item3 == true).Count() <= 0)
                 {
-                    types.Add(mainTableRelation.EntityType);
-                }
-                if (!dicTypePropMappings.Keys.Contains(mainTableRelation.EntityType))
-                {
-                    dicTypePropMappings.Add(mainTableRelation.EntityType, new Tuple<EJoinType, IList<KeyValuePair<PropertyInfo, PropertyInfo>>, IList<JoinTableRelationAttribute>>(
-                    mainTableRelation.JoinType, new List<KeyValuePair<PropertyInfo, PropertyInfo>>(), new List<JoinTableRelationAttribute>()));
+                    //types.Add(mainTableRelation.EntityType);
+                    orderEntityTypeAndIsSamples.Add(new Tuple<int, Type, bool>(i, mainTableRelation.EntityType, mainTableRelation.IsTogetherSampleType));
                 }
 
-                IList<KeyValuePair<PropertyInfo, PropertyInfo>> destPropList = dicTypePropMappings[mainTableRelation.EntityType].Item2;
-                IList<JoinTableRelationAttribute> joinTableRelList = dicTypePropMappings[mainTableRelation.EntityType].Item3;
+                IList<KeyValuePair<PropertyInfo, PropertyInfo>> destPropList = null;
+                IList<JoinTableRelationAttribute> joinTableRelList = null;
+                if (mainTableRelation.IsTogetherSampleType == false || orderEntityTypeAndIsSamples.Where(t => t.Item2 == mainTableRelation.EntityType && t.Item3 == true).Count() <= 0)
+                {
+                    destPropList = new List<KeyValuePair<PropertyInfo, PropertyInfo>>();
+                    joinTableRelList = new List<JoinTableRelationAttribute>();
+                    dicTypePropMappings.Add(new KeyValuePair<int, Type>(i, mainTableRelation.EntityType), new Tuple<EJoinType, IList<KeyValuePair<PropertyInfo, PropertyInfo>>, IList<JoinTableRelationAttribute>>(
+                    mainTableRelation.JoinType, destPropList, joinTableRelList));
+                    //用来属性查找Join表
+                    dicMainTablePropMapOrder.Add(prop.Name, i);
+                }
+                else
+                {
+                    var first = orderEntityTypeAndIsSamples.First(t => t.Item3 == true && t.Item2 == mainTableRelation.EntityType);
+                    var itemKey = dicTypePropMappings.Keys.First(t => t.Key == first.Item1 && t.Value == first.Item2);
+                    destPropList = dicTypePropMappings[itemKey].Item2;
+                    joinTableRelList = dicTypePropMappings[itemKey].Item3;
+                    //用来属性查找Join表
+                    dicMainTablePropMapOrder.Add(prop.Name, first.Item1);
+                }
+
                 string destPropName = prop.Name;
                 if (!string.IsNullOrEmpty(mainTableRelation.DestPropName))
                 {
                     destPropName = mainTableRelation.DestPropName;
                 }
+
                 //var currentProp = prop;
                 var destProp = mainTableRelation.EntityType.GetProperty(destPropName, BindingFlags.Instance | BindingFlags.Public);
                 if (!(destPropList.Where(t => t.Value == destProp)?.Count() > 0))
@@ -632,15 +724,15 @@ namespace ZeroOne.Repository
                 var joinTableRels = prop.GetCustomAttributes<JoinTableRelationAttribute>();
                 foreach (var item in joinTableRels)
                 {
-                    if (!types.Contains(item.DestEntityType))
-                    {
-                        types.Add(item.DestEntityType);
-                    }
+                    //if (!types.Contains(item.DestEntityType))
+                    //{
+                    //    types.Add(item.DestEntityType);
+                    //}
 
                     var currProp = mainTableRelation.EntityType.GetProperty(item.PropName, BindingFlags.Instance | BindingFlags.Public);
                     var destRelProp = item.DestEntityType.GetProperty(item.DestRelPropName, BindingFlags.Instance | BindingFlags.Public);
-                    //必须要保证有一个类型的属性存在
-                    if (currProp != null || destRelProp != null)
+                    //两个表的属性存在
+                    if (currProp != null && destRelProp != null && item.DestEntityType != null)
                     {
                         if (!(joinTableRelList.Where(t => t.Property == currProp && t.DestEntityType == item.DestEntityType && t.DestProperty == destRelProp)?.Count() > 0))
                         {
@@ -648,23 +740,27 @@ namespace ZeroOne.Repository
                             item.DestProperty = destProp;
                             joinTableRelList.Add(item);
                         }
-                        else if (currProp != null && item.PropValue != null)
-                        {
-                            item.Property = currProp;
-                            joinTableRelList.Add(item);
-                        }
-                        else if (destRelProp != null && item.DestPropValue != null)
-                        {
-                            item.DestProperty = destProp;
-                            joinTableRelList.Add(item);
-                        }
                     }
-
+                    else if (currProp != null && item.PropValue != null)
+                    {
+                        item.Property = currProp;
+                        joinTableRelList.Add(item);
+                    }
+                    else if (destRelProp != null && item.DestPropValue != null && item.DestEntityType != null)
+                    {
+                        item.DestProperty = destProp;
+                        joinTableRelList.Add(item);
+                    }
                 }
+                i++;
             }
 
+            //添加第一个当前TEntity
+            orderEntityTypeAndIsSamples.Insert(0, new Tuple<int, Type, bool>(start - 1, entityType, false));
+
             //生成类型对象参数表达式
-            var paramExps = types.Select((t, i) => new KeyValuePair<Type, ParameterExpression>(t, Expression.Parameter(t, $"t{i + 1}"))).ToArray();
+            //var paramExps = types.Select((t, i) => new KeyValuePair<Type, ParameterExpression>(t, Expression.Parameter(t, $"t{i + 1}"))).ToArray();
+            var paramExps = orderEntityTypeAndIsSamples.Select(t => new KeyValuePair<int, ParameterExpression>(t.Item1, Expression.Parameter(t.Item2, $"t{t.Item1}"))).ToArray();
             //结果类型表达式参数
             var rExpParam = Expression.Parameter(resultType, "r");
 
@@ -711,17 +807,37 @@ namespace ZeroOne.Repository
                     //两个属性都不为空
                     if (joinItem.Property != null && joinItem.DestProperty != null)
                     {
-                        left = Expression.Property(paramExps.FirstOrDefault(t => t.Key == item.Key).Value, joinItem.Property);
-                        right = Expression.Property(paramExps.FirstOrDefault(t => t.Key == joinItem.DestEntityType).Value, joinItem.DestProperty);
+                        left = Expression.Property(paramExps.FirstOrDefault(t => t.Key == item.Key.Key).Value, joinItem.Property);
+                        if (!string.IsNullOrEmpty(joinItem.MainTableAttrPropName) && dicMainTablePropMapOrder.Keys.Contains(joinItem.MainTableAttrPropName))
+                        {
+                            var first = paramExps.First(t => t.Key == dicMainTablePropMapOrder[joinItem.MainTableAttrPropName]);
+                            right = Expression.Property(first.Value, joinItem.DestProperty);
+                        }
+                        else
+                        {
+                            var first = orderEntityTypeAndIsSamples.First(t => t.Item2 == joinItem.DestEntityType);
+                            right = Expression.Property(paramExps.FirstOrDefault(t => t.Key == first.Item1).Value, joinItem.DestProperty);
+                        }
+                        //right = Expression.Property(paramExps.FirstOrDefault(t => t.Key == joinItem.DestEntityType).Value, joinItem.DestProperty);
                     }
                     else if (joinItem.Property != null && joinItem.PropValue != null)
                     {
-                        left = Expression.Property(paramExps.FirstOrDefault(t => t.Key == item.Key).Value, joinItem.Property);
+                        left = Expression.Property(paramExps.FirstOrDefault(t => t.Key == item.Key.Key).Value, joinItem.Property);
                         right = Expression.Constant(joinItem.PropValue);
                     }
                     else if (joinItem.DestProperty != null && joinItem.DestPropValue != null)
                     {
-                        left = Expression.Property(paramExps.FirstOrDefault(t => t.Key == joinItem.DestEntityType).Value, joinItem.DestProperty);
+                        if (!string.IsNullOrEmpty(joinItem.MainTableAttrPropName) && dicMainTablePropMapOrder.Keys.Contains(joinItem.MainTableAttrPropName))
+                        {
+                            var first = paramExps.First(t => t.Key == dicMainTablePropMapOrder[joinItem.MainTableAttrPropName]);
+                            left = Expression.Property(first.Value, joinItem.DestProperty);
+                        }
+                        else
+                        {
+                            var first = orderEntityTypeAndIsSamples.First(t => t.Item2 == joinItem.DestEntityType);
+                            left = Expression.Property(paramExps.FirstOrDefault(t => t.Key == first.Item1).Value, joinItem.DestProperty);
+                        }
+                        //left = Expression.Property(paramExps.FirstOrDefault(t => t.Key == joinItem.DestEntityType).Value, joinItem.DestProperty);
                         right = Expression.Constant(joinItem.PropValue);
                     }
                     else
@@ -805,13 +921,14 @@ namespace ZeroOne.Repository
                 //处理查询结果属性绑定
                 foreach (var keyValue in item.Value.Item2)
                 {
-                    bindingExp = Expression.Property(paramExps.First(t => t.Key == item.Key).Value, keyValue.Value);
+                    bindingExp = Expression.Property(paramExps.First(t => t.Key == item.Key.Key).Value, keyValue.Value);
                     memberBindings.Add(Expression.Bind(keyValue.Key, bindingExp));
                 }
             }
 
             //设置了当前EntityPropNameAttribute的属性 或者啥特性都没有设置
             var entityProps = totalProps.Where(t => t.GetCustomAttribute<MainTableRelationAttribute>() == null);
+            var firstType = orderEntityTypeAndIsSamples.First(t => t.Item2 == entityType);
             foreach (var prop in entityProps)
             {
                 var attr = prop.GetCustomAttribute<EntityPropNameAttribute>();
@@ -821,7 +938,7 @@ namespace ZeroOne.Repository
                     propName = attr.PropName;
                 }
                 var entityProp = entityType.GetProperty(propName, BindingFlags.Public | BindingFlags.Instance);
-                bindingExp = Expression.Property(paramExps.First(t => t.Key == entityType).Value, entityProp);
+                bindingExp = Expression.Property(paramExps.First(t => t.Key == firstType.Item1).Value, entityProp);
                 memberBindings.Add(Expression.Bind(prop, bindingExp));
             }
 
@@ -832,7 +949,11 @@ namespace ZeroOne.Repository
             //最终的Queryable的参数
             Expression joinExp = Expression.Lambda(Expression.New(constructor, joinList.Select(t => t.Value)), paramExps.Select(t => t.Value));
             //查询方法
-            var queryableMethod = this._client.GetType().GetMethod(nameof(this._client.Queryable)).MakeGenericMethod(types.ToArray());
+
+            //var typeList = dicTypePropMappings.Select(t => t.Key.Value).ToList();
+            //typeList.Insert(0,entityType);
+
+            var queryableMethod = this._client.GetType().GetMethod(nameof(this._client.Queryable)).MakeGenericMethod(orderEntityTypeAndIsSamples.Select(t => t.Item2).ToArray());
             //执行返回查询对象
             var queryObject = queryableMethod.Invoke(this._client, new object[] { joinExp });
             //判断查询对象是否为空
@@ -851,11 +972,11 @@ namespace ZeroOne.Repository
                         attribute = prop.GetCustomAttribute<DbOperationAttribute>();
                         if (attribute == null)
                         {
-                            attribute = new DbOperationAttribute(typeof(TEntity), prop.Name);
+                            attribute = new DbOperationAttribute(entityType, prop.Name);
                         }
                         else
                         {
-                            if (attribute.EntityType == null) { attribute.EntityType = typeof(TEntity); }
+                            if (attribute.EntityType == null) { attribute.EntityType = entityType; }
                             if (string.IsNullOrEmpty(attribute.PropName)) { attribute.PropName = prop.Name; }
                         }
                         attribute.Prop = attribute.EntityType.GetProperty(attribute.PropName, BindingFlags.Public | BindingFlags.Instance);
@@ -863,7 +984,7 @@ namespace ZeroOne.Repository
                         dbOperations.Add(attribute);
                     }
                 }
-                var whereExp = GetWhereExpression(dbOperations, paramExps);
+                var whereExp = GetWhereExpression(dbOperations, paramExps, orderEntityTypeAndIsSamples.Select(t => new KeyValuePair<int, Type>(t.Item1, t.Item2)).ToList(), dicMainTablePropMapOrder);
                 if (whereExp != null)
                 {
                     var whereMethod = queryObject.GetType().GetMethod("Where", new Type[] { whereExp.GetType() });
@@ -896,100 +1017,10 @@ namespace ZeroOne.Repository
             return queryResult;
         }
 
-        /// <summary>
-        /// 获取最终结果
-        /// </summary>
-        /// <typeparam name="TResult">结果类型</typeparam>
-        /// <typeparam name="TSearchResult">查询结果类型</typeparam>
-        /// <param name="search">查询对象</param>
-        /// <returns></returns>
-        public async Task<TSearchResult> SearchResultAsync<TResult, TSearchResult>(TSearch search)
-            where TResult : IResult, new()
-            where TSearchResult : BaseSearchResult<TResult>, new()
-        {
-            //获取最终查询对象
-            var selectMethodResult = this.GetSelectResult<TResult, TSearchResult>(search);
-            var listMethod = selectMethodResult.GetType().GetMethod("ToListAsync");
-            //获取最终结果对象
-            object resultList = listMethod.Invoke(selectMethodResult, null);
-
-            //返回分页查询对象
-            TSearchResult searchResult = new TSearchResult();
-            if (resultList is Task<List<TResult>>)
-            {
-                var taskResult = resultList as Task<List<TResult>>;
-                searchResult.Items = await taskResult;
-            }
-            return searchResult;
-        }
-
-        /// <summary>
-        /// 获取最终分页结果
-        /// </summary>
-        /// <typeparam name="TPageSearch">分页查询类型参数</typeparam>
-        /// <typeparam name="TResult">集合里的成员对象类型</typeparam>
-        /// <typeparam name="TPageSearchResult">包括总页数以及分页的结果对象集合</typeparam>
-        /// <param name="pageSearch">查询对象</param>
-        /// <returns></returns>
-        public async Task<TPageSearchResult> SearchPageResultAsync<TPageSearch, TResult, TPageSearchResult>(TPageSearch pageSearch)
-            where TPageSearch : BaseSearch, IPageSearch
-            where TResult : IResult, new()
-            where TPageSearchResult : PageSearchResult<TResult>, new()
-        {
-            //获取最终查询对象
-            var selectMethodResult = this.GetSelectResult<TResult, TPageSearchResult>(pageSearch);
-
-            object resultList = null;
-            int totalCount = 0;
-            var pagetListMethod = selectMethodResult.GetType().GetMethod("ToPageListAsync", new Type[] { typeof(int), typeof(int), typeof(int) });
-            //获取最终结果对象
-            resultList = pagetListMethod.Invoke(selectMethodResult, new object[] { pageSearch.PageIndex, pageSearch.PageSize, totalCount });
-
-            //返回分页查询对象
-            TPageSearchResult pageSearchResult = new TPageSearchResult();
-            if (resultList is Task<List<TResult>>)
-            {
-                var taskResult = resultList as Task<List<TResult>>;
-                pageSearchResult.Items = await taskResult;
-                pageSearchResult.TotalCount = totalCount;
-            }
-            return pageSearchResult;
 
 
-            //if (selectLambda != null)
-            //{
-            //    if (whereObject != null)
-            //    {
-            //        var selectMethod = whereObject.GetType().GetMethod("Select", new Type[] { selectLambda.GetType() });
-            //        if (selectMethod != null)
-            //        {
-            //            var result = selectMethod.Invoke(whereObject, new object[] { selectLambda });
-            //            var pagetListMethod = result.GetType().GetMethod("ToPageList", new Type[] { typeof(int), typeof(int), typeof(int) });
-            //            resultList = pagetListMethod.Invoke(result, new object[] { pageSearch.PageIndex, pageSearch.PageSize, totalCount });
-            //        }
-            //    }
-            //    else
-            //    {
-            //        var selectMethod = queryObject.GetType().GetMethod("Select", new Type[] { selectLambda.GetType() });
-            //        if (selectMethod != null)
-            //        {
-            //            var result = selectMethod.Invoke(queryObject, new object[] { selectLambda });
-            //            var pagetListMethod = result.GetType().GetMethod("ToPageListAsync", new Type[] { typeof(int), typeof(int), typeof(int) });
-            //            resultList = pagetListMethod.Invoke(result, new object[] { pageSearch.PageIndex, pageSearch.PageSize, totalCount });
-            //        }
-            //    }
-            //}
-            //最后执行select方法
-            //int totalCount = 0;
-            //this._client.Queryable<ProInfo, ProCategory, UserInfo>((t1, t2, t3) =>
-            //new JoinQueryInfos(JoinType.Inner, t1.CategoryId == t2.Id, JoinType.Left, t2.CreatorUserId == t3.Id.ToString()))
-            //    .Where((t1, t2, t3) => t1.IsDeleted == false && t2.IsDeleted == false).Select<TResult>((t1, t2, t3) => new TResult() { }).ToListAsync()
 
-            //return null;
-        }
-
-
-        private Expression GetWhereExpression(IList<DbOperationAttribute> operAttrs, IList<KeyValuePair<Type, ParameterExpression>> keyValues)
+        private Expression GetWhereExpression(IList<DbOperationAttribute> operAttrs, IList<KeyValuePair<int, ParameterExpression>> keyValues, IList<KeyValuePair<int, Type>> numTypes, Dictionary<string, int> dicPropNums)
         {
             var groups = operAttrs.GroupBy(t => t.GroupKey);
             //Dictionary<int?, KeyValuePair<int?, Expression>> dicGroupExps = new Dictionary<int?, KeyValuePair<int?, Expression>>();
@@ -1026,7 +1057,16 @@ namespace ZeroOne.Repository
                         Expression compareExp = null;
                         var current = items[i];
                         //比较运算
-                        Expression left = Expression.Property(keyValues.First(t => t.Key == current.EntityType).Value, current.Prop);
+                        Expression left = null;
+                        if (!string.IsNullOrEmpty(current.JoinPropName) && dicPropNums.Keys.Contains(current.JoinPropName))
+                        {
+                            left = Expression.Property(keyValues.First(t => t.Key == dicPropNums[current.JoinPropName]).Value, current.Prop);
+                        }
+                        else
+                        {
+                            var first = numTypes.First(t => t.Value == current.EntityType);
+                            left = Expression.Property(keyValues.First(t => t.Key == first.Key).Value, current.Prop);
+                        }
                         Expression right = Expression.Constant(current.Value);
                         if (current.CompareOperator == ECompareOperator.Equal)
                         {
