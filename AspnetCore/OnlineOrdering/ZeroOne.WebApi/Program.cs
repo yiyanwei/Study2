@@ -23,16 +23,16 @@ namespace ZeroOne.WebApi
         public static void Main(string[] args)
         {
 
-            var firstType = typeof(ProInfo);
-            var secondType = typeof(ProInfo);
-            if (firstType == secondType)
-            {
-                Console.WriteLine("==");
-            }
-            if (firstType.Equals(secondType))
-            {
-                Console.WriteLine("Equals");
-            }
+            //var firstType = typeof(ProInfo);
+            //var secondType = typeof(ProInfo);
+            //if (firstType == secondType)
+            //{
+            //    Console.WriteLine("==");
+            //}
+            //if (firstType.Equals(secondType))
+            //{
+            //    Console.WriteLine("Equals");
+            //}
             //LocatingPoint start = new LocatingPoint(32.1934050000, 119.4428390000);
             //LocatingPoint end = new LocatingPoint(32.1899910000, 119.4680730000);
             //Console.WriteLine(new LocatingLine().GetDistance(start, end));

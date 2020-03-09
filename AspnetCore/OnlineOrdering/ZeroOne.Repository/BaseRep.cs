@@ -613,23 +613,32 @@ namespace ZeroOne.Repository
         {
             //获取最终查询对象
             var selectMethodResult = this.GetSelectResult<TResult, TPageSearchResult>(pageSearch);
+            if (selectMethodResult == null)
+            {
+                throw new Exception("");
+            }
 
             object resultList = null;
             int totalCount = 0;
-            var pagetListMethod = selectMethodResult.GetType().GetMethod("ToPageListAsync", new Type[] { typeof(int), typeof(int), typeof(int) });
-            //获取最终结果对象
-            resultList = pagetListMethod.Invoke(selectMethodResult, new object[] { pageSearch.PageIndex, pageSearch.PageSize, totalCount });
-
-            //返回分页查询对象
-            TPageSearchResult pageSearchResult = new TPageSearchResult();
-            if (resultList is Task<List<TResult>>)
+            var pagetListMethods = selectMethodResult.GetType().GetMethods().Where(t => t.Name == "ToPageListAsync" && t.GetParameters().Count() == 3).ToList();
+            if (pagetListMethods.Count > 0)
             {
-                var taskResult = resultList as Task<List<TResult>>;
-                pageSearchResult.Items = await taskResult;
-                pageSearchResult.TotalCount = totalCount;
-            }
-            return pageSearchResult;
+                //var pagetListMethod = selectMethodResult.GetType().GetMethod("ToPageListAsync", new Type[] { typeof(int), typeof(int), typeof(int) });
+                var pagetListMethod = pagetListMethods[0];
+                //获取最终结果对象
+                resultList = pagetListMethod.Invoke(selectMethodResult, new object[] { pageSearch.PageIndex, pageSearch.PageSize, totalCount });
 
+                //返回分页查询对象
+                TPageSearchResult pageSearchResult = new TPageSearchResult();
+                if (resultList is Task<List<TResult>>)
+                {
+                    var taskResult = resultList as Task<List<TResult>>;
+                    pageSearchResult.Items = await taskResult;
+                    pageSearchResult.TotalCount = totalCount;
+                }
+                return pageSearchResult;
+            }
+            return null;
         }
 
         private object GetSelectResult<TResult, TSearchResult>(BaseSearch search)
@@ -976,6 +985,10 @@ namespace ZeroOne.Repository
                 DbOperationAttribute attribute = null;
                 foreach (var prop in searchProps)
                 {
+                    if (prop.Name == nameof(IPageSearch.PageIndex) || prop.Name == nameof(IPageSearch.PageSize))
+                    {
+                        continue;
+                    }
                     val = prop.GetValue(search);
                     if (val != null)
                     {
@@ -1027,13 +1040,24 @@ namespace ZeroOne.Repository
             {
                 if (whereObject != null)
                 {
-                    selectMethod = whereObject.GetType().GetMethod("Select", new Type[] { selectLambda.GetType() });
-                    queryResult = selectMethod.Invoke(whereObject, new object[] { selectLambda });
+                    //this._client.Queryable<ProCategory, ProCategory>((t1, t2) => t1.Id == t2.ParentId).Where((t1, t2) => t1.CategoryName == "").Select<ProCategorySearchResult>((t1, t2) =>)
+                    var selectMethods = whereObject.GetType().GetMethods().Where(t => t.Name == "Select" && t.GetParameters().Where(x => x.Name == "expression" && x.Member?.DeclaringType?.GenericTypeArguments?.Count() == orderEntityTypeAndIsSamples.Count).Count() > 0).ToList();
+                    //var b = whereObject.GetType().GetMethod("Select");
+                    if (selectMethods.Count > 0)
+                    {
+                        selectMethod = selectMethods[0].MakeGenericMethod(new[] { resultType });
+                        queryResult = selectMethod.Invoke(whereObject, new object[] { selectLambda });
+                    }
                 }
                 else
                 {
-                    selectMethod = queryObject.GetType().GetMethod("Select", new Type[] { selectLambda.GetType() });
-                    queryResult = selectMethod.Invoke(queryObject, new object[] { selectLambda });
+                    var selectMethods = queryObject.GetType().GetMethods().Where(t => t.Name == "Select" && t.GetParameters().Where(x => x.Name == "expression" && x.Member?.DeclaringType?.GenericTypeArguments?.Count() == orderEntityTypeAndIsSamples.Count).Count() > 0).ToList();
+                    //selectMethod = queryObject.GetType().GetMethod("Select", new Type[] { selectLambda.GetType() });
+                    if (selectMethods.Count > 0)
+                    {
+                        selectMethod = selectMethods[0].MakeGenericMethod(new[] { resultType });
+                        queryResult = selectMethod.Invoke(queryObject, new object[] { selectLambda });
+                    }
                 }
             }
             //return new KeyValuePair<object, MethodInfo>(whereObject != null ? whereObject : queryObject, selectMethod);
@@ -1071,18 +1095,16 @@ namespace ZeroOne.Repository
                 }
 
                 Expression totalExp = null;
-                int count = groupItem.Count();
+                //int count = groupItem.Count();
+                var items = groupItem.OrderBy(t => t.LogicalOperator).ToList();
+                //items = items.Where(t => t.PropName != nameof(IPageSearch.PageIndex) && t.PropName != nameof(IPageSearch.PageSize)).ToList();
+                int count = items.Count;
                 if (count > 0)
                 {
-                    var items = groupItem.OrderBy(t => t.LogicalOperator).ToList();
                     for (var i = 0; i < count; i++)
                     {
                         var current = items[i];
-                        if (current.PropName == nameof(IPageSearch.PageIndex) || current.PropName == nameof(IPageSearch.PageSize))
-                        {
-                            continue;
-                        }
-                        Expression compareExp = null;                        
+                        Expression compareExp = null;
                         //比较运算
                         Expression left = null;
                         if (!string.IsNullOrEmpty(current.MainTablePropName) && dicPropNums.Keys.Contains(current.MainTablePropName))

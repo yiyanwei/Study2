@@ -45,6 +45,7 @@ namespace ZeroOne.Extension.Global
                         var genenicType = objectResult.Value?.GetType();
                         if (!(genenicType == typeof(BaseResponse<>)))
                         {
+                            genenicType = (genenicType == null) ? typeof(object) : genenicType;
                             var objType = typeof(BaseResponse<>).MakeGenericType(genenicType);
                             var obj = Activator.CreateInstance(objType);
                             //数据属性
