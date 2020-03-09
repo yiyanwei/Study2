@@ -22,11 +22,11 @@ namespace ZeroOne.WebApi.Controllers
         public CustomController(IBaseService<TEntity, TPrimaryKey> service)
         {
             this.service = service;
-            var claim = User.Claims.FirstOrDefault(t => t.Type == JwtClaimTypes.Id);
-            if (claim != null)
-            {
-                UserId = claim.Value;
-            }
+            //var claim = User.Claims.FirstOrDefault(t => t.Type == JwtClaimTypes.Id);
+            //if (claim != null)
+            //{
+            //    UserId = claim.Value;
+            //}
         }
 
         /// <summary>

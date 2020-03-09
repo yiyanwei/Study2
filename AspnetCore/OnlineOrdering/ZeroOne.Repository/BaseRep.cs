@@ -636,7 +636,7 @@ namespace ZeroOne.Repository
             where TResult : IResult, new()
             where TSearchResult : BaseSearchResult<TResult>
         {
-            Dictionary<Type, IList<PropertyInfo>> dicTypeProps = new Dictionary<Type, IList<PropertyInfo>>();
+            //Dictionary<Type, IList<PropertyInfo>> dicTypeProps = new Dictionary<Type, IList<PropertyInfo>>();
             //当前对象的类型，也就是主表对象类型
             var entityType = typeof(TEntity);
             //获取所有配置了关联信息的类型对象
@@ -644,8 +644,8 @@ namespace ZeroOne.Repository
             //配置未关联属性
             var totalProps = resultType.GetProperties(BindingFlags.Public | BindingFlags.Instance);
 
-            var myProps = totalProps.Where(t => t.GetCustomAttribute<MainTableRelationAttribute>() == null).ToList();
-            dicTypeProps.Add(entityType, myProps);
+            //var myProps = totalProps.Where(t => t.GetCustomAttribute<MainTableRelationAttribute>() == null).ToList();
+            //dicTypeProps.Add(entityType, myProps);
 
             //配置关联表属性
             var mainTableProps = totalProps.Where(t => t.GetCustomAttribute<MainTableRelationAttribute>() != null).OrderBy(t => t.GetCustomAttribute<MainTableRelationAttribute>().JoinType);
@@ -724,11 +724,6 @@ namespace ZeroOne.Repository
                 var joinTableRels = prop.GetCustomAttributes<JoinTableRelationAttribute>();
                 foreach (var item in joinTableRels)
                 {
-                    //if (!types.Contains(item.DestEntityType))
-                    //{
-                    //    types.Add(item.DestEntityType);
-                    //}
-
                     var currProp = mainTableRelation.EntityType.GetProperty(item.PropName, BindingFlags.Instance | BindingFlags.Public);
                     var destRelProp = item.DestEntityType.GetProperty(item.DestRelPropName, BindingFlags.Instance | BindingFlags.Public);
                     //两个表的属性存在
@@ -737,7 +732,7 @@ namespace ZeroOne.Repository
                         if (!(joinTableRelList.Where(t => t.Property == currProp && t.DestEntityType == item.DestEntityType && t.DestProperty == destRelProp)?.Count() > 0))
                         {
                             item.Property = currProp;
-                            item.DestProperty = destProp;
+                            item.DestProperty = destRelProp;
                             joinTableRelList.Add(item);
                         }
                     }
@@ -748,7 +743,7 @@ namespace ZeroOne.Repository
                     }
                     else if (destRelProp != null && item.DestPropValue != null && item.DestEntityType != null)
                     {
-                        item.DestProperty = destProp;
+                        item.DestProperty = destRelProp;
                         joinTableRelList.Add(item);
                     }
                 }
@@ -952,8 +947,23 @@ namespace ZeroOne.Repository
 
             //var typeList = dicTypePropMappings.Select(t => t.Key.Value).ToList();
             //typeList.Insert(0,entityType);
+            var joinExpType = joinExp.GetType();
+            var queryableMethods = this._client.GetType().GetMethods().Where(
+                t => t.Name == nameof(this._client.Queryable)
+                && t.GetGenericArguments().Count() == orderEntityTypeAndIsSamples.Count
+                && t.ToString().Contains(nameof(JoinQueryInfos)));
+            if (queryableMethods.Count() <= 0)
+            {
+                throw new Exception("");
+            }
+            var queryableMethod = queryableMethods.ToList()[0].MakeGenericMethod(orderEntityTypeAndIsSamples.Select(t => t.Item2).ToArray());
+            //this._client.GetType().GetMethod(nameof(this._client.Queryable), 2, new[] { joinExpType });
 
-            var queryableMethod = this._client.GetType().GetMethod(nameof(this._client.Queryable)).MakeGenericMethod(orderEntityTypeAndIsSamples.Select(t => t.Item2).ToArray());
+            //queryableMethods.Where(t=>t.GetParameters().Where(x=>x.ParameterType == join))
+
+            //.MakeGenericMethod(orderEntityTypeAndIsSamples.Select(t => t.Item2).ToArray());
+            //         this._client.Queryable<ProCategory,ProCategory>()
+            //Expression<Func<ProCategory, ProCategory, JoinQueryInfos>> xx = Expression.Lambda<Func<ProCategory, ProCategory, JoinQueryInfos>>(null, null);
             //执行返回查询对象
             var queryObject = queryableMethod.Invoke(this._client, new object[] { joinExp });
             //判断查询对象是否为空
@@ -976,10 +986,23 @@ namespace ZeroOne.Repository
                         }
                         else
                         {
-                            if (attribute.EntityType == null) { attribute.EntityType = entityType; }
+                            //if (attribute.EntityType == null) { attribute.EntityType = entityType; }
                             if (string.IsNullOrEmpty(attribute.PropName)) { attribute.PropName = prop.Name; }
                         }
-                        attribute.Prop = attribute.EntityType.GetProperty(attribute.PropName, BindingFlags.Public | BindingFlags.Instance);
+
+                        if (!string.IsNullOrWhiteSpace(attribute.MainTablePropName) && dicMainTablePropMapOrder.ContainsKey(attribute.MainTablePropName))
+                        {
+                            var keyEntityType = orderEntityTypeAndIsSamples.First(t => t.Item1 == dicMainTablePropMapOrder[attribute.MainTablePropName]);
+                            attribute.Prop = keyEntityType.Item2.GetProperty(attribute.PropName, BindingFlags.Public | BindingFlags.Instance);
+                        }
+                        else if (attribute.EntityType != null)
+                        {
+                            attribute.Prop = attribute.EntityType.GetProperty(attribute.PropName, BindingFlags.Public | BindingFlags.Instance);
+                        }
+                        else
+                        {
+                            throw new Exception("");
+                        }
                         attribute.Value = val;
                         dbOperations.Add(attribute);
                     }
@@ -1054,13 +1077,17 @@ namespace ZeroOne.Repository
                     var items = groupItem.OrderBy(t => t.LogicalOperator).ToList();
                     for (var i = 0; i < count; i++)
                     {
-                        Expression compareExp = null;
                         var current = items[i];
+                        if (current.PropName == nameof(IPageSearch.PageIndex) || current.PropName == nameof(IPageSearch.PageSize))
+                        {
+                            continue;
+                        }
+                        Expression compareExp = null;                        
                         //比较运算
                         Expression left = null;
-                        if (!string.IsNullOrEmpty(current.JoinPropName) && dicPropNums.Keys.Contains(current.JoinPropName))
+                        if (!string.IsNullOrEmpty(current.MainTablePropName) && dicPropNums.Keys.Contains(current.MainTablePropName))
                         {
-                            left = Expression.Property(keyValues.First(t => t.Key == dicPropNums[current.JoinPropName]).Value, current.Prop);
+                            left = Expression.Property(keyValues.First(t => t.Key == dicPropNums[current.MainTablePropName]).Value, current.Prop);
                         }
                         else
                         {

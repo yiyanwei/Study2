@@ -86,7 +86,8 @@ namespace ZeroOne.WebApi.Controllers
         [HttpPost("UserLogin")]
         public async Task<object> UserLogin(UserLoginRequest request)
         {
-            return await this.GetToken(request);
+            var result = await this.GetToken(request);
+            return result;
         }
     }
 }

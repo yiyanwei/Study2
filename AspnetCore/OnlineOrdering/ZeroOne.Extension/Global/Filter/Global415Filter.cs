@@ -6,6 +6,8 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Controllers;
 using Microsoft.AspNetCore.Mvc.Filters;
 using ZeroOne.Extension;
+using System.Threading.Tasks;
+using System.Runtime.CompilerServices;
 
 namespace ZeroOne.Extension.Global
 {
@@ -72,9 +74,18 @@ namespace ZeroOne.Extension.Global
                     }
                     //执行结果
                     var actionResult = action.MethodInfo.Invoke(context.Controller, keyValuePairs != null && keyValuePairs.Keys != null ? keyValuePairs.Keys.ToArray() : null);
+
                     //执行成功
                     result.StatusCode = 200;
-                    result.Value = actionResult;
+                    var resultProp = actionResult.GetType().GetProperty("Result");
+                    if (resultProp != null)
+                    {
+                        result.Value = resultProp.GetValue(actionResult);
+                    }
+                    else
+                    {
+                        result.Value = actionResult;
+                    }
                 }
             }
             base.OnResultExecuting(context);

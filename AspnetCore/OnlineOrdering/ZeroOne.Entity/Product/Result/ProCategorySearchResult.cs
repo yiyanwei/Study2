@@ -4,12 +4,26 @@ using System.Text;
 
 namespace ZeroOne.Entity
 {
+    /// <summary>
+    /// 产品分类查询结果
+    /// </summary>
     public class ProCategorySearchResult : Result
     {
+        /// <summary>
+        /// 主键Id
+        /// </summary>
+        public Guid Id { get; set; }
+
+        /// <summary>
+        /// 分类名称
+        /// </summary>
         public string CategoryName { get; set; }
 
-        [MainTableRelation(typeof(ProCategory),EJoinType.LeftJoin,nameof(ProCategory.CategoryName),false)]
-        [JoinTableRelation(nameof(ProCategory.Id),typeof(ProCategory),nameof(ProCategory.ParentId))]
+        /// <summary>
+        /// 父级分类名称
+        /// </summary>
+        [MainTableRelation(typeof(ProCategory), EJoinType.LeftJoin, nameof(ProCategory.CategoryName), false)]
+        [JoinTableRelation(nameof(ProCategory.Id), typeof(ProCategory), nameof(ProCategory.ParentId))]
         public string ParentCategoryName { get; set; }
     }
 }

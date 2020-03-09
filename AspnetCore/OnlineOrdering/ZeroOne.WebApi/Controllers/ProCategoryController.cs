@@ -43,6 +43,16 @@ namespace ZeroOne.WebApi.Controllers
             return result;
         }
 
-
+        /// <summary>
+        /// 获取分页数据
+        /// </summary>
+        /// <param name="pageSearch"></param>
+        /// <returns></returns>
+        [HttpGet("SearchPageList")]
+        public async Task<PageSearchResult<ProCategorySearchResult>> SearchPageList(ProCategoryPageSearch pageSearch)
+        {
+            var claim = User.Claims.FirstOrDefault(t => t.Type == JwtClaimTypes.Id);
+            return await this.Service.SearchPageResultAsync<ProCategoryPageSearch, ProCategorySearchResult, PageSearchResult<ProCategorySearchResult>>(pageSearch);
+        }
     }
 }

@@ -72,8 +72,8 @@ namespace ZeroOne.Entity
         public string MainTableAttrPropName { get; set; }
 
         public JoinTableRelationAttribute(string propName, Type destEntityType, string destRelPropName,
-            ECompareOperator compareOperator = ECompareOperator.Equal, ELogicalOperator logicalOperator = ELogicalOperator.And, 
-            object propVal = null, object destPropVal = null,string mainTableAttrPropName = null)
+            ECompareOperator compareOperator = ECompareOperator.Equal, ELogicalOperator logicalOperator = ELogicalOperator.None,
+            object propVal = null, object destPropVal = null, string mainTableAttrPropName = null)
         {
             this.PropName = propName;
             this.DestEntityType = destEntityType;
@@ -143,7 +143,7 @@ namespace ZeroOne.Entity
     /// </summary>
     public class DbOperationAttribute : Attribute
     {
-        public string JoinPropName { get; set; }
+        public string MainTablePropName { get; set; }
 
         public ECompareOperator CompareOperator { get; set; }
 
@@ -186,16 +186,16 @@ namespace ZeroOne.Entity
 
 
         public DbOperationAttribute(Type entityType, string propName = null,
-             int? groupKey = null, int? parentGroupKey = null, string joinPropName = null, ECompareOperator compareOperator = ECompareOperator.Equal,
+             int groupKey = 0, int parentGroupKey = 0, string mainTablePropName = null, ECompareOperator compareOperator = ECompareOperator.Equal,
              ELogicalOperator logicalOperator = ELogicalOperator.And, ELogicalOperator parentLogicalOperator = ELogicalOperator.And)
         {
-            this.JoinPropName = joinPropName;
+            this.MainTablePropName = mainTablePropName;
             this.CompareOperator = compareOperator;
             this.LogicalOperator = logicalOperator;
             this.EntityType = entityType;
             this.PropName = propName;
-            this.GroupKey = groupKey;
-            this.ParentGroupKey = parentGroupKey;
+            this.GroupKey = groupKey == 0 ? null : (int?)groupKey;
+            this.ParentGroupKey = parentGroupKey == 0 ? null : (int?)parentGroupKey;
             this.ParentLogicalOperator = ELogicalOperator.And;
         }
     }

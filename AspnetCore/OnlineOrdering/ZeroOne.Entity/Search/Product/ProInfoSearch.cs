@@ -28,9 +28,18 @@ namespace ZeroOne.Entity
 
     }
 
+    /// <summary>
+    /// 产品分页查询对象
+    /// </summary>
     public class ProInfoPageSearch : ProInfoSearch, IPageSearch
     {
+        /// <summary>
+        /// 页索引
+        /// </summary>
         public int PageIndex { get;set; }
+        /// <summary>
+        /// 页大小
+        /// </summary>
         public int PageSize { get;set; }
     }
 }
