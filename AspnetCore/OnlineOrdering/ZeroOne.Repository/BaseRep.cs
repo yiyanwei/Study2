@@ -192,41 +192,45 @@ namespace ZeroOne.Repository
         /// </summary>
         /// <param name="type">泛型类型参数的类型</param>
         /// <returns></returns>
-        protected MethodInfo GetMethodByGenericArgType(Type type)
+        protected MethodInfo GetContainsMethodByGenericArgType(Type type)
         {
-            MethodInfo method = null;
-            if (type != null)
-            {
-                if (type == typeof(int))
-                {
-                    method = (methodof<Func<IEnumerable<int>, int, bool>>)Enumerable.Contains;
-                }
-                else if (type == typeof(decimal))
-                {
-                    method = (methodof<Func<IEnumerable<decimal>, decimal, bool>>)Enumerable.Contains;
-                }
-                else if (type == typeof(float))
-                {
-                    method = (methodof<Func<IEnumerable<float>, float, bool>>)Enumerable.Contains;
-                }
-                else if (type == typeof(long))
-                {
-                    method = (methodof<Func<IEnumerable<long>, long, bool>>)Enumerable.Contains;
-                }
-                else if (type == typeof(double))
-                {
-                    method = (methodof<Func<IEnumerable<double>, double, bool>>)Enumerable.Contains;
-                }
-                else if (type == typeof(DateTime))
-                {
-                    method = (methodof<Func<IEnumerable<DateTime>, DateTime, bool>>)Enumerable.Contains;
-                }
-                else if (type == typeof(string))
-                {
-                    method = (methodof<Func<IEnumerable<string>, string, bool>>)Enumerable.Contains;
-                }
-            }
-            return method;
+            var enumerableType = typeof(IEnumerable<>).MakeGenericType(type);
+            var containMethod = enumerableType.GetMethod(nameof(string.Contains));
+            return containMethod;
+
+            //MethodInfo method = null;
+            //if (type != null)
+            //{
+            //    if (type == typeof(int))
+            //    {
+            //        method = (methodof<Func<IEnumerable<int>, int, bool>>)Enumerable.Contains;
+            //    }
+            //    else if (type == typeof(decimal))
+            //    {
+            //        method = (methodof<Func<IEnumerable<decimal>, decimal, bool>>)Enumerable.Contains;
+            //    }
+            //    else if (type == typeof(float))
+            //    {
+            //        method = (methodof<Func<IEnumerable<float>, float, bool>>)Enumerable.Contains;
+            //    }
+            //    else if (type == typeof(long))
+            //    {
+            //        method = (methodof<Func<IEnumerable<long>, long, bool>>)Enumerable.Contains;
+            //    }
+            //    else if (type == typeof(double))
+            //    {
+            //        method = (methodof<Func<IEnumerable<double>, double, bool>>)Enumerable.Contains;
+            //    }
+            //    else if (type == typeof(DateTime))
+            //    {
+            //        method = (methodof<Func<IEnumerable<DateTime>, DateTime, bool>>)Enumerable.Contains;
+            //    }
+            //    else if (type == typeof(string))
+            //    {
+            //        method = (methodof<Func<IEnumerable<string>, string, bool>>)Enumerable.Contains;
+            //    }
+            //}
+            //return method;
         }
     }
 
@@ -286,7 +290,7 @@ namespace ZeroOne.Repository
                 {
                     PropertyInfo compareProp = modelType.GetProperty(item.Key);
 
-                    MethodInfo containsMethod = this.GetMethodByGenericArgType(property.PropertyType.GetGenericArguments()[0]);
+                    MethodInfo containsMethod = this.GetContainsMethodByGenericArgType(property.PropertyType.GetGenericArguments()[0]);
                     //判断属性值是否为Nullable类型值
                     if (compareProp.PropertyType.GetGenericTypeDefinition() == typeof(Nullable<>))
                     {
@@ -619,26 +623,22 @@ namespace ZeroOne.Repository
             }
 
             object resultList = null;
-            int totalCount = 0;
-            var pagetListMethods = selectMethodResult.GetType().GetMethods().Where(t => t.Name == "ToPageListAsync" && t.GetParameters().Count() == 3).ToList();
-            if (pagetListMethods.Count > 0)
-            {
-                //var pagetListMethod = selectMethodResult.GetType().GetMethod("ToPageListAsync", new Type[] { typeof(int), typeof(int), typeof(int) });
-                var pagetListMethod = pagetListMethods[0];
-                //获取最终结果对象
-                resultList = pagetListMethod.Invoke(selectMethodResult, new object[] { pageSearch.PageIndex, pageSearch.PageSize, totalCount });
+            int intTotalCount = 0;
+            var totalCount = new RefAsync<int>(intTotalCount);
+            var pagetListMethod = selectMethodResult.GetType().GetMethod("ToPageListAsync", new Type[] { typeof(int), typeof(int), totalCount.GetType() });
+            //获取最终结果对象
+            object[] parameters = new object[] { pageSearch.PageIndex, pageSearch.PageSize, totalCount };
+            resultList = pagetListMethod.Invoke(selectMethodResult, parameters);
 
-                //返回分页查询对象
-                TPageSearchResult pageSearchResult = new TPageSearchResult();
-                if (resultList is Task<List<TResult>>)
-                {
-                    var taskResult = resultList as Task<List<TResult>>;
-                    pageSearchResult.Items = await taskResult;
-                    pageSearchResult.TotalCount = totalCount;
-                }
-                return pageSearchResult;
+            //返回分页查询对象
+            TPageSearchResult pageSearchResult = new TPageSearchResult();
+            if (resultList is Task<List<TResult>>)
+            {
+                var taskResult = resultList as Task<List<TResult>>;
+                pageSearchResult.Items = await taskResult;
+                pageSearchResult.TotalCount = totalCount;
             }
-            return null;
+            return pageSearchResult;
         }
 
         private object GetSelectResult<TResult, TSearchResult>(BaseSearch search)
@@ -653,21 +653,10 @@ namespace ZeroOne.Repository
             //配置未关联属性
             var totalProps = resultType.GetProperties(BindingFlags.Public | BindingFlags.Instance);
 
-            //var myProps = totalProps.Where(t => t.GetCustomAttribute<MainTableRelationAttribute>() == null).ToList();
-            //dicTypeProps.Add(entityType, myProps);
-
             //配置关联表属性
             var mainTableProps = totalProps.Where(t => t.GetCustomAttribute<MainTableRelationAttribute>() != null).OrderBy(t => t.GetCustomAttribute<MainTableRelationAttribute>().JoinType);
-            //
-            //Tuple<PropertyInfo, PropertyInfo>  Item1:TSearchResult的当前TEntity的属性，Item2：目标类型的属性
-            //Dictionary<Tuple<Type,Type>, Tuple<EJoinType, IList<Tuple<PropertyInfo, PropertyInfo>>>> dicJoinTables = new Dictionary<Tuple<Type, Type>, Tuple<EJoinType, IList<Tuple<PropertyInfo, PropertyInfo>>>>();
-
-            //Dictionary<Type, ParameterExpression> dicTypeParams = new Dictionary<Type, ParameterExpression>();
-            //IList<Type> types = new List<Type>();
-            //添加默认的当前Entity
-            //types.Add(entityType);
-
-            //mainTableProps.Where(t => t.GetCustomAttribute<MainTableRelationAttribute>().IsTogetherSampleType == true).Select(t=>t.GetCustomAttribute<MainTableRelationAttribute>())
+            
+            //序号、类型以及是否共用同类型参数集合
             IList<Tuple<int, Type, bool>> orderEntityTypeAndIsSamples = new List<Tuple<int, Type, bool>>();
 
 
@@ -675,11 +664,6 @@ namespace ZeroOne.Repository
                 new Dictionary<KeyValuePair<int, Type>, Tuple<EJoinType, IList<KeyValuePair<PropertyInfo, PropertyInfo>>, IList<JoinTableRelationAttribute>>>();
             int i = 2;
             int start = i;
-
-            //foreach (var prop in mainTableProps)
-            //{
-            //    var mainTableRelation = prop.GetCustomAttribute<MainTableRelationAttribute>();
-            //}
 
             //用来属性查找Join表
             Dictionary<string, int> dicMainTablePropMapOrder = new Dictionary<string, int>();
@@ -768,9 +752,7 @@ namespace ZeroOne.Repository
             //结果类型表达式参数
             var rExpParam = Expression.Parameter(resultType, "r");
 
-            //IList<Type> joinTypes = new List<Type>();
-            //IList<Expression> joinExpList = new List<Expression>();
-
+            //属性绑定表达式
             IList<MemberBinding> memberBindings = new List<MemberBinding>();
             Expression bindingExp = null;
 
@@ -875,6 +857,40 @@ namespace ZeroOne.Repository
                     {
                         compareExp = Expression.LessThanOrEqual(left, right);
                     }
+                    //字符串就是like，IEnumerable<>就是in
+                    else if (joinItem.CompareOperator == ECompareOperator.Contains)
+                    {
+                        //当前对象表属性不为空值不为空，并且目标类型为IEnumerable<>类型
+                        if (joinItem.Property != null && joinItem.PropValue != null && joinItem.PropValue.GetType().GetInterfaces().Any(x => typeof(IEnumerable<>) == (x.IsGenericType ? x.GetGenericTypeDefinition() : x)))
+                        {
+                            var property = joinItem.Property;
+                            var containsMethod = this.GetContainsMethodByGenericArgType(property.PropertyType);
+                            compareExp = Expression.Call(containsMethod, right, left);
+                        }
+                        //目标属性不为空目标值不为空，并且目标值类型为IEnumerable<>类型
+                        else if (joinItem.DestProperty != null && joinItem.DestPropValue != null && joinItem.DestPropValue.GetType().GetInterfaces().Any(x => typeof(IEnumerable<>) == (x.IsGenericType ? x.GetGenericTypeDefinition() : x)))
+                        {
+                            var property = joinItem.DestProperty;
+                            var containsMethod = this.GetContainsMethodByGenericArgType(property.PropertyType);
+                            compareExp = Expression.Call(containsMethod, right, left);
+                        }
+                        //目标值不为空并且目标值是string类型
+                        //当前属性值不为空并且值类型是string类型
+                        //当前属性不为空目标属性不为空并且字符串类型
+                        else if (
+                                (joinItem.DestPropValue != null && joinItem.DestPropValue.GetType() == typeof(string))
+                                || (joinItem.PropValue != null && joinItem.PropValue.GetType() == typeof(string))
+                                || (joinItem.Property != null && joinItem.DestProperty != null && joinItem.Property.PropertyType == typeof(string) && joinItem.DestProperty.PropertyType == typeof(string))
+                            )
+                        {
+                            var containsMethod = typeof(string).GetMethod(nameof(string.Contains));
+                            compareExp = Expression.Call(containsMethod, left, right);
+                        }
+                        else
+                        {
+                            throw new Exception("");
+                        }
+                    }
                     else
                     {
                         throw new Exception("");
@@ -966,13 +982,6 @@ namespace ZeroOne.Repository
                 throw new Exception("");
             }
             var queryableMethod = queryableMethods.ToList()[0].MakeGenericMethod(orderEntityTypeAndIsSamples.Select(t => t.Item2).ToArray());
-            //this._client.GetType().GetMethod(nameof(this._client.Queryable), 2, new[] { joinExpType });
-
-            //queryableMethods.Where(t=>t.GetParameters().Where(x=>x.ParameterType == join))
-
-            //.MakeGenericMethod(orderEntityTypeAndIsSamples.Select(t => t.Item2).ToArray());
-            //         this._client.Queryable<ProCategory,ProCategory>()
-            //Expression<Func<ProCategory, ProCategory, JoinQueryInfos>> xx = Expression.Lambda<Func<ProCategory, ProCategory, JoinQueryInfos>>(null, null);
             //执行返回查询对象
             var queryObject = queryableMethod.Invoke(this._client, new object[] { joinExp });
             //判断查询对象是否为空
@@ -990,7 +999,7 @@ namespace ZeroOne.Repository
                         continue;
                     }
                     val = prop.GetValue(search);
-                    if (val != null)
+                    if (val.IsNotNullAndEmpty())
                     {
                         attribute = prop.GetCustomAttribute<DbOperationAttribute>();
                         if (attribute == null)
@@ -1020,13 +1029,16 @@ namespace ZeroOne.Repository
                         dbOperations.Add(attribute);
                     }
                 }
-                var whereExp = GetWhereExpression(dbOperations, paramExps, orderEntityTypeAndIsSamples.Select(t => new KeyValuePair<int, Type>(t.Item1, t.Item2)).ToList(), dicMainTablePropMapOrder);
-                if (whereExp != null)
+                if (dbOperations.Count > 0)
                 {
-                    var whereMethod = queryObject.GetType().GetMethod("Where", new Type[] { whereExp.GetType() });
-                    if (whereMethod != null)
+                    var whereExp = GetWhereExpression(dbOperations, paramExps, orderEntityTypeAndIsSamples.Select(t => new KeyValuePair<int, Type>(t.Item1, t.Item2)).ToList(), dicMainTablePropMapOrder);
+                    if (whereExp != null)
                     {
-                        whereObject = whereMethod.Invoke(queryObject, new object[] { whereExp });
+                        var whereMethod = queryObject.GetType().GetMethod("Where", new Type[] { whereExp.GetType() });
+                        if (whereMethod != null)
+                        {
+                            whereObject = whereMethod.Invoke(queryObject, new object[] { whereExp });
+                        }
                     }
                 }
             }
@@ -1040,7 +1052,7 @@ namespace ZeroOne.Repository
             {
                 if (whereObject != null)
                 {
-                    //this._client.Queryable<ProCategory, ProCategory>((t1, t2) => t1.Id == t2.ParentId).Where((t1, t2) => t1.CategoryName == "").Select<ProCategorySearchResult>((t1, t2) =>)
+                    //this._client.Queryable<ProCategory, ProCategory>((t1, t2) => t1.Id == t2.ParentId).Where((t1, t2) => t1.CategoryName == "").Select<ProCategorySearchResult>((t1, t2) => new ProCategorySearchResult()).ToPageListAsync
                     var selectMethods = whereObject.GetType().GetMethods().Where(t => t.Name == "Select" && t.GetParameters().Where(x => x.Name == "expression" && x.Member?.DeclaringType?.GenericTypeArguments?.Count() == orderEntityTypeAndIsSamples.Count).Count() > 0).ToList();
                     //var b = whereObject.GetType().GetMethod("Select");
                     if (selectMethods.Count > 0)
@@ -1060,12 +1072,17 @@ namespace ZeroOne.Repository
                     }
                 }
             }
-            //return new KeyValuePair<object, MethodInfo>(whereObject != null ? whereObject : queryObject, selectMethod);
             return queryResult;
         }
 
-
-
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="operAttrs"></param>
+        /// <param name="keyValues"></param>
+        /// <param name="numTypes"></param>
+        /// <param name="dicPropNums"></param>
+        /// <returns></returns>
 
         private Expression GetWhereExpression(IList<DbOperationAttribute> operAttrs, IList<KeyValuePair<int, ParameterExpression>> keyValues, IList<KeyValuePair<int, Type>> numTypes, Dictionary<string, int> dicPropNums)
         {
@@ -1117,6 +1134,7 @@ namespace ZeroOne.Repository
                             left = Expression.Property(keyValues.First(t => t.Key == first.Key).Value, current.Prop);
                         }
                         Expression right = Expression.Constant(current.Value);
+
                         if (current.CompareOperator == ECompareOperator.Equal)
                         {
                             compareExp = Expression.Equal(left, right);
@@ -1140,6 +1158,25 @@ namespace ZeroOne.Repository
                         else if (current.CompareOperator == ECompareOperator.LessThanOrEqual)
                         {
                             compareExp = Expression.LessThanOrEqual(left, right);
+                        }
+                        else if (current.CompareOperator == ECompareOperator.Contains)
+                        {
+                            if (typeof(string) == current.Prop.PropertyType)
+                            {
+                                var containsMethod = typeof(string).GetMethod(nameof(string.Contains));
+                                compareExp = Expression.Call(containsMethod, left, right);
+                            }
+                            else if (current.Value.GetType().GetInterfaces().Any(x => typeof(IEnumerable<>) == (x.IsGenericType ? x.GetGenericTypeDefinition() : x)))
+                            {
+                                var property = current.Prop;
+                                var containsMethod = this.GetContainsMethodByGenericArgType(property.PropertyType);
+                                compareExp = Expression.Call(containsMethod, right, left);
+                            }
+                            else
+                            {
+                                throw new Exception("");
+                            }
+                            //if(current.Prop.PropertyType)
                         }
                         else
                         {
@@ -1171,7 +1208,7 @@ namespace ZeroOne.Repository
             int? paramParentGroupKey = null;
             //递归调用所有的分组
             this.GetRecursion(expList, paramParentGroupKey);
-            var endExp = expList.First(t => t.GroupKey == paramParentGroupKey);
+            var endExp = expList.Single(t => t.GroupKey == paramParentGroupKey);
             if (endExp == null || endExp.TotalExpression == null)
             {
                 throw new Exception("");

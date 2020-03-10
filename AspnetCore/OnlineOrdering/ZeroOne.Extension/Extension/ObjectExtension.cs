@@ -19,10 +19,10 @@ namespace ZeroOne.Extension
             }
             else
             {
-                if (obj.GetType() == typeof(Guid))
-                {
-                    return !obj.ToString().Equals(Guid.Empty.ToString());
-                }
+                //if (obj.GetType() == typeof(Guid))
+                //{
+                //    return !obj.ToString().Equals(Guid.Empty.ToString());
+                //}
                 if (string.IsNullOrEmpty(obj.ToString()))
                 {
                     return false;
