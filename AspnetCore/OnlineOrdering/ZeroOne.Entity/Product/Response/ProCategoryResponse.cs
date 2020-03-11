@@ -5,9 +5,9 @@ using System.Text;
 namespace ZeroOne.Entity
 {
     /// <summary>
-    /// 产品分类查询结果
+    /// 产品分类响应对象
     /// </summary>
-    public class ProCategorySearchResult : Result
+    public class ProCategoryResponse : IResult
     {
         /// <summary>
         /// 主键Id
@@ -22,13 +22,11 @@ namespace ZeroOne.Entity
         /// <summary>
         /// 父级分类名称
         /// </summary>
-        [MainTableRelation(typeof(ProCategory), EJoinType.LeftJoin, nameof(ProCategory.CategoryName), false)]
-        [JoinTableRelation(nameof(ProCategory.Id), typeof(ProCategory), nameof(ProCategory.ParentId))]
         public string ParentCategoryName { get; set; }
 
         /// <summary>
         /// 创建时间
         /// </summary>
-        public DateTime? CreationTime { get; set; }
+        public string CreationTime { get; set; }
     }
 }

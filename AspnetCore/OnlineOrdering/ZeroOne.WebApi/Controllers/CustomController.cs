@@ -6,6 +6,7 @@ using IdentityModel;
 using Microsoft.AspNetCore.Mvc;
 using ZeroOne.Application;
 using ZeroOne.Entity;
+using AutoMapper;
 
 namespace ZeroOne.WebApi.Controllers
 {
@@ -15,6 +16,7 @@ namespace ZeroOne.WebApi.Controllers
     where TAddRequest : IAddRequest, IEntity<TPrimaryKey>
     where TEditRequest : IEditRequest, IEntity<TPrimaryKey>
     {
+        protected Mapper Mapper { get; set; }
         /// <summary>
         /// 服务注入
         /// </summary>

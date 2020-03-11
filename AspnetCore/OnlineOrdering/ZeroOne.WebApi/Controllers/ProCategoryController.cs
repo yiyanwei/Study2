@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using IdentityModel;
+using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -52,7 +53,8 @@ namespace ZeroOne.WebApi.Controllers
         public async Task<PageSearchResult<ProCategorySearchResult>> SearchPageList(ProCategoryPageSearch pageSearch)
         {
             var claim = User.Claims.FirstOrDefault(t => t.Type == JwtClaimTypes.Id);
-            return await this.Service.SearchPageResultAsync<ProCategoryPageSearch, ProCategorySearchResult, PageSearchResult<ProCategorySearchResult>>(pageSearch);
+            var result = await this.Service.SearchPageResultAsync<ProCategoryPageSearch, ProCategorySearchResult, PageSearchResult<ProCategorySearchResult>>(pageSearch);
+            return null;
         }
     }
 }

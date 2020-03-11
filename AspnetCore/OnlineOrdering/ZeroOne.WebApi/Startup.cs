@@ -2,11 +2,9 @@ using System;
 using System.IO;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 using System.Reflection;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.HttpsPolicy;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -22,10 +20,9 @@ using NLog.Web;
 using SqlSugar;
 using ZeroOne.Application;
 using ZeroOne.Entity;
-using Microsoft.AspNetCore.Mvc.Filters;
-using ZeroOne.Extension;
 using ZeroOne.Extension.Global;
 using Microsoft.AspNetCore.Routing;
+using AutoMapper;
 
 namespace ZeroOne.WebApi
 {
@@ -61,12 +58,20 @@ namespace ZeroOne.WebApi
                 //options.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore;
             });
 
+            //映射
+            services.AddAutoMapper((cfg) =>
+            {
+                ViewAutoMapperInitialize.WebInitAutoMap(cfg);
+            }, Assembly.GetExecutingAssembly(), typeof(BaseEntity<>).Assembly);
+
             //允许跨域访问
-            services.AddCors(options => {
+            services.AddCors(options =>
+            {
                 options.AddPolicy(globalCorsName, builder => builder.WithOrigins("http://localhost:8080").AllowAnyMethod().AllowAnyHeader());
             });
 
-            services.Configure<RouteOptions>(config => {
+            services.Configure<RouteOptions>(config =>
+            {
                 //config.ConstraintMap.Add("enum", typeof(EnumConstraint));
                 //config.ConstraintMap.Add(nameof(GetUrlParamToObjConstraint), typeof(GetUrlParamToObjConstraint));
             });
@@ -182,7 +187,7 @@ namespace ZeroOne.WebApi
             app.UseSwaggerUI(c =>
             {
                 c.SwaggerEndpoint("/swagger/v1/swagger.json", "ApiHelp V1");
-            });          
+            });
 
             app.UseEndpoints(endpoints =>
             {

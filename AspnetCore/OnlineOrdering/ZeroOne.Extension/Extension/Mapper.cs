@@ -21,11 +21,18 @@ namespace ZeroOne.Extension
             if (source == null)
                 return default;
             var sourceType = typeof(TSource);
-            var paramExp = Expression.Parameter(sourceType, "t");
-            var memberInitExpression = GetExpression(paramExp, sourceType, typeof(TTarget));
-            var lambda = Expression.Lambda<Func<TSource, TTarget>>(memberInitExpression, paramExp);
-            var func = lambda.Compile();
-            return func(source);
+            if (sourceType.IsClass)
+            {
+                var paramExp = Expression.Parameter(sourceType, "t");
+                var memberInitExpression = GetExpression(paramExp, sourceType, typeof(TTarget));
+                var lambda = Expression.Lambda<Func<TSource, TTarget>>(memberInitExpression, paramExp);
+                var func = lambda.Compile();
+                return func(source);
+            }
+            else
+            {
+                throw new Exception("不是类对象");
+            }
         }
 
         /// <summary>
