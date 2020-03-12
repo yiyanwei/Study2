@@ -59,10 +59,9 @@ namespace ZeroOne.WebApi
             });
 
             //映射
-            services.AddAutoMapper((cfg) =>
-            {
-                ViewAutoMapperInitialize.WebInitAutoMap(cfg);
-            }, Assembly.GetExecutingAssembly(), typeof(BaseEntity<>).Assembly);
+            var config = new MapperConfiguration(e => e.AddProfile<ViewMappingProfile>());
+            var mapper = config.CreateMapper();
+            services.AddSingleton(mapper);
 
             //允许跨域访问
             services.AddCors(options =>

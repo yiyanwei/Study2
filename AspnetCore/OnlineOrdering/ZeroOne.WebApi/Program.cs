@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
+using AutoMapper;
 using Microsoft.Extensions.Logging;
 using System.Linq.Expressions;
 using ZeroOne.Extension.Model;
@@ -40,6 +41,13 @@ namespace ZeroOne.WebApi
 
             //LocatingPoint start2 = new LocatingPoint(32.20440944, 119.45583541);
             //Console.WriteLine(start2.GetDistance(48.49918, 124.8857));
+
+            //var config = new MapperConfiguration(cfg => {
+            //    cfg.CreateMap<PageSearchResult<ProCategorySearchResult>, PageSearchResult<ProCategoryResponse>>();
+            //    cfg.CreateMap<ProCategorySearchResult, ProCategoryResponse>()
+            //    .ForMember(x => x.CreationTime, x => x.MapFrom(y => y.CreationTime.HasValue ? y.CreationTime.Value.ToString("yyyy-MM-dd HH:mm:ss") : string.Empty));
+            //});
+
 
             CreateHostBuilder(args).Build().Run();
         }
