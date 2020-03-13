@@ -24,7 +24,7 @@ namespace ZeroOne.Application
         /// <param name="rowVersion">行版本号</param>
         /// <param name="userId">当前操作人Id</param>
         /// <returns></returns>
-        Task<bool> DeleteAsync(TPrimaryKey id, Guid rowVersion, string userId);
+        Task<bool> DeleteAsync(TPrimaryKey id, Guid rowVersion, Guid? userId);
 
         /// <summary>
         /// 

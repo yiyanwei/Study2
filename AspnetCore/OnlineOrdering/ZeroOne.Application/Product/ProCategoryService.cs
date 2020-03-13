@@ -8,7 +8,7 @@ using ZeroOne.Repository;
 
 namespace ZeroOne.Application
 {
-    public class ProCategoryService : BaseService<ProCategory, Guid, ProCategorySearch>, IProCategoryService
+    public class ProCategoryService : BaseService<ProCategory, Guid?, ProCategorySearch>, IProCategoryService
     {
 
         private IProCategoryRep Rep;
@@ -17,7 +17,7 @@ namespace ZeroOne.Application
             this.Rep = rep;
         }
 
-        public async Task<IList<SelectItem<string, Guid>>> GetSelectItems()
+        public async Task<IList<SelectItem<string, Guid?>>> GetSelectItems()
         {
             return await this.Rep.GetSelectItems();
         }

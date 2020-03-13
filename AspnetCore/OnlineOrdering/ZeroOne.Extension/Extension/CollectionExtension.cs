@@ -16,7 +16,7 @@ namespace ZeroOne.Extension
         /// <param name="parentItem">父节点</param>
         /// <param name="target">目标数据集</param>
         public static void SelectRecursionCall<TLabel, TValue>(this IList<SelectItem<TLabel, TValue>> source, SelectItem<TLabel, TValue> parentItem, IList<SelectItem<TLabel, TValue>> target)
-            where TValue : IComparable, IComparable<TValue>, IEquatable<TValue>
+            //where TValue : IComparable, IComparable<TValue>, IEquatable<TValue>
         {
             if (source == null || source.Count() <= 0)
             {

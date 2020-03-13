@@ -16,7 +16,7 @@ namespace ZeroOne.WebApi.Controllers
     [Route("api/[controller]")]
     [ApiController]
     [Authorize]
-    public class ProCategoryController : CustomController<ProCategory, Guid, ProCategoryAddRequest, ProCategoryEditRequest, ProCategoryResult, ProCategorySearch>
+    public class ProCategoryController : CustomController<ProCategory, Guid?, ProCategoryAddRequest, ProCategoryEditRequest, ProCategoryResult, ProCategorySearch>
     {
         private IProCategoryService Service
         {
@@ -28,9 +28,9 @@ namespace ZeroOne.WebApi.Controllers
         /// <summary>
         /// 服务注入
         /// </summary>
-        public ProCategoryController(IProCategoryService service) : base(service)
+        public ProCategoryController(IProCategoryService service,IMapper mapper) : base(service)
         {
-
+            this.Mapper = mapper;
         }
 
         /// <summary>
@@ -38,7 +38,7 @@ namespace ZeroOne.WebApi.Controllers
         /// </summary>
         /// <returns></returns>
         [HttpGet("GetDropDownListAsync")]
-        public async Task<IList<SelectItem<string, Guid>>> GetDropDownListAsync()
+        public async Task<IList<SelectItem<string, Guid?>>> GetDropDownListAsync()
         {
             var result = await Service.GetSelectItems();
             return result;
@@ -50,11 +50,11 @@ namespace ZeroOne.WebApi.Controllers
         /// <param name="pageSearch"></param>
         /// <returns></returns>
         [HttpGet("SearchPageList")]
-        public async Task<PageSearchResult<ProCategorySearchResult>> SearchPageList(ProCategoryPageSearch pageSearch)
+        public async Task<PageSearchResult<ProCategoryResponse>> SearchPageList(ProCategoryPageSearch pageSearch)
         {
             var claim = User.Claims.FirstOrDefault(t => t.Type == JwtClaimTypes.Id);
             var result = await this.Service.SearchPageResultAsync<ProCategoryPageSearch, ProCategorySearchResult, PageSearchResult<ProCategorySearchResult>>(pageSearch);
-            return null;
+            return Mapper.Map<PageSearchResult<ProCategoryResponse>>(result);
         }
     }
 }

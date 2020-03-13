@@ -8,7 +8,7 @@ namespace ZeroOne.Entity
     /// </summary>
     [SugarTable("user_info")]
 
-    public class UserInfo : BaseEntity<Guid>,IRowVersion
+    public class UserInfo : BaseEntity<Guid?>,IRowVersion
     {
         /// <summary>
         /// 

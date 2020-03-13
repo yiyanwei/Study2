@@ -16,19 +16,14 @@ namespace ZeroOne.WebApi.Controllers
     where TAddRequest : IAddRequest, IEntity<TPrimaryKey>
     where TEditRequest : IEditRequest, IEntity<TPrimaryKey>
     {
-        protected Mapper Mapper { get; set; }
+        protected IMapper Mapper { get; set; }
         /// <summary>
         /// 服务注入
         /// </summary>
         protected IBaseService<TEntity, TPrimaryKey> service;
         public CustomController(IBaseService<TEntity, TPrimaryKey> service)
-        {
+        {            
             this.service = service;
-            //var claim = User.Claims.FirstOrDefault(t => t.Type == JwtClaimTypes.Id);
-            //if (claim != null)
-            //{
-            //    UserId = claim.Value;
-            //}
         }
 
         /// <summary>
@@ -52,7 +47,7 @@ namespace ZeroOne.WebApi.Controllers
         [HttpPost("Add")]
         public async Task<TEntity> Add(TAddRequest request)
         {
-            request.CreatorUserId = UserId;
+            request.CreatorUserId = Guid.Parse(UserId);
             return await service.AddAndReturnAsync(request);
         }
 
@@ -64,7 +59,7 @@ namespace ZeroOne.WebApi.Controllers
         [HttpPut("Edit")]
         public async Task Edit(TEditRequest request)
         {
-            request.LastModifierUserId = UserId;
+            request.LastModifierUserId = Guid.Parse(UserId);
             var result = await service.UpdateNotNullAsync(request);
             if (!result)
             {
@@ -85,7 +80,7 @@ namespace ZeroOne.WebApi.Controllers
             {
 
             }
-            var result = await service.DeleteAsync(id, rowVersion.Value, UserId);
+            var result = await service.DeleteAsync(id, rowVersion.Value,Guid.Parse(UserId));
             if (!result)
             {
 

@@ -6,7 +6,7 @@ using ZeroOne.Entity;
 
 namespace ZeroOne.Application
 {
-    public interface IProInfoService : IBaseService<ProInfo, Guid, ProInfoSearch>
+    public interface IProInfoService : IBaseService<ProInfo, Guid?, ProInfoSearch>
     {
         //Task<ProInfo> GetProductInfo(Guid id);
 

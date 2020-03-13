@@ -28,5 +28,9 @@ namespace ZeroOne.Entity
         /// 创建时间
         /// </summary>
         public string CreationTime { get; set; }
+        /// <summary>
+        /// 操作人
+        /// </summary>
+        public string RealName { get; set; }
     }
 }

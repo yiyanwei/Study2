@@ -6,13 +6,13 @@ using ZeroOne.Extension.Model;
 
 namespace ZeroOne.Application
 {
-    public interface IProCategoryService : IBaseService<ProCategory, Guid, ProCategorySearch>
+    public interface IProCategoryService : IBaseService<ProCategory, Guid?, ProCategorySearch>
     {
         /// <summary>
         /// 获取产品分类下拉列表
         /// </summary>
         /// <returns></returns>
-        Task<IList<SelectItem<string, Guid>>> GetSelectItems();
+        Task<IList<SelectItem<string, Guid?>>> GetSelectItems();
 
         /// <summary>
         /// 添加产品分类

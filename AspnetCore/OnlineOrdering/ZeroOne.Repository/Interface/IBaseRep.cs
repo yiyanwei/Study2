@@ -41,7 +41,7 @@ namespace ZeroOne.Repository
         /// <param name="rowVersion">对象的版本号</param>
         /// <param name="userId">删除操作操作人id</param>
         /// <returns></returns>
-        Task<bool> DeleteByIdAsync(TPrimaryKey id, Guid rowVersion, string userId = null);
+        Task<bool> DeleteByIdAsync(TPrimaryKey id, Guid rowVersion, Guid? userId = null);
 
         /// <summary>
         /// 更新对象（不为空的数据）

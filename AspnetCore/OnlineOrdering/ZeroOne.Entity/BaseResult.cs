@@ -45,7 +45,7 @@ namespace ZeroOne.Entity
         /// <summary>
         /// 删除操作人
         /// </summary>
-        public string DeleterUserId { get; set; }
+        public Guid? DeleterUserId { get; set; }
 
         /// <summary>
         /// 删除时间
@@ -55,7 +55,7 @@ namespace ZeroOne.Entity
         /// <summary>
         /// 创建人
         /// </summary>
-        public string CreatorUserId { get; set; }
+        public Guid? CreatorUserId { get; set; }
 
         /// <summary>
         /// 创建时间
@@ -65,7 +65,7 @@ namespace ZeroOne.Entity
         /// <summary>
         /// 更新人
         /// </summary>
-        public string LastModifierUserId { get; set; }
+        public Guid? LastModifierUserId { get; set; }
 
         /// <summary>
         /// 更新时间

@@ -14,7 +14,7 @@ namespace ZeroOne.WebApi.Controllers
     [Route("api/[controller]")]
     [ApiController]
     [Authorize]
-    public class ProInfoController : CustomController<ProInfo, Guid, ProInfoAddRequest, ProInfoEditRequest, ProInfoResult, ProInfoSearch>
+    public class ProInfoController : CustomController<ProInfo, Guid?, ProInfoAddRequest, ProInfoEditRequest, ProInfoResult, ProInfoSearch>
     {
         /// <summary>
         /// 具体的服务接口

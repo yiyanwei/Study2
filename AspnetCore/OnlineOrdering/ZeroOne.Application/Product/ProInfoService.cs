@@ -8,7 +8,7 @@ using ZeroOne.Repository;
 
 namespace ZeroOne.Application
 {
-    public class ProInfoService : BaseService<ProInfo, Guid, ProInfoSearch>, IProInfoService
+    public class ProInfoService : BaseService<ProInfo, Guid?, ProInfoSearch>, IProInfoService
     {
         private IProInfoRep _ProInfoRep;
         private IProCategoryRep ProCategoryRep;

@@ -77,7 +77,7 @@ namespace ZeroOne.Application
             return await this.Rep.AddEntityAsync(entity);
         }
 
-        public async Task<bool> DeleteAsync(TPrimaryKey id, Guid rowVersion, string userId)
+        public async Task<bool> DeleteAsync(TPrimaryKey id, Guid rowVersion, Guid? userId)
         {
             return await this.Rep.DeleteByIdAsync(id, rowVersion, userId);
         }

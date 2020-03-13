@@ -7,7 +7,7 @@ namespace ZeroOne.Entity
     /// <summary>
     /// 产品新增请求对象
     /// </summary>
-    public class ProInfoAddRequest:AddEntity,IEntity<Guid>, IAddRequest
+    public class ProInfoAddRequest:AddEntity,IEntity<Guid?>, IAddRequest
     {
         public ProInfoAddRequest() : base()
         {
@@ -17,7 +17,7 @@ namespace ZeroOne.Entity
         /// <summary>
         /// 主键Id
         /// </summary>
-        public Guid Id { get; set; }
+        public Guid? Id { get; set; }
 
         /// <summary>
         /// 产品分类Id
@@ -53,12 +53,12 @@ namespace ZeroOne.Entity
     /// <summary>
     /// 产品修改请求对象
     /// </summary>
-    public class ProInfoEditRequest : UpdateEntity, IEntity<Guid>, IEditRequest
+    public class ProInfoEditRequest : UpdateEntity, IEntity<Guid?>, IEditRequest
     {
         /// <summary>
         /// 主键Id
         /// </summary>
-        public Guid Id { get; set; }
+        public Guid? Id { get; set; }
 
         /// <summary>
         /// 产品分类Id

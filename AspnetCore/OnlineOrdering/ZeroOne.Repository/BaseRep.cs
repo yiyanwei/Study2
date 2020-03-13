@@ -131,7 +131,7 @@ namespace ZeroOne.Repository
         /// <param name="id">对象Id</param>
         /// <param name="rowVersion">版本号</param>
         /// <returns></returns>
-        public async Task<bool> DeleteByIdAsync(TPrimaryKey id, Guid rowVersion, string userId = null)
+        public async Task<bool> DeleteByIdAsync(TPrimaryKey id, Guid rowVersion, Guid? userId = null)
         {
             ConcurrentProcess(new TEntity() { Id = id, RowVersion = rowVersion });
             Guid newGuid = Guid.NewGuid();
@@ -672,7 +672,8 @@ namespace ZeroOne.Repository
             {
 
                 var mainTableRelation = prop.GetCustomAttribute<MainTableRelationAttribute>();
-                if (mainTableRelation.IsTogetherSampleType == false || orderEntityTypeAndIsSamples.Where(t => t.Item2 == mainTableRelation.EntityType && t.Item3 == true).Count() <= 0)
+                var notExist = mainTableRelation.IsTogetherSampleType == false || orderEntityTypeAndIsSamples.Where(t => t.Item2 == mainTableRelation.EntityType && t.Item3 == true).Count() <= 0;
+                if (notExist)
                 {
                     //types.Add(mainTableRelation.EntityType);
                     orderEntityTypeAndIsSamples.Add(new Tuple<int, Type, bool>(i, mainTableRelation.EntityType, mainTableRelation.IsTogetherSampleType));
@@ -680,7 +681,7 @@ namespace ZeroOne.Repository
 
                 IList<KeyValuePair<PropertyInfo, PropertyInfo>> destPropList = null;
                 IList<JoinTableRelationAttribute> joinTableRelList = null;
-                if (mainTableRelation.IsTogetherSampleType == false || orderEntityTypeAndIsSamples.Where(t => t.Item2 == mainTableRelation.EntityType && t.Item3 == true).Count() <= 0)
+                if (notExist)
                 {
                     destPropList = new List<KeyValuePair<PropertyInfo, PropertyInfo>>();
                     joinTableRelList = new List<JoinTableRelationAttribute>();

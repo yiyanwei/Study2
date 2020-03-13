@@ -8,7 +8,7 @@ namespace ZeroOne.Entity
     /// <summary>
     /// 产品分类新增请求对象
     /// </summary>
-    public class ProCategoryAddRequest : AddEntity, IAddRequest, IEntity<Guid>
+    public class ProCategoryAddRequest : AddEntity, IAddRequest, IEntity<Guid?>
     {
         public ProCategoryAddRequest() : base()
         {
@@ -22,17 +22,17 @@ namespace ZeroOne.Entity
         /// <summary>
         /// 父级id
         /// </summary>
-        public Guid ParentId { get; set; }
+        public Guid? ParentId { get; set; }
         /// <summary>
         /// 主键Id
         /// </summary>
-        public Guid Id { get; set; }
+        public Guid? Id { get; set; }
     }
 
     /// <summary>
     /// 产品分类编辑请求对象
     /// </summary>
-    public class ProCategoryEditRequest : UpdateEntity, IEntity<Guid>, IEditRequest
+    public class ProCategoryEditRequest : UpdateEntity, IEntity<Guid?>, IEditRequest
     {
         /// <summary>
         /// 分类名称
@@ -41,10 +41,10 @@ namespace ZeroOne.Entity
         /// <summary>
         /// 父级id
         /// </summary>
-        public Guid ParentId { get; set; }
+        public Guid? ParentId { get; set; }
         /// <summary>
         /// 主键Id
         /// </summary>
-        public Guid Id { get; set; }
+        public Guid? Id { get; set; }
     }
 }
