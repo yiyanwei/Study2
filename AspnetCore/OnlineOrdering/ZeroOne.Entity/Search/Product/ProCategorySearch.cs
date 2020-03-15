@@ -7,6 +7,7 @@ namespace ZeroOne.Entity
     /// </summary>
     public class ProCategorySearch : BaseSearch
     {
+        [DbOperation(entityType: typeof(ProCategory), compareOperator: ECompareOperator.Contains)]
         public string CategoryName { get; set; }
 
         public Guid? ParentId { get; set; }

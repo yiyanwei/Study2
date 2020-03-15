@@ -655,7 +655,7 @@ namespace ZeroOne.Repository
 
             //配置关联表属性
             var mainTableProps = totalProps.Where(t => t.GetCustomAttribute<MainTableRelationAttribute>() != null).OrderBy(t => t.GetCustomAttribute<MainTableRelationAttribute>().JoinType);
-            
+
             //序号、类型以及是否共用同类型参数集合
             IList<Tuple<int, Type, bool>> orderEntityTypeAndIsSamples = new List<Tuple<int, Type, bool>>();
 
@@ -753,6 +753,70 @@ namespace ZeroOne.Repository
             //结果类型表达式参数
             var rExpParam = Expression.Parameter(resultType, "r");
 
+            //获取排序特性
+            //int orderPropAttrCount = 0;
+            //IEnumerable<DbOrderingAttribute> orderPropAttrs = null;
+            //int orderTypeAttrCount = 0;
+            //IEnumerable<DbOrderingAttribute> orderTypeAttrs = null;
+            IList<KeyValuePair<Expression, EOrderRule>> typeOrderRuleList = new List<KeyValuePair<Expression, EOrderRule>>();
+            var orderAttrs = resultType.GetCustomAttributes<DbOrderingAttribute>();
+            if (orderAttrs.Count() > 0)
+            {
+                //orderPropAttrs = orderAttrs.Where(t => !string.IsNullOrEmpty(t.MainTablePropName));
+                //orderPropAttrCount = orderPropAttrs.Count();
+                //orderTypeAttrs = orderAttrs.Where(t => t.EntityType != null);
+                //orderTypeAttrCount = orderTypeAttrs.Count();
+                foreach (var orderAttr in orderAttrs)
+                {
+                    if (!string.IsNullOrEmpty(orderAttr.MainTablePropName) && dicMainTablePropMapOrder.Keys.Contains(orderAttr.MainTablePropName))
+                    {
+                        int sortNum = dicMainTablePropMapOrder[orderAttr.MainTablePropName];
+                        var first = paramExps.First(t => t.Key == sortNum);
+                        //排序属性
+                        var orderProp = orderEntityTypeAndIsSamples[sortNum].Item2.GetProperty(orderAttr.PropName, BindingFlags.Public | BindingFlags.Instance);
+                        typeOrderRuleList.Add(new KeyValuePair<Expression, EOrderRule>(Expression.TypeAs(Expression.Property(first.Value, orderProp), typeof(object)), orderAttr.OrderRule));
+                    }
+                    else if (orderAttr.EntityType != null && orderEntityTypeAndIsSamples.Where(t => t.Item2 == orderAttr.EntityType).Count() > 0)
+                    {
+                        int sortNum = orderEntityTypeAndIsSamples.First(t => t.Item2 == orderAttr.EntityType).Item1;
+                        var first = paramExps.First(t => t.Key == sortNum);
+                        //排序属性
+                        var orderProp = orderAttr.EntityType.GetProperty(orderAttr.PropName, BindingFlags.Public | BindingFlags.Instance);
+                        typeOrderRuleList.Add(new KeyValuePair<Expression, EOrderRule>(Expression.TypeAs(Expression.Property(first.Value, orderProp), typeof(object)), orderAttr.OrderRule));
+                    }
+                }
+            }
+
+            //if (orderPropAttrCount > 0)
+            //{
+            //    foreach (var orderPropAttr in orderPropAttrs)
+            //    {
+            //        if (dicMainTablePropMapOrder.Keys.Contains(orderPropAttr.MainTablePropName))
+            //        {
+            //            int sortNum = dicMainTablePropMapOrder[orderPropAttr.MainTablePropName];
+            //            var first = paramExps.First(t => t.Key == sortNum);
+            //            //排序属性
+            //            var orderProp = orderEntityTypeAndIsSamples[sortNum].Item2.GetProperty(orderPropAttr.PropName, BindingFlags.Public | BindingFlags.Instance);
+            //            typeOrderRuleList.Add(new KeyValuePair<Expression, EOrderRule>(Expression.TypeAs(Expression.Property(first.Value, orderProp), typeof(object)), orderPropAttr.OrderRule));
+            //        }
+            //    }
+            //}
+            ////排序属性大小
+            //if (orderTypeAttrCount > 0)
+            //{
+            //    foreach (var orderAttr in orderTypeAttrs)
+            //    {
+            //        if (orderEntityTypeAndIsSamples.Where(t => t.Item2 == orderAttr.EntityType).Count() > 0)
+            //        {
+            //            int sortNum = orderEntityTypeAndIsSamples.First(t => t.Item2 == orderAttr.EntityType).Item1;
+            //            var first = paramExps.First(t => t.Key == sortNum);
+            //            //排序属性
+            //            var orderProp = orderAttr.EntityType.GetProperty(orderAttr.PropName, BindingFlags.Public | BindingFlags.Instance);
+            //            typeOrderRuleList.Add(new KeyValuePair<Expression, EOrderRule>(Expression.Property(first.Value, orderProp), orderAttr.OrderRule));
+            //        }
+            //    }
+            //}
+
             //属性绑定表达式
             IList<MemberBinding> memberBindings = new List<MemberBinding>();
             Expression bindingExp = null;
@@ -816,15 +880,16 @@ namespace ZeroOne.Repository
                     {
                         if (!string.IsNullOrEmpty(joinItem.MainTableAttrPropName) && dicMainTablePropMapOrder.Keys.Contains(joinItem.MainTableAttrPropName))
                         {
-                            var first = paramExps.First(t => t.Key == dicMainTablePropMapOrder[joinItem.MainTableAttrPropName]);
+                            int sortNum = dicMainTablePropMapOrder[joinItem.MainTableAttrPropName];
+                            var first = paramExps.First(t => t.Key == sortNum);
                             left = Expression.Property(first.Value, joinItem.DestProperty);
                         }
                         else
                         {
-                            var first = orderEntityTypeAndIsSamples.First(t => t.Item2 == joinItem.DestEntityType);
-                            left = Expression.Property(paramExps.FirstOrDefault(t => t.Key == first.Item1).Value, joinItem.DestProperty);
+                            var myType = orderEntityTypeAndIsSamples.First(t => t.Item2 == joinItem.DestEntityType);
+                            var myExpParam = paramExps.FirstOrDefault(t => t.Key == myType.Item1);
+                            left = Expression.Property(myExpParam.Value, joinItem.DestProperty);
                         }
-                        //left = Expression.Property(paramExps.FirstOrDefault(t => t.Key == joinItem.DestEntityType).Value, joinItem.DestProperty);
                         right = Expression.Constant(joinItem.PropValue);
                     }
                     else
@@ -884,8 +949,9 @@ namespace ZeroOne.Repository
                                 || (joinItem.Property != null && joinItem.DestProperty != null && joinItem.Property.PropertyType == typeof(string) && joinItem.DestProperty.PropertyType == typeof(string))
                             )
                         {
-                            var containsMethod = typeof(string).GetMethod(nameof(string.Contains));
-                            compareExp = Expression.Call(containsMethod, left, right);
+                            var strType = typeof(string);
+                            var containsMethod = strType.GetMethod(nameof(string.Contains), new Type[] { strType });
+                            compareExp = Expression.Call(left, containsMethod, right);
                         }
                         else
                         {
@@ -1044,34 +1110,64 @@ namespace ZeroOne.Repository
                 }
             }
 
+            //排序对象
+            object orderObject = queryObject;
+            if (whereObject != null)
+            {
+                orderObject = whereObject;
+            }
+            LambdaExpression orderLambda = null;
+            MethodInfo orderMethod = null;
+            object queryResult = null;
+            if (typeOrderRuleList.Count > 0)
+            {
+                var orderMethods = orderObject.GetType().GetMethods().Where(t => t.Name == "OrderBy" && t.GetParameters().Where(x => x.Name == "expression" && x.Member?.DeclaringType?.GenericTypeArguments?.Count() == orderEntityTypeAndIsSamples.Count).Count() > 0).ToList();
+                if (orderMethods.Count > 0)
+                {
+                    orderMethod = orderMethods[0];
+                    foreach (var orderRule in typeOrderRuleList)
+                    {
+                        OrderByType orderByType = OrderByType.Asc;
+                        if (orderRule.Value == EOrderRule.Desc)
+                        {
+                            orderByType = OrderByType.Desc;
+                        }
+                        orderLambda = Expression.Lambda(orderRule.Key, paramExps.Select(t => t.Value));
+                        orderObject = orderMethod.Invoke(orderObject, new object[] { orderLambda, orderByType });
+                    }
+                }
+            }
+
+            //select对象
             var memerInitExp = Expression.MemberInit(Expression.New(resultType), memberBindings);
             var selectLambda = Expression.Lambda(memerInitExp, paramExps.Select(t => t.Value));
-            MethodInfo selectMethod = null;
-            object queryResult = null;
             //int totalCount = 0;
             if (selectLambda != null)
             {
-                if (whereObject != null)
+                //if (whereObject != null)
+                //{
+                //this._client.Queryable<ProCategory, ProCategory>((t1, t2) => t1.Id == t2.ParentId).Where((t1, t2) => t1.CategoryName == "")
+                //    .OrderBy((t1, t2) => t1.CategoryName, OrderByType.Asc)
+                //    .OrderBy(())
+                //    .Select<ProCategorySearchResult>((t1, t2) => new ProCategorySearchResult())
+                var selectMethods = orderObject.GetType().GetMethods().Where(t => t.Name == "Select" && t.GetParameters().Where(x => x.Name == "expression" && x.Member?.DeclaringType?.GenericTypeArguments?.Count() == orderEntityTypeAndIsSamples.Count).Count() > 0).ToList();
+                //var b = whereObject.GetType().GetMethod("Select");
+                if (selectMethods.Count > 0)
                 {
-                    //this._client.Queryable<ProCategory, ProCategory>((t1, t2) => t1.Id == t2.ParentId).Where((t1, t2) => t1.CategoryName == "").Select<ProCategorySearchResult>((t1, t2) => new ProCategorySearchResult()).ToPageListAsync
-                    var selectMethods = whereObject.GetType().GetMethods().Where(t => t.Name == "Select" && t.GetParameters().Where(x => x.Name == "expression" && x.Member?.DeclaringType?.GenericTypeArguments?.Count() == orderEntityTypeAndIsSamples.Count).Count() > 0).ToList();
-                    //var b = whereObject.GetType().GetMethod("Select");
-                    if (selectMethods.Count > 0)
-                    {
-                        selectMethod = selectMethods[0].MakeGenericMethod(new[] { resultType });
-                        queryResult = selectMethod.Invoke(whereObject, new object[] { selectLambda });
-                    }
+                    MethodInfo selectMethod = selectMethods[0].MakeGenericMethod(new[] { resultType });
+                    queryResult = selectMethod.Invoke(orderObject, new object[] { selectLambda });
                 }
-                else
-                {
-                    var selectMethods = queryObject.GetType().GetMethods().Where(t => t.Name == "Select" && t.GetParameters().Where(x => x.Name == "expression" && x.Member?.DeclaringType?.GenericTypeArguments?.Count() == orderEntityTypeAndIsSamples.Count).Count() > 0).ToList();
-                    //selectMethod = queryObject.GetType().GetMethod("Select", new Type[] { selectLambda.GetType() });
-                    if (selectMethods.Count > 0)
-                    {
-                        selectMethod = selectMethods[0].MakeGenericMethod(new[] { resultType });
-                        queryResult = selectMethod.Invoke(queryObject, new object[] { selectLambda });
-                    }
-                }
+                //}
+                //else
+                //{
+                //    var selectMethods = queryObject.GetType().GetMethods().Where(t => t.Name == "Select" && t.GetParameters().Where(x => x.Name == "expression" && x.Member?.DeclaringType?.GenericTypeArguments?.Count() == orderEntityTypeAndIsSamples.Count).Count() > 0).ToList();
+                //    //selectMethod = queryObject.GetType().GetMethod("Select", new Type[] { selectLambda.GetType() });
+                //    if (selectMethods.Count > 0)
+                //    {
+                //        selectMethod = selectMethods[0].MakeGenericMethod(new[] { resultType });
+                //        queryResult = selectMethod.Invoke(queryObject, new object[] { selectLambda });
+                //    }
+                //}
             }
             return queryResult;
         }
@@ -1105,7 +1201,7 @@ namespace ZeroOne.Repository
 
                 //默认And
                 ELogicalOperator parentLogicalOperator = ELogicalOperator.And;
-                var parentLogicalOperators = groupItem.Select(t => t.ParentLogicalOperator).Distinct().ToList();
+                var parentLogicalOperators = groupItem.Select(t => t.ParGroupLogicalOperator).Distinct().ToList();
                 //存在取第一个
                 if (parentLogicalOperators.Count > 0)
                 {
@@ -1164,8 +1260,9 @@ namespace ZeroOne.Repository
                         {
                             if (typeof(string) == current.Prop.PropertyType)
                             {
-                                var containsMethod = typeof(string).GetMethod(nameof(string.Contains));
-                                compareExp = Expression.Call(containsMethod, left, right);
+                                var strType = typeof(string);
+                                var containsMethod = strType.GetMethod(nameof(string.Contains), new Type[] { strType });
+                                compareExp = Expression.Call(left, containsMethod, right);
                             }
                             else if (current.Value.GetType().GetInterfaces().Any(x => typeof(IEnumerable<>) == (x.IsGenericType ? x.GetGenericTypeDefinition() : x)))
                             {
@@ -1253,7 +1350,7 @@ namespace ZeroOne.Repository
 
 
     public abstract class BaseRep<TEntity, TPrimaryKey, TSearch, TSearchResult> : BaseRep<TEntity, TPrimaryKey, TSearch>
-                where TSearch : BaseSearch
+        where TSearch : BaseSearch
         where TEntity : BaseEntity<TPrimaryKey>, IRowVersion, new()
     {
         public BaseRep(ISqlSugarClient client) : base(client)

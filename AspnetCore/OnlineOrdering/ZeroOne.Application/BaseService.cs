@@ -1,4 +1,5 @@
-﻿using System;
+﻿using AutoMapper;
+using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using ZeroOne.Entity;
@@ -10,7 +11,7 @@ namespace ZeroOne.Application
     public abstract class BaseService<TEntity, TPrimaryKey, TSearch> : BaseService<TEntity, TPrimaryKey>, IBaseService<TEntity, TPrimaryKey, TSearch>
         where TEntity : BaseEntity<TPrimaryKey>, new()
         where TSearch : BaseSearch
-    {
+    {       
         /// <summary>
         /// 获取查询过滤数据库对象
         /// </summary>
@@ -19,9 +20,10 @@ namespace ZeroOne.Application
         protected abstract IList<BaseRepModel> GetBaseRepBySearch(TSearch search);
 
         private IBaseRep<TEntity, TPrimaryKey, TSearch> Rep;
-        public BaseService(IBaseRep<TEntity, TPrimaryKey, TSearch> rep) : base(rep)
+        public BaseService(IBaseRep<TEntity, TPrimaryKey, TSearch> rep,IMapper mapper) : base(rep)
         {
             this.Rep = rep;
+            this.Mapper = mapper;
         }
 
         public async Task<IList<TEntity>> GetEntitiesAsync(TSearch search)
@@ -65,6 +67,8 @@ namespace ZeroOne.Application
             return result;
         }
 
+        protected IMapper Mapper { get; set; }
+
         private IBaseRep<TEntity, TPrimaryKey> Rep;
         public BaseService(IBaseRep<TEntity, TPrimaryKey> rep)
         {
@@ -73,7 +77,8 @@ namespace ZeroOne.Application
 
         public async Task<TEntity> AddAndReturnAsync<TRequest>(TRequest request) where TRequest : IAddRequest
         {
-            var entity = request.Map<TEntity>();
+            //= request.Map<TEntity>();
+            var entity = Mapper.Map<TEntity>(request);
             return await this.Rep.AddEntityAsync(entity);
         }
 

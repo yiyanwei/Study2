@@ -52,7 +52,6 @@ namespace ZeroOne.WebApi.Controllers
         [HttpGet("SearchPageList")]
         public async Task<PageSearchResult<ProCategoryResponse>> SearchPageList(ProCategoryPageSearch pageSearch)
         {
-            var claim = User.Claims.FirstOrDefault(t => t.Type == JwtClaimTypes.Id);
             var result = await this.Service.SearchPageResultAsync<ProCategoryPageSearch, ProCategorySearchResult, PageSearchResult<ProCategorySearchResult>>(pageSearch);
             return Mapper.Map<PageSearchResult<ProCategoryResponse>>(result);
         }

@@ -79,4 +79,21 @@ namespace ZeroOne.Entity
         [Description("Or")]
         Or = 2
     }
+
+    /// <summary>
+    /// 升序降序
+    /// </summary>
+    public enum EOrderRule
+    {
+        /// <summary>
+        /// 升序
+        /// </summary>
+        [Description("升序")]
+        Asc = 1,
+        /// <summary>
+        /// 降序
+        /// </summary>
+        [Description("降序")]
+        Desc = 2
+    }
 }

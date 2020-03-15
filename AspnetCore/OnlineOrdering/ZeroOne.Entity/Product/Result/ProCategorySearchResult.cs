@@ -7,6 +7,8 @@ namespace ZeroOne.Entity
     /// <summary>
     /// 产品分类查询结果
     /// </summary>
+    [DbOrdering(nameof(ProCategory.CreationTime),EOrderRule.Desc,typeof(ProCategory))]
+    [DbOrdering(nameof(ProCategory.CreationTime), EOrderRule.Desc,nameof(ParentCategoryName))]
     public class ProCategorySearchResult : Result
     {
         /// <summary>

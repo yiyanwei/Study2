@@ -1,3 +1,4 @@
+using AutoMapper;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -12,7 +13,7 @@ namespace ZeroOne.Application
     {
 
         private IProCategoryRep Rep;
-        public ProCategoryService(IProCategoryRep rep) : base(rep)
+        public ProCategoryService(IProCategoryRep rep, IMapper mapper) : base(rep, mapper)
         {
             this.Rep = rep;
         }

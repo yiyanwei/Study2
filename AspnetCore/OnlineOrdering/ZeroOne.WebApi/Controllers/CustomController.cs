@@ -22,7 +22,7 @@ namespace ZeroOne.WebApi.Controllers
         /// </summary>
         protected IBaseService<TEntity, TPrimaryKey> service;
         public CustomController(IBaseService<TEntity, TPrimaryKey> service)
-        {            
+        {
             this.service = service;
         }
 
@@ -47,7 +47,11 @@ namespace ZeroOne.WebApi.Controllers
         [HttpPost("Add")]
         public async Task<TEntity> Add(TAddRequest request)
         {
-            request.CreatorUserId = Guid.Parse(UserId);
+            var idClaim = User.Claims.FirstOrDefault(t => t.Type == JwtClaimTypes.Id);
+            if (idClaim != null)
+            {
+                request.CreatorUserId = Guid.Parse(idClaim.Value);
+            }
             return await service.AddAndReturnAsync(request);
         }
 
@@ -59,7 +63,11 @@ namespace ZeroOne.WebApi.Controllers
         [HttpPut("Edit")]
         public async Task Edit(TEditRequest request)
         {
-            request.LastModifierUserId = Guid.Parse(UserId);
+            var idClaim = User.Claims.FirstOrDefault(t => t.Type == JwtClaimTypes.Id);
+            if (idClaim != null)
+            {
+                request.LastModifierUserId = Guid.Parse(idClaim.Value);
+            }
             var result = await service.UpdateNotNullAsync(request);
             if (!result)
             {
@@ -80,7 +88,7 @@ namespace ZeroOne.WebApi.Controllers
             {
 
             }
-            var result = await service.DeleteAsync(id, rowVersion.Value,Guid.Parse(UserId));
+            var result = await service.DeleteAsync(id, rowVersion.Value, Guid.Parse(UserId));
             if (!result)
             {
 

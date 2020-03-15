@@ -4,6 +4,7 @@ using System.Reflection;
 
 namespace ZeroOne.Entity
 {
+    [AttributeUsage(AttributeTargets.Class)]
     public class TableAttribute : Attribute
     {
         public TableAttribute(string name)
@@ -14,6 +15,7 @@ namespace ZeroOne.Entity
         public string Name { get; set; }
     }
 
+    [AttributeUsage(AttributeTargets.Property | AttributeTargets.Field)]
     public class ColumnNameAttribute : Attribute
     {
         /// <summary>
@@ -27,6 +29,7 @@ namespace ZeroOne.Entity
         }
     }
 
+    [AttributeUsage(AttributeTargets.Property | AttributeTargets.Field, AllowMultiple = true)]
     public class JoinTableRelationAttribute : Attribute
     {
         /// <summary>
@@ -86,6 +89,7 @@ namespace ZeroOne.Entity
         }
     }
 
+    [AttributeUsage(AttributeTargets.Property | AttributeTargets.Field)]
     public class EntityPropNameAttribute : Attribute
     {
 
@@ -99,6 +103,7 @@ namespace ZeroOne.Entity
     /// <summary>
     /// 表关联主关联表
     /// </summary>
+    [AttributeUsage(AttributeTargets.Property | AttributeTargets.Field)]
     public class MainTableRelationAttribute : Attribute
     {
         public Type EntityType { get; set; }
@@ -116,6 +121,32 @@ namespace ZeroOne.Entity
             this.JoinType = joinType;
             this.DestPropName = destPropName;
             this.IsTogetherSampleType = isTogetherSampleType;
+        }
+    }
+
+    [AttributeUsage(AttributeTargets.Class, AllowMultiple = true)]
+    public class DbOrderingAttribute : Attribute
+    {
+        public string PropName { get; set; }
+
+        public EOrderRule OrderRule { get; set; }
+
+        public Type EntityType { get; set; }
+
+        public string MainTablePropName { get; set; }
+
+        public DbOrderingAttribute(string propName, EOrderRule orderRule, Type entityType)
+        {
+            this.PropName = propName;
+            this.OrderRule = orderRule;
+            this.EntityType = entityType;
+        }
+
+        public DbOrderingAttribute(string propName, EOrderRule orderRule, string mainTablePropName)
+        {
+            this.PropName = propName;
+            this.OrderRule = orderRule;
+            this.MainTablePropName = mainTablePropName;
         }
     }
 
@@ -157,7 +188,7 @@ namespace ZeroOne.Entity
 
         public int? ParentGroupKey { get; set; }
 
-        public ELogicalOperator ParentLogicalOperator { get; set; }
+        public ELogicalOperator ParGroupLogicalOperator { get; set; }
 
         public PropertyInfo Prop { get; set; }
 
@@ -167,27 +198,27 @@ namespace ZeroOne.Entity
         {
             this.CompareOperator = ECompareOperator.Equal;
             this.LogicalOperator = ELogicalOperator.And;
-            this.ParentLogicalOperator = ELogicalOperator.And;
+            this.ParGroupLogicalOperator = ELogicalOperator.And;
         }
 
         public DbOperationAttribute(ECompareOperator compareOperator)
         {
             this.CompareOperator = compareOperator;
             this.LogicalOperator = ELogicalOperator.And;
-            this.ParentLogicalOperator = ELogicalOperator.And;
+            this.ParGroupLogicalOperator = ELogicalOperator.And;
         }
 
         public DbOperationAttribute(ECompareOperator compareOperator, ELogicalOperator logicalOperator)
         {
             this.CompareOperator = compareOperator;
             this.LogicalOperator = logicalOperator;
-            this.ParentLogicalOperator = ELogicalOperator.And;
+            this.ParGroupLogicalOperator = ELogicalOperator.And;
         }
 
 
         public DbOperationAttribute(Type entityType, string propName = null,
              int groupKey = 0, int parentGroupKey = 0, string mainTablePropName = null, ECompareOperator compareOperator = ECompareOperator.Equal,
-             ELogicalOperator logicalOperator = ELogicalOperator.And, ELogicalOperator parentLogicalOperator = ELogicalOperator.And)
+             ELogicalOperator logicalOperator = ELogicalOperator.And, ELogicalOperator parGroupLogicalOperator = ELogicalOperator.And)
         {
             this.MainTablePropName = mainTablePropName;
             this.CompareOperator = compareOperator;
@@ -196,7 +227,7 @@ namespace ZeroOne.Entity
             this.PropName = propName;
             this.GroupKey = groupKey == 0 ? null : (int?)groupKey;
             this.ParentGroupKey = parentGroupKey == 0 ? null : (int?)parentGroupKey;
-            this.ParentLogicalOperator = ELogicalOperator.And;
+            this.ParGroupLogicalOperator = ELogicalOperator.And;
         }
     }
 }

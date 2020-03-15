@@ -5,6 +5,7 @@ using System.Reflection;
 using System.Threading.Tasks;
 using ZeroOne.Entity;
 using ZeroOne.Repository;
+using AutoMapper;
 
 namespace ZeroOne.Application
 {
@@ -12,7 +13,7 @@ namespace ZeroOne.Application
     {
         private IProInfoRep _ProInfoRep;
         private IProCategoryRep ProCategoryRep;
-        public ProInfoService(IProInfoRep proInfoRep, IProCategoryRep proCategoryRep) : base(proInfoRep)
+        public ProInfoService(IProInfoRep proInfoRep, IProCategoryRep proCategoryRep,IMapper mapper) : base(proInfoRep, mapper)
         {
             this._ProInfoRep = proInfoRep;
             this.ProCategoryRep = proCategoryRep;
