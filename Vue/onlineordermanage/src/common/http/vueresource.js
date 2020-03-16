@@ -61,7 +61,7 @@ function newUrl(url, data) {
 }
 
 //根目录
-const rootApi = "http://localhost:5002/api";
+const rootApi = "http://localhost:8888/api";
 
 /*get方式请求数据*/
 function get(url, data, success, error) {

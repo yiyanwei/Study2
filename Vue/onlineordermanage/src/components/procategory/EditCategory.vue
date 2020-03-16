@@ -33,22 +33,9 @@ export default {
       }
     };
   },
-  beforeCreate(){
-    console.log("beforeCreate");
-  },
-  created(){
-    console.log("created");
-  },
   mounted: function() {
     this.form.id = this.$parent.$parent.currentId;
     this.initData();
-    console.log('mounted');
-  },
-  beforeDestroy: function() {
-    console.log("beforeDestroy");
-  },
-  destroyed() {
-    console.log("destroyed");
   },
   methods: {
     getCategory() {

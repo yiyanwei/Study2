@@ -5,10 +5,9 @@ using System.Text;
 namespace ZeroOne.Entity
 {
     /// <summary>
-    /// 产品信息
+    /// 产品返回对象
     /// </summary>
-    [DbOrdering(nameof(ProInfo.CreationTime), EOrderRule.Desc, typeof(ProInfo))]
-    public class ProInfoSearchResult : Result
+    public class ProInfoResponse : IResult
     {
         /// <summary>
         /// 主键Id
@@ -42,20 +41,15 @@ namespace ZeroOne.Entity
         /// <summary>
         /// 分类名称
         /// </summary>
-        [MainTableRelation(typeof(ProCategory), EJoinType.InnerJoin)]
-        [JoinTableRelation(nameof(ProCategory.Id),typeof(ProInfo),nameof(ProInfo.CategoryId))]
         public string CategoryName { get; set; }
 
         /// <summary>
         /// 创建时间
         /// </summary>
-        public DateTime? CreationTime { get; set; }
-
+        public string CreationTime { get; set; }
         /// <summary>
-        /// 用户姓名
+        /// 操作人
         /// </summary>
-        [MainTableRelation(typeof(UserInfo), EJoinType.LeftJoin, nameof(UserInfo.Name))]
-        [JoinTableRelation(nameof(UserInfo.Id), typeof(ProInfo), nameof(ProInfo.CreatorUserId))]
         public string RealName { get; set; }
     }
 }

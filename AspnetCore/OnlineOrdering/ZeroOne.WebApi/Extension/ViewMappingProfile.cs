@@ -15,6 +15,10 @@ namespace ZeroOne.WebApi
             CreateMap<PageSearchResult<ProCategorySearchResult>, PageSearchResult<ProCategoryResponse>>();
             CreateMap<ProCategorySearchResult, ProCategoryResponse>()
             .ForMember(x => x.CreationTime, x => x.MapFrom(y => y.CreationTime.HasValue ? y.CreationTime.Value.ToString("yyyy-MM-dd HH:mm:ss") : string.Empty));
+            //产品映射
+            CreateMap<PageSearchResult<ProInfoSearchResult>, PageSearchResult<ProInfoResponse>>();
+            CreateMap<ProInfoSearchResult, ProInfoResponse>()
+                .ForMember(x => x.CreationTime, x => x.MapFrom(y => y.CreationTime.HasValue ? y.CreationTime.Value.ToString("yyyy-MM-dd HH:mm:ss") : string.Empty));
 
             //产品分类添加对象，默认未提供父级分类的id则为根级分类
 

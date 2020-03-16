@@ -54,12 +54,6 @@
       width="350px"
       :close-on-click-modal="false"
       :destroy-on-close="true"
-      @close="editClose"
-      @open="editOpen"
-      @opened="editOpened"
-      @closed="editClosed"
-      @beforeDestroy="editBeforeDestory"
-      @destroyed="editDestDroyed"
     >
       <EditCategory v-if="dialogEditCategory" ref="editCategory" />
     </el-dialog>
@@ -93,33 +87,13 @@ export default {
   mounted: function() {
     this.initData();
   },
-  methods: {
-    editBeforeDestory() {
-      console.log("editBeforeDestory");
-    },
-    editDestDroyed() {
-      console.log("editDestDroyed");
-    },
+  methods: {  
     initData() {
       this.getData();
     },
     currentChange(pageIndex) {
       this.form.pageIndex = pageIndex;
       this.getData();
-    },
-    editOpen() {
-      console.log("editOpen");
-    },
-    editOpened() {
-      console.log("editOpened");
-    },
-    editClose() {
-      console.log("editClose");
-      // console.log(this.$refs);
-      // console.log(this.$refs.editCategory);
-    },
-    editClosed() {
-      console.log("editClosed");
     },
     onSearch() {
       this.form.pageIndex = 0;

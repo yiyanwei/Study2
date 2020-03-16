@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Authorization;
 using NLog.Web;
 using ZeroOne.Entity;
 using ZeroOne.Application;
+using AutoMapper;
 
 namespace ZeroOne.WebApi.Controllers
 {
@@ -21,9 +22,10 @@ namespace ZeroOne.WebApi.Controllers
         /// </summary>
         private IProInfoService Service;
 
-        public ProInfoController(IProInfoService service) : base(service)
+        public ProInfoController(IProInfoService service, IMapper mapper) : base(service)
         {
             this.Service = service;
+            this.Mapper = mapper;
         }
 
         /// <summary>
@@ -32,9 +34,10 @@ namespace ZeroOne.WebApi.Controllers
         /// <param name="pageSearch"></param>
         /// <returns></returns>
         [HttpGet("SearchPageList")]
-        public async Task<PageSearchResult<ProInfoSearchResult>> SearchPageList(ProInfoPageSearch pageSearch)
+        public async Task<PageSearchResult<ProInfoResponse>> SearchPageList(ProInfoPageSearch pageSearch)
         {
-            return await this.Service.SearchPageResultAsync<ProInfoPageSearch, ProInfoSearchResult, PageSearchResult<ProInfoSearchResult>>(pageSearch);
+            var results = await this.Service.SearchPageResultAsync<ProInfoPageSearch, ProInfoSearchResult, PageSearchResult<ProInfoSearchResult>>(pageSearch);
+            return Mapper.Map<PageSearchResult<ProInfoResponse>>(results);
         }
 
 
