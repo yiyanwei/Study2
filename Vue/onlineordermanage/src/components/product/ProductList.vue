@@ -15,7 +15,7 @@
         </el-form-item>
         <el-form-item>
           <el-button type="primary" @click="onSearch">查询</el-button>
-          <el-button type="primary" @click="dialogAddCategory = true">新增</el-button>
+          <el-button type="primary" @click="dialogAddProduct = true">新增</el-button>
         </el-form-item>
       </el-form>
     </header>
@@ -57,6 +57,24 @@
         </template>
       </el-table-column>
     </el-table>
+    <div>
+      <el-pagination
+        background
+        layout="prev, pager, next"
+        :total="total"
+        :page-size="form.pageSize"
+        @current-change="currentChange"
+      ></el-pagination>
+    </div>
+    <el-dialog
+      title="新增产品"
+      :visible.sync="dialogAddProduct"
+      width="30%"
+      :close-on-click-modal="false"
+      :destroy-on-close="true"
+    >
+      <AddProduct v-if="dialogAddProduct" />
+    </el-dialog>
   </div>
 </template>
 <style>
@@ -74,27 +92,40 @@
 }
 </style>
 <script>
+import AddProduct from "./AddPro.vue";
 import http from "../../common/http/vueresource.js";
 export default {
   data() {
     return {
+      dialogAddProduct:false,
       tableData: [],
-      procateoptions:[],
+      procateoptions: [],
+      total: 0,
       form: {
         pageIndex: 0,
         pageSize: 10
       }
     };
   },
+  components:{
+    AddProduct
+  },
   mounted() {
     this.getCategoryList();
     this.getData();
   },
   methods: {
+    onSearch(){
+
+    },
     onEdit(row) {
       console.log(row);
     },
-    getCategoryList(){
+    currentChange(pageIndex){
+      this.form.pageIndex = pageIndex;
+      this.getData();
+    },
+    getCategoryList() {
       var api = "/ProCategory/GetDropDownListAsync";
       http.get(api, null, response => {
         if (response && response.success && response.data) {
