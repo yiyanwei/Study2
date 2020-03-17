@@ -23,16 +23,16 @@ namespace ZeroOne.WebApi
         //}
         public static void Main(string[] args)
         {
-            DateTime now = DateTime.Now;
-            long ticks = (now.ToUniversalTime().Ticks - 621355968000000000) / 10000;
-            Console.WriteLine(ticks);
-            Console.WriteLine(now);
-            Console.WriteLine(now.Ticks);
-            Console.WriteLine(now.ToUniversalTime());
-            Console.WriteLine(now.ToUniversalTime().Ticks);
+            //DateTime now = DateTime.Now;
+            //long ticks = (now.ToUniversalTime().Ticks - 621355968000000000) / 10000;
+            //Console.WriteLine(ticks);
+            //Console.WriteLine(now);
+            //Console.WriteLine(now.Ticks);
+            //Console.WriteLine(now.ToUniversalTime());
+            //Console.WriteLine(now.ToUniversalTime().Ticks);
 
-            Console.WriteLine(new DateTime(621355968000000000));
-
+            //Console.WriteLine(new DateTime(621355968000000000));
+            //Console.WriteLine(new DateTime(ticks * 10000 + 621355968000000000).AddHours(8));
 
             //            1584361276650
             //2020 / 3 / 16 20:21:16
@@ -41,7 +41,7 @@ namespace ZeroOne.WebApi
             //637199580766505249
             //1970 / 1 / 1 0:00:00
 
-            Console.WriteLine(new DateTime(ticks * 10000 + 621355968000000000).AddHours(8));
+
             //var firstType = typeof(ProInfo);
             //var secondType = typeof(ProInfo);
             //if (firstType == secondType)

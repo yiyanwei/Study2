@@ -83,7 +83,7 @@ namespace ZeroOne.WebApi
 
             //数据库连接配置
             services.Configure<ConnectionConfig>(Configuration.GetSection("ConnectionConfig"));
-            services.AddSingleton<ISqlSugarClient>(t =>
+            services.AddTransient<ISqlSugarClient>(t =>
             {
                 var connConfig = t.GetRequiredService<IOptions<ConnectionConfig>>().Value;
                 var extMethodList = new List<SqlFuncExternal>();
