@@ -132,5 +132,6 @@ export default {
   get,
   post,
   put,
-  del
+  del,
+  rootApi
 }
