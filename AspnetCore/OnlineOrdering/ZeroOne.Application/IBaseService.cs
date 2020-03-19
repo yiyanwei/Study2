@@ -6,6 +6,7 @@ using ZeroOne.Entity;
 
 namespace ZeroOne.Application
 {
+
     public interface IBaseService<TEntity, TPrimaryKey>
         where TEntity : BaseEntity<TPrimaryKey>
     {
