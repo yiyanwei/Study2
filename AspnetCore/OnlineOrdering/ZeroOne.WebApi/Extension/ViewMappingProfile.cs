@@ -24,6 +24,9 @@ namespace ZeroOne.WebApi
 
             CreateMap<ProCategoryAddRequest, ProCategory>()
                 .ForMember(x => x.ParentId, x => x.MapFrom(t => t.ParentId.HasValue ? t.ParentId.Value : Guid.Empty));
+
+            //添加产品对象映射
+            CreateMap<ProInfoAddRequest, ProInfo>();
         }
     }
 }

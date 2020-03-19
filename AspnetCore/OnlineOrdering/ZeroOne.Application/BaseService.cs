@@ -77,7 +77,6 @@ namespace ZeroOne.Application
 
         public async Task<TEntity> AddAndReturnAsync<TRequest>(TRequest request) where TRequest : IAddRequest
         {
-            //= request.Map<TEntity>();
             var entity = Mapper.Map<TEntity>(request);
             return await this.Rep.AddEntityAsync(entity);
         }
