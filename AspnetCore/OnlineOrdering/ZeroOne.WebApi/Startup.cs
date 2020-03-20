@@ -23,6 +23,7 @@ using ZeroOne.Entity;
 using ZeroOne.Extension.Global;
 using Microsoft.AspNetCore.Routing;
 using AutoMapper;
+using ZeroOne.Extension.Model;
 
 namespace ZeroOne.WebApi
 {
@@ -139,6 +140,13 @@ namespace ZeroOne.WebApi
 
                 };
                 o.Events = new JwtBearerOverrideEvents();
+            });
+
+            //文件上传配置
+           var uploadSettingSection = Configuration.GetSection(nameof(UploadSettings));
+            services.Configure<UploadSettings>(options => {
+                options.SourceImgRootPath = uploadSettingSection[nameof(UploadSettings.SourceImgRootPath)];
+                options.ThumbnailImgRootPath = uploadSettingSection[nameof(UploadSettings.ThumbnailImgRootPath)];
             });
 
             //add swagger

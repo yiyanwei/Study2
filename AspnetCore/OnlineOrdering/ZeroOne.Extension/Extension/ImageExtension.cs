@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 using System.Drawing;
 using System.Drawing.Imaging;
+using ZeroOne.Extension.Model;
 
 namespace ZeroOne.Extension
 {
@@ -59,6 +60,53 @@ namespace ZeroOne.Extension
                     }
                     thumHeight = height.Value;
                     thumWidth = width.Value;
+                    break;
+            }
+            return originImage.GetThumbnailImage(thumWidth, thumHeight, null, IntPtr.Zero); ;
+        }
+
+        public static Image GenerateThumbImage(this Image originImage, ImageUploadParameter uploadParameter)
+        {
+            if (originImage == null)
+            {
+                throw new Exception();
+            }
+            //图片原始高度
+            int originHeight = originImage.Height;
+            //图片原始宽度
+            int originWidth = originImage.Width;
+            //算出比例
+            float proportion = 0;
+            int thumHeight = 0, thumWidth = 0;
+            switch (uploadParameter.ThumbnailWay)
+            {
+                case EThumbnailWay.Height:
+                    if (!uploadParameter.Height.HasValue)
+                    {
+                        throw new Exception();
+                    }
+                    thumHeight = uploadParameter.Height.Value;
+                    proportion = (float)(thumHeight / originHeight);
+                    thumWidth = (int)(originWidth * proportion);
+                    break;
+                case EThumbnailWay.Width:
+                    if (!uploadParameter.Width.HasValue)
+                    {
+                        throw new Exception();
+                    }
+                    thumWidth = uploadParameter.Width.Value;
+                    //算出比例
+                    proportion = (float)(thumWidth / originWidth);
+                    thumHeight = (int)(originHeight * proportion);
+                    break;
+                case EThumbnailWay.HW:
+                default:
+                    if (!uploadParameter.Height.HasValue || !uploadParameter.Width.HasValue)
+                    {
+                        throw new Exception();
+                    }
+                    thumHeight = uploadParameter.Height.Value;
+                    thumWidth = uploadParameter.Width.Value;
                     break;
             }
             return originImage.GetThumbnailImage(thumWidth, thumHeight, null, IntPtr.Zero); ;

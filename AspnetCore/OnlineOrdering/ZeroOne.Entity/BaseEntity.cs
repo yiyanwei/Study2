@@ -3,18 +3,20 @@ using SqlSugar;
 
 namespace ZeroOne.Entity
 {
-    
-    /// <summary>
-    /// 实体基础类
-    /// </summary>
-    public class BaseEntity<TPrimaryKey>: IEntity<TPrimaryKey>, IDeleted, IUpdated, IRowVersion
+    public class Entity<TPrimaryKey> : IEntity<TPrimaryKey>
     {
-        
         /// <summary>
         /// 主键
         /// </summary>
         [SugarColumn(IsPrimaryKey = true)]
         public TPrimaryKey Id { get; set; }
+    }
+
+    /// <summary>
+    /// 实体基础类
+    /// </summary>
+    public class BaseEntity<TPrimaryKey> : Entity<TPrimaryKey>, IEntity<TPrimaryKey>, IDeleted, IUpdated, IRowVersion
+    {
 
         /// <summary>
         /// 数据状态 0：正常，1：删除
