@@ -5,7 +5,7 @@ using System.Collections.Generic;
 
 namespace ZeroOne.Repository
 {
-    public interface IBaseRep<TEntity, TPrimaryKey> where TEntity : BaseEntity<TPrimaryKey>
+    public interface IBaseRep<TEntity, TPrimaryKey> where TEntity : IEntity<TPrimaryKey>
     {
         /// <summary>
         /// 获取结果对象
@@ -60,7 +60,7 @@ namespace ZeroOne.Repository
 
     public interface IBaseRep<TEntity, TPrimaryKey, TSearch> : IBaseRep<TEntity, TPrimaryKey>
         where TSearch : BaseSearch
-        where TEntity : BaseEntity<TPrimaryKey>
+        where TEntity : IEntity<TPrimaryKey>
     {
         /// <summary>
         /// 获取TModel对象的列表

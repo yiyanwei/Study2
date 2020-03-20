@@ -8,14 +8,6 @@ namespace ZeroOne.Application
 {
     public interface IProInfoService : IBaseService<ProInfo, Guid?, ProInfoSearch>
     {
-        //Task<ProInfo> GetProductInfo(Guid id);
 
-        //Task<IList<ProInfo>> GetProducts();
-
-        Task<ProInfo> GetProByName(string name);
-
-        Task<ProInfo> AddProductInfo(ProInfo model);
-
-        void ImportData();
     }
 }

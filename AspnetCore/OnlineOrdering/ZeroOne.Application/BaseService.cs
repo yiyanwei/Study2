@@ -9,9 +9,9 @@ using ZeroOne.Repository;
 namespace ZeroOne.Application
 {
     public abstract class BaseService<TEntity, TPrimaryKey, TSearch> : BaseService<TEntity, TPrimaryKey>, IBaseService<TEntity, TPrimaryKey, TSearch>
-        where TEntity : BaseEntity<TPrimaryKey>, new()
+        where TEntity : class, IEntity<TPrimaryKey>, new()
         where TSearch : BaseSearch
-    {       
+    {
         /// <summary>
         /// 获取查询过滤数据库对象
         /// </summary>
@@ -20,7 +20,7 @@ namespace ZeroOne.Application
         protected abstract IList<BaseRepModel> GetBaseRepBySearch(TSearch search);
 
         private IBaseRep<TEntity, TPrimaryKey, TSearch> Rep;
-        public BaseService(IBaseRep<TEntity, TPrimaryKey, TSearch> rep,IMapper mapper) : base(rep)
+        public BaseService(IBaseRep<TEntity, TPrimaryKey, TSearch> rep, IMapper mapper) : base(rep)
         {
             this.Rep = rep;
             this.Mapper = mapper;
@@ -60,7 +60,7 @@ namespace ZeroOne.Application
     }
 
     public abstract class BaseService<TEntity, TPrimaryKey> : IBaseService<TEntity, TPrimaryKey>
-        where TEntity : BaseEntity<TPrimaryKey>, new()
+        where TEntity : class, IEntity<TPrimaryKey>, new()
     {
         public virtual TResult FormatResult<TResult>(TResult result) where TResult : class, IResult, new()
         {

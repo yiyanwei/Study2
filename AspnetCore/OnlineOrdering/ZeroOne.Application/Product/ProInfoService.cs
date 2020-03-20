@@ -33,45 +33,7 @@ namespace ZeroOne.Application
             return result;
         }
 
-        public async Task<ProInfo> GetProByName(string name)
-        {
-            return await this._ProInfoRep.GetProByName(name);
-        }
-
-
-        public async Task<ProInfo> AddProductInfo(ProInfo model)
-        {
-            if (model == null)
-            {
-                throw new Exception("数据为null");
-            }
-            model.Id = Guid.NewGuid();
-            return await this._ProInfoRep.AddEntityAsync(model);
-        }
-
-
-        /// <summary>
-        /// 测试导入数据
-        /// </summary>
-        public void ImportData()
-        {
-            IList<ProInfoBulk> products = new List<ProInfoBulk>();
-            ProInfoBulk product;
-            string bulkVal = DateTime.Now.ToString("yyyyMMddHHmmssfff");
-            for (int i = 0; i < 666; i++)
-            {
-                product = new ProInfoBulk()
-                {
-                    Id = Guid.NewGuid(),
-                    ProName = "产品" + (i + 1),
-                    ProCode = (i + 1).ToString(),
-                    BulkIdentity = bulkVal
-                };
-                products.Add(product);
-            }
-            this._ProInfoRep.BulkAddOrUpdate<ProInfoBulk, ProInfo>(products, beforeAction: this._ProInfoRep.BeforeAction);
-        }
-
+        
         protected override IList<BaseRepModel> GetBaseRepBySearch(ProInfoSearch search)
         {
             throw new NotImplementedException();

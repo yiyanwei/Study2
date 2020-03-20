@@ -168,69 +168,6 @@ namespace ZeroOne.Extension
             return originImage.GetThumbnailImage(thumWidth, thumHeight, null, IntPtr.Zero); ;
         }
 
-        // using System.Drawing;
-
-
-        //public static Image GenerateThumbImage(Image originalImage, int limitedSize)
-
-        //    {
-
-        //        if (limitedSize < 20)
-
-        //        {
-
-        //            throw new InvalidObjectException("limitedSize");
-
-        //        }
-
-        //        int height = originalImage.Height;
-
-        //        int width = originalImage.Width;
-
-        //        if (height > limitedSize || width > limitedSize)
-
-        //        {
-
-        //            int newHeight, newWidth;
-
-        //            if (height > width)
-
-        //            {
-
-        //                newHeight = limitedSize;
-
-        //                double tmp = (limitedSize / height) * width;
-
-        //                newWidth = (int)Math.Round(tmp);
-
-        //            }
-
-        //            else
-
-        //            {
-
-        //                newWidth = limitedSize;
-
-        //                double tmp = (limitedSize / width) * height;
-
-        //                newHeight = (int)Math.Round(tmp);
-
-        //            }
-
-        //            return originalImage.GetThumbnailImage(newWidth, newHeight, null, IntPtr.Zero);
-
-        //        }
-
-        //        else
-
-        //        {
-
-        //            return originalImage;
-
-        //        }
-
-        //    }
-
         //这是一个设定长和宽最大值后，等比例缩略的方法
         //其中，InvalidObjectException是我自定义的Exception
         //而if (limitedSize < 20)这句，是我认为不该创建小于20px的缩略图。

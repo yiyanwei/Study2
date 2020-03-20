@@ -8,7 +8,7 @@ namespace ZeroOne.Application
 {
 
     public interface IBaseService<TEntity, TPrimaryKey>
-        where TEntity : BaseEntity<TPrimaryKey>
+        where TEntity : IEntity<TPrimaryKey>
     {
         /// <summary>
         /// 更新不为空的字段
@@ -51,7 +51,7 @@ namespace ZeroOne.Application
     }
 
     public interface IBaseService<TEntity, TPrimaryKey, TSearch> : IBaseService<TEntity, TPrimaryKey>
-        where TEntity : BaseEntity<TPrimaryKey>
+        where TEntity : IEntity<TPrimaryKey>
         where TSearch : BaseSearch
     {
         /// <summary>
