@@ -21,6 +21,8 @@ namespace ZeroOne.Application
             services.AddTransient<IProInfoRep,ProInfoRep>();
             //用户仓储服务
             services.AddTransient<IUserInfoRep, UserInfoRep>();
+            //文件仓储服务
+            services.AddTransient<IFileInfoRep, FileInfoRep>();
             return services;
         }
     }

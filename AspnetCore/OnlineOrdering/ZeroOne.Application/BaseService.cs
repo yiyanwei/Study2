@@ -67,6 +67,12 @@ namespace ZeroOne.Application
             return result;
         }
 
+        public virtual TResult FormatResult<TResult>(TEntity entity) where TResult : class, IResult, new()
+        {
+            var result = Mapper.Map<TResult>(entity);
+            return result;
+        }
+
         protected IMapper Mapper { get; set; }
 
         private IBaseRep<TEntity, TPrimaryKey> Rep;
@@ -81,6 +87,21 @@ namespace ZeroOne.Application
             return await this.Rep.AddEntityAsync(entity);
         }
 
+        public async Task<TEntity> AddAndReturnAsync(TEntity entity)
+        {
+            return await this.Rep.AddEntityAsync(entity);
+        }
+
+        /// <summary>
+        /// 添加对象集合
+        /// </summary>
+        /// <param name="list">list集合</param>
+        /// <returns></returns>
+        public async Task<int> AddEntityListAsync(List<TEntity> list)
+        {
+            return await this.Rep.AddEntityListAsync(list);
+        }
+
         public async Task<bool> DeleteAsync(TPrimaryKey id, Guid rowVersion, Guid? userId)
         {
             return await this.Rep.DeleteByIdAsync(id, rowVersion, userId);
@@ -88,8 +109,8 @@ namespace ZeroOne.Application
 
         public async Task<TResult> GetResultByIdAsync<TResult>(TPrimaryKey id) where TResult : class, IResult, new()
         {
-            var result = await this.Rep.GetResultByIdAsync<TResult>(id);
-            return this.FormatResult(result);
+            var entity = await this.Rep.GetEntityByIdAsync(id);
+            return Mapper.Map<TResult>(entity);
         }
 
         public async Task<TEntity> GetEntityByIdAsync(TPrimaryKey id)

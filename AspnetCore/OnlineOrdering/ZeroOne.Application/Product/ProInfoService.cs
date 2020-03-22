@@ -11,29 +11,36 @@ namespace ZeroOne.Application
 {
     public class ProInfoService : BaseService<ProInfo, Guid?, ProInfoSearch>, IProInfoService
     {
-        private IProInfoRep _ProInfoRep;
-        private IProCategoryRep ProCategoryRep;
-        public ProInfoService(IProInfoRep proInfoRep, IProCategoryRep proCategoryRep,IMapper mapper) : base(proInfoRep, mapper)
+        protected IProInfoRep ProInfoRep;
+        protected IProCategoryRep ProCategoryRep;
+        protected IFileInfoRep FileInfoRep;
+        public ProInfoService(IProInfoRep proInfoRep, IProCategoryRep proCategoryRep, IFileInfoRep fileInfoRep, IMapper mapper) : base(proInfoRep, mapper)
         {
-            this._ProInfoRep = proInfoRep;
+            this.ProInfoRep = proInfoRep;
             this.ProCategoryRep = proCategoryRep;
+            this.FileInfoRep = fileInfoRep;
         }
 
-        public override TResult FormatResult<TResult>(TResult result)
+        public async Task<ProInfoSingleResult> GetSingleProInfoAsync(Guid? id)
         {
-            if (result != null && result is ProInfoResult)
+            var entity = await this.ProInfoRep.GetEntityByIdAsync(id);
+            if (entity == null)
             {
-                var convertResult = result as ProInfoResult;
-                //获取产品分类的信息
-                if (convertResult.CategoryId.HasValue)
-                {
-                    convertResult.ProCategory = this.ProCategoryRep.GetEntityById(convertResult.CategoryId.Value);
-                }
+                throw new Exception("");
+            }
+
+            var result = Mapper.Map<ProInfoSingleResult>(entity);
+            if (entity.UploadId.HasValue)
+            {
+                Guid uploadId = entity.UploadId.Value;
+                var fileEntityList = await this.FileInfoRep.GetEntityListAsync(nameof(FileInfo.UploadId), uploadId);
+                var fileResultList = Mapper.Map<List<FileInfoResult>>(fileEntityList);
+                result.FileInfos = fileResultList;
             }
             return result;
         }
 
-        
+
         protected override IList<BaseRepModel> GetBaseRepBySearch(ProInfoSearch search)
         {
             throw new NotImplementedException();

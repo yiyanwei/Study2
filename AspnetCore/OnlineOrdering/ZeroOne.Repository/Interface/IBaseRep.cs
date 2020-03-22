@@ -7,12 +7,13 @@ namespace ZeroOne.Repository
 {
     public interface IBaseRep<TEntity, TPrimaryKey> where TEntity : IEntity<TPrimaryKey>
     {
-        /// <summary>
-        /// 获取结果对象
-        /// </summary>
-        /// <param name="id">主键Id</param>
-        /// <returns></returns>
-        Task<TResponse> GetResultByIdAsync<TResponse>(TPrimaryKey id) where TResponse : class, IResult, new();
+        Task<List<TEntity>> GetEntityListAsync(string propName, object value, ECompareOperator compareOperator = ECompareOperator.Equal);
+        ///// <summary>
+        ///// 获取结果对象
+        ///// </summary>
+        ///// <param name="id">主键Id</param>
+        ///// <returns></returns>
+        //Task<TResponse> GetResultByIdAsync<TResponse>(TPrimaryKey id) where TResponse : class, IResult, new();
 
         /// <summary>
         /// 获取实体对象
@@ -34,6 +35,13 @@ namespace ZeroOne.Repository
         /// <param name="model">对象实例</param>
         /// <returns></returns>
         Task<TEntity> AddEntityAsync(TEntity model);
+
+        /// <summary>
+        /// 添加对象集合
+        /// </summary>
+        /// <param name="list"></param>
+        /// <returns></returns>
+        Task<int> AddEntityListAsync(List<TEntity> list);
         /// <summary>
         /// 删除对象
         /// </summary>
@@ -80,6 +88,14 @@ namespace ZeroOne.Repository
         Task<TSearchResult> SearchResultAsync<TResult, TSearchResult>(TSearch search)
                 where TResult : IResult, new()
                 where TSearchResult : BaseSearchResult<TResult>, new();
+
+        /// <summary>
+        /// 获取TResult对象的List集合
+        /// </summary>
+        /// <typeparam name="TResult"></typeparam>
+        /// <param name="search"></param>
+        /// <returns></returns>
+        Task<List<TResult>> GetResultListAsync<TResult>(TSearch search) where TResult : IResult, new();
 
         /// <summary>
         /// 获取最终分页结果

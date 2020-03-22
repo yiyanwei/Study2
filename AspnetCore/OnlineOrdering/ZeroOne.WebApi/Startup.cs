@@ -24,6 +24,9 @@ using ZeroOne.Extension.Global;
 using Microsoft.AspNetCore.Routing;
 using AutoMapper;
 using ZeroOne.Extension.Model;
+using Microsoft.Extensions.FileProviders;
+using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.PlatformAbstractions;
 
 namespace ZeroOne.WebApi
 {
@@ -81,6 +84,7 @@ namespace ZeroOne.WebApi
             services.AddTransient<IProInfoService, ProInfoService>();
             services.AddTransient<IProCategoryService, ProCategoryService>();
             services.AddTransient<IUserInfoService, UserInfoService>();
+            services.AddTransient<IFileInfoService, FileInfoService>();
 
             //数据库连接配置
             services.Configure<ConnectionConfig>(Configuration.GetSection("ConnectionConfig"));
@@ -180,7 +184,13 @@ namespace ZeroOne.WebApi
             }
 
             app.UseCors(globalCorsName);
-
+            //允许访问静态文件
+            app.UseStaticFiles(new StaticFileOptions()
+            {
+                FileProvider = new PhysicalFileProvider(
+                Path.Combine(Directory.GetCurrentDirectory(), @"MyStaticFiles/Upload")),
+                RequestPath = new PathString()
+            });
             app.UseHttpsRedirection();
             //启用身份验证中间件
             app.UseAuthentication();

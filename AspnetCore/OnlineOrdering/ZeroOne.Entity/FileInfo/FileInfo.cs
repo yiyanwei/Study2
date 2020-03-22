@@ -7,7 +7,7 @@ namespace ZeroOne.Entity
     /// 上传文件对象
     /// </summary>
     [SugarTable("file_info")]
-    public class FileInfo : IEntity<Guid?>
+    public class FileInfo : IEntity<Guid?>, IDeleted
     {
         /// <summary>
         /// 
@@ -22,6 +22,11 @@ namespace ZeroOne.Entity
         /// </summary>
         [SugarColumn(IsPrimaryKey = true)]
         public Guid? Id { get; set; }
+
+        /// <summary>
+        /// 上传Id
+        /// </summary>
+        public Guid? UploadId { get; set; }
 
         /// <summary>
         /// 文件名（不包括扩展名）
@@ -56,7 +61,7 @@ namespace ZeroOne.Entity
         /// <summary>
         /// 创建人
         /// </summary>
-        public string CreatorUserId { get; set; }
+        public Guid? CreatorUserId { get; set; }
 
         /// <summary>
         /// 创建时间
@@ -66,7 +71,7 @@ namespace ZeroOne.Entity
         /// <summary>
         /// 更新人
         /// </summary>
-        public string LastModifierUserId { get; set; }
+        public Guid? LastModifierUserId { get; set; }
 
         /// <summary>
         /// 更新时间
@@ -81,7 +86,7 @@ namespace ZeroOne.Entity
         /// <summary>
         /// 删除操作人Id
         /// </summary>
-        public string DeleterUserId { get; set; }
+        public Guid? DeleterUserId { get; set; }
 
         /// <summary>
         /// 删除时间

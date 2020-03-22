@@ -19,13 +19,15 @@
     <el-form-item label="产品基本单位">
       <el-input v-model="form.proBaseUnit" style="width:80%;"></el-input>
     </el-form-item>
-    <el-form-item label="产品图片" prop="fileId">
+    <el-form-item label="产品图片" prop="uploadId">
       <el-upload
         :action="uploadAddr"
+        :data="data"
+        name="files"
         list-type="picture-card"
         :auto-upload="true"
         :limit="1"
-        :v-model="form.fileId"
+        :v-model="form.uploadId"
         :on-success="uploadSuccess"
         :on-exceed="uploadExceed"
         :on-preview="handlePictureCardPreview"
@@ -51,7 +53,7 @@ import http from "../../common/http/vueresource.js";
 export default {
   data() {
     return {
-      uploadAddr: http.rootApi + "/upload/UploadImage",
+      uploadAddr: http.rootApi + "/upload/UploadImageAndGenerateThum",
       fit: "contain",
       url: "",
       dialogImageUrl: "",
@@ -59,17 +61,20 @@ export default {
       disabled: false,
       uploadVisible: true,
       procateoptions: [],
+      data:{
+        limitSize:100
+      },
       form: {
         proName: "",
         //proCode: "",
         proBaseUnit: "",
         categoryId: "",
-        fileId: "",
+        uploadId: "",
         proDesc: ""
       },
       rules: {
         proName: [
-          { required: true, message: "请输入活动产品名称", trigger: "blur" }
+          { required: true, message: "请输入产品名称", trigger: "blur" }
         ],
         categoryId: [
           {
@@ -78,7 +83,7 @@ export default {
             trigger: "change"
           }
         ],
-        fileId: [
+        uploadId: [
           {
             required: true,
             message: "请上传图片",
@@ -93,8 +98,8 @@ export default {
   },
   methods: {
     uploadSuccess(data) {
-      if (data.data && data.data.id) {
-        this.form.fileId = data.data.id;
+      if (data.data && data.data.uploadId) {
+        this.form.uploadId = data.data.uploadId;
         this.$refs["ruleForm"].validate();
       }
     },
@@ -112,15 +117,12 @@ export default {
       });
     },
     handleRemove() {
-      this.form.fileId = "";
+      this.form.uploadId = "";
       this.$refs["ruleForm"].validate();
     },
     handlePictureCardPreview(file) {
       this.dialogImageUrl = file.url;
       this.dialogVisible = true;
-    },
-    handleDownload(file) {
-      console.log(file);
     },
     submitForm(formName) {
       this.$refs[formName].validate(valid => {

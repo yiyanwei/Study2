@@ -27,6 +27,11 @@ namespace ZeroOne.WebApi
 
             //添加产品对象映射
             CreateMap<ProInfoAddRequest, ProInfo>();
+            CreateMap<ProInfo, ProInfoSingleResult>();
+            CreateMap<FileInfo, FileInfoResult>()
+                .ForMember(x => x.Name, x => x.MapFrom(t => t.FileName + t.FileExt))
+                .ForMember(x => x.Url, x => x.MapFrom(t => t.TargetFileUrl))
+                .ForMember(x => x.SourceUrl, x => x.MapFrom(t => t.SourceFileUrl));
         }
     }
 }

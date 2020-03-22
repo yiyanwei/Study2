@@ -40,6 +40,15 @@ namespace ZeroOne.WebApi.Controllers
             return Mapper.Map<PageSearchResult<ProInfoResponse>>(results);
         }
 
-
+        /// <summary>
+        /// 获取单个产品的信息，包含缩略图
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
+        [HttpGet("GetProInfo")]
+        public async Task<ProInfoSingleResult> GetProInfo(Guid? id)
+        {
+            return await this.Service.GetSingleProInfoAsync(id);
+        }
     }
 }

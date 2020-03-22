@@ -1,58 +1,35 @@
 <template>
   <div>
-    <!-- <el-radio-group v-model="isCollapse" style="margin-bottom: 20px;">
-      <el-radio-button :label="false">展开</el-radio-button>
-      <el-radio-button :label="true">收起</el-radio-button>
-    </el-radio-group>-->
-    <el-menu
-      default-active="1-4-1"
-      class="el-menu-vertical-demo"
-      @open="handleOpen"
-      @close="handleClose"
-      @select="handleSelect"
-      :collapse="isCollapse"
-    >
-      <el-menu-item index="0">
-        <i v-bind:class="{'el-icon-right':isCollapse,'el-icon-back':!isCollapse}"></i>
-        <span slot="title" v-text="collapseText"></span>
-      </el-menu-item>
-      <el-submenu index="1">
-        <div slot="title">
-          <i class="el-icon-location"></i>
-          <span slot="title">导航一</span>
-        </div>
-        <el-menu-item-group>
-          <span slot="title">分组一</span>
-          <el-menu-item index="1-1">选项1</el-menu-item>
-          <el-menu-item index="1-2">选项2</el-menu-item>
-        </el-menu-item-group>
-        <el-menu-item-group title="分组2">
-          <el-menu-item index="1-3">选项3</el-menu-item>
-        </el-menu-item-group>
-        <el-submenu index="1-4">
-          <span slot="title">选项4</span>
-          <el-menu-item index="1-4-1">选项1</el-menu-item>
-        </el-submenu>
-      </el-submenu>
-      <el-menu-item index="2">
-        <i class="el-icon-menu"></i>
-        <span slot="title">导航二</span>
-      </el-menu-item>
-      <el-menu-item index="3" disabled>
-        <i class="el-icon-document"></i>
-        <span slot="title">导航三</span>
-      </el-menu-item>
-      <el-menu-item index="4">
-        <i class="el-icon-setting"></i>
-        <span slot="title">导航四</span>
-      </el-menu-item>
-    </el-menu>
+    <el-container style="border: 1px solid #eee">
+      <el-aside width="250px">
+        <el-menu router class="el-menu-vertical-demo" :default-active="this.$router.path">
+          <el-submenu v-for="(item,i) in navList" :key="i+1" v-show="item.second" index="item.name">
+            <template slot="title">{{ item.navItem }}</template>
+            <el-menu-item
+              v-for="(sec,j) in item.second"
+              :key="(i+1)-(j+1)"
+              :index="sec.name"
+            >{{ sec.navItem }}</el-menu-item>
+          </el-submenu>
+          <el-menu-item
+            v-for="(item,i) in navList"
+            :key="(i+1)"
+            v-show="!item.second"
+            :index="item.name"
+          >{{ item.navItem }}</el-menu-item>
+        </el-menu>
+      </el-aside>
+      <el-main>
+        <router-view class="routerView"></router-view>
+      </el-main>
+    </el-container>
   </div>
 </template>
 <style>
 .el-menu-vertical-demo:not(.el-menu--collapse) {
-  width: 200px;
+  min-width: 200px;
   min-height: 400px;
+  height: 100%;
 }
 </style>
 
@@ -60,8 +37,17 @@
 export default {
   data() {
     return {
-      isCollapse: true,
-      collapseText:"展开"
+      navList: [
+        {
+          name: "/prolist",
+          navItem: "产品管理",
+          second: [
+            { name: "/procategorylist", navItem: "产品分类管理" },
+            { name: "/prolist", navItem: "产品管理" }
+          ]
+        }
+      ],
+      isCollapse: true
     };
   },
   methods: {
@@ -75,7 +61,7 @@ export default {
       if (key == 0) {
         this.isCollapse = !this.isCollapse;
       }
-      this.collapseText = this.isCollapse?"展开":"收起";
+      this.collapseText = this.isCollapse ? "展开" : "收起";
     }
   }
 };

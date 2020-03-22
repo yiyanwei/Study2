@@ -3,10 +3,14 @@
     <header>
       <el-form :inline="true" :model="form" class="demo-form-inline">
         <el-form-item label="产品名称">
-          <el-input v-model="form.categoryName" placeholder="产品名称"></el-input>
+          <el-input v-model="form.proName" placeholder="请输入产品名称"></el-input>
+        </el-form-item>
+        <el-form-item label="产品编号">
+          <el-input v-model="form.proCode" placeholder="请输入产品编号" style="width:80%;"></el-input>
         </el-form-item>
         <el-form-item label="产品类别">
           <el-cascader
+            v-model="form.categoryId"
             :options="procateoptions"
             :props="{ checkStrictly: true,emitPath:false }"
             clearable
@@ -52,7 +56,6 @@
       <el-table-column label="操作人" prop="realName"></el-table-column>
       <el-table-column fixed="right" label="操作" width="100">
         <template slot-scope="scope">
-          <!-- <el-button @click="handleClick(scope.row)" type="text" size="small">查看</el-button> -->
           <el-button type="text" size="small" @click="onEdit(scope.row)">编辑</el-button>
         </template>
       </el-table-column>
@@ -75,6 +78,12 @@
     >
       <AddProduct v-if="dialogAddProduct" />
     </el-dialog>
+    <el-dialog title="编辑产品" 
+    width="30%"
+    :close-on-click-modal="false"
+    :visible.sync="dialogEditProduct">
+      <EditProduct v-if="dialogEditProduct" />
+    </el-dialog>
   </div>
 </template>
 <style>
@@ -93,35 +102,41 @@
 </style>
 <script>
 import AddProduct from "./AddPro.vue";
+import EditProduct from "./EditPro.vue";
 import http from "../../common/http/vueresource.js";
 export default {
   data() {
     return {
-      dialogAddProduct:false,
+      currentId: "",
+      dialogAddProduct: false,
+      dialogEditProduct: false,
       tableData: [],
       procateoptions: [],
       total: 0,
       form: {
         pageIndex: 0,
-        pageSize: 10
+        pageSize: 10,
+        proName:"",
+        proCode:"",
+        categoryId:""
       }
     };
   },
-  components:{
-    AddProduct
+  components: {
+    AddProduct,
+    EditProduct
   },
   mounted() {
     this.getCategoryList();
     this.getData();
   },
   methods: {
-    onSearch(){
-
-    },
+    onSearch() {},
     onEdit(row) {
-      console.log(row);
+      this.currentId = row.id;
+      this.dialogEditProduct = true;
     },
-    currentChange(pageIndex){
+    currentChange(pageIndex) {
       this.form.pageIndex = pageIndex;
       this.getData();
     },

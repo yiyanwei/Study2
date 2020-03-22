@@ -35,6 +35,9 @@ namespace ZeroOne.Application
         /// <returns></returns>
         Task<TEntity> AddAndReturnAsync<TRequest>(TRequest request) where TRequest : IAddRequest;
 
+        Task<TEntity> AddAndReturnAsync(TEntity request);
+
+        Task<int> AddEntityListAsync(List<TEntity> list);
         /// <summary>
         /// 根据主键Id结果对象
         /// </summary>

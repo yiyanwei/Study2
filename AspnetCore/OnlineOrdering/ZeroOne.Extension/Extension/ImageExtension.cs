@@ -49,7 +49,7 @@ namespace ZeroOne.Extension
                     }
                     thumWidth = width.Value;
                     //算出比例
-                    proportion = (float)(thumWidth / originWidth);
+                    proportion = (float)thumWidth / (float)originWidth;
                     thumHeight = (int)(originHeight * proportion);
                     break;
                 case EThumbnailWay.HW:
@@ -86,7 +86,7 @@ namespace ZeroOne.Extension
                         throw new Exception();
                     }
                     thumHeight = uploadParameter.Height.Value;
-                    proportion = (float)(thumHeight / originHeight);
+                    proportion = (float)thumHeight / (float)originHeight;
                     thumWidth = (int)(originWidth * proportion);
                     break;
                 case EThumbnailWay.Width:

@@ -47,9 +47,9 @@ namespace ZeroOne.Entity
         /// </summary>
         public string ProBaseUnit { get; set; }
         /// <summary>
-        /// 文件Id
+        /// 上传id
         /// </summary>
-        public Guid? FileId { get; set; }
+        public Guid? UploadId { get; set; }
 
     }
 }

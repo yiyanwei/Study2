@@ -73,7 +73,7 @@ export default {
       http.post(api, this.form, response => {
         if (response.success) {
           this.$message({
-            message: "产品分类修改成功",
+            message: "产品分类保存成功",
             type: "success"
           });
           //获取父级窗口是否正确

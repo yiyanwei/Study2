@@ -17,9 +17,89 @@ namespace ZeroOne.Repository
 {
 
     public abstract class BaseRep<TEntity, TPrimaryKey> : IBaseRep<TEntity, TPrimaryKey>
-        where TEntity : BaseEntity<TPrimaryKey>, IRowVersion, new()
+        where TEntity : class, IEntity<TPrimaryKey>, IDeleted, new()
     {
+        public async Task<List<TEntity>> GetEntityListAsync(string propName, object value, ECompareOperator compareOperator = ECompareOperator.Equal)
+        {
+            //比较运算
+            Type entityType = typeof(TEntity);
+            PropertyInfo prop = entityType.GetProperty(propName.Trim());
+            if (prop == null)
+            {
+                throw new Exception("");
+            }
+            ParameterExpression paramExp = Expression.Parameter(entityType, "t");
+            Expression left = null;
+            if (prop.PropertyType.IsGenericType && prop.PropertyType.GetGenericTypeDefinition() == typeof(Nullable<>))
+            {
+                left = Expression.Convert(Expression.Property(paramExp, prop), prop.PropertyType.GenericTypeArguments[0]);
+            }
+            else
+            {
+                left = Expression.Property(paramExp, prop);
+            }
 
+            Expression right = null;
+            var valType = value.GetType();
+            if (valType.IsGenericType && value.GetType().GetGenericTypeDefinition() == typeof(Nullable<>))
+            {
+                right = Expression.TypeAs(Expression.Constant(value), value.GetType().GenericTypeArguments[0]);
+            }
+            else
+            {
+                right = Expression.Constant(value);
+            }
+
+            Expression compareExp = null;
+            if (compareOperator == ECompareOperator.Equal)
+            {
+                compareExp = Expression.Equal(left, right);
+            }
+            else if (compareOperator == ECompareOperator.NotEqual)
+            {
+                compareExp = Expression.NotEqual(left, right);
+            }
+            else if (compareOperator == ECompareOperator.GreaterThan)
+            {
+                compareExp = Expression.GreaterThan(left, right);
+            }
+            else if (compareOperator == ECompareOperator.GreaterThanOrEqual)
+            {
+                compareExp = Expression.GreaterThanOrEqual(left, right);
+            }
+            else if (compareOperator == ECompareOperator.LessThan)
+            {
+                compareExp = Expression.LessThan(left, right);
+            }
+            else if (compareOperator == ECompareOperator.LessThanOrEqual)
+            {
+                compareExp = Expression.LessThanOrEqual(left, right);
+            }
+            else if (compareOperator == ECompareOperator.Contains)
+            {
+                if (typeof(string) == prop.PropertyType)
+                {
+                    var strType = typeof(string);
+                    var containsMethod = strType.GetMethod(nameof(string.Contains), new Type[] { strType });
+                    compareExp = Expression.Call(left, containsMethod, right);
+                }
+                else if (value.GetType().GetInterfaces().Any(x => typeof(IEnumerable<>) == (x.IsGenericType ? x.GetGenericTypeDefinition() : x)))
+                {
+                    var containsMethod = this.GetContainsMethodByGenericArgType(prop.PropertyType);
+                    compareExp = Expression.Call(containsMethod, right, left);
+                }
+                else
+                {
+                    throw new Exception("");
+                }
+            }
+            else
+            {
+                throw new Exception("");
+            }
+            Expression<Func<TEntity, bool>> lambdaExp = Expression.Lambda<Func<TEntity, bool>>(compareExp, paramExp);
+            return await this.Queryable.Where(lambdaExp).ToListAsync();
+        }
 
         protected ISugarQueryable<TEntity> Queryable { get; set; }
 
@@ -39,7 +119,6 @@ namespace ZeroOne.Repository
         /// <returns></returns>
         public virtual TResult FormatResult<TResult>(TResult result) where TResult : class, IResult, new()
         {
-            //result.GetType().GetProperties(BindingFlags.Public | BindingFlags.Instance).Where(t => t.PropertyType.IsClass);
             return result;
         }
 
@@ -52,18 +131,18 @@ namespace ZeroOne.Repository
             return await this.Queryable.Where(t => (bool)SqlFunc.IsNull(t.IsDeleted, false) == false).ToListAsync();
         }
 
-        /// <summary>
-        /// 根据Id获取对应的结果对象
-        /// </summary>
-        /// <typeparam name="TResult">结果对象类型</typeparam>
-        /// <param name="id"></param>
-        /// <returns></returns>
-        public async Task<TResult> GetResultByIdAsync<TResult>(TPrimaryKey id) where TResult : class, IResult, new()
-        {
-            var query = this._client.Queryable<TEntity>();
-            var result = await query.Where(t => t.Id.Equals(id) && SqlFunc.IsNull(t.IsDeleted, false) == false).Select(t => t.Map<TResult>()).FirstAsync();
-            return this.FormatResult(result);
-        }
+        ///// <summary>
+        ///// 根据Id获取对应的结果对象
+        ///// </summary>
+        ///// <typeparam name="TResult">结果对象类型</typeparam>
+        ///// <param name="id"></param>
+        ///// <returns></returns>
+        //public async Task<TResult> GetResultByIdAsync<TResult>(TPrimaryKey id) where TResult : class, IResult, new()
+        //{
+        //    var query = this._client.Queryable<TEntity>();
+        //    var result = await query.Where(t => t.Id.Equals(id) && SqlFunc.IsNull(t.IsDeleted, false) == false).Select(t => t.Map<TResult>()).FirstAsync();
+        //    return this.FormatResult(result);
+        //}
 
         /// <summary>
         /// 根据id返回数据库对象
@@ -82,34 +161,6 @@ namespace ZeroOne.Repository
             return query.Where(t => t.Id.Equals(id) && SqlFunc.IsNull(t.IsDeleted, false) == false).First();
         }
 
-        private Expression<Func<TEntity, bool>> GetBaseWhereExpression(TPrimaryKey id)
-        {
-
-            ParameterExpression paramExp = Expression.Parameter(typeof(TEntity), "t");
-            #region 主键值相等
-            //属性表达式
-            Expression propExp = Expression.Property(paramExp, nameof(BaseEntity<TPrimaryKey>.Id));
-            //值表达式
-            Expression valExp = Expression.Constant(id);
-            //相等表达式
-            Expression equalExp = Expression.Equal(propExp, valExp);
-            #endregion
-            #region 未删除
-            //SqlFunc.IsNull<bool>()
-            //Expression delPropExp = Expression.Property(paramExp, nameof(IDeleted.IsDeleted));
-            //Expression delValExp = Expression.Constant(false);
-
-            //var genenicType = typeof(int);
-            //var methodExp = Expression.Call(Expression.Constant(this), nameof(IFNULL), new Type[] { genenicType }, Expression.Constant(1), Expression.Constant(2));
-            //Expression<Func<int>> expression = Expression.Lambda<Func<int>>(methodExp);
-            //var result = expression.Compile()();
-
-            #endregion
-            Expression<Func<TEntity, bool>> lambda = Expression.Lambda<Func<TEntity, bool>>(equalExp, paramExp);
-            return lambda;
-        }
-
-
 
         /// <summary>
         /// 添加数据实体
@@ -118,11 +169,23 @@ namespace ZeroOne.Repository
         /// <returns></returns>
         public async Task<TEntity> AddEntityAsync(TEntity entity)
         {
-            if (!entity.RowVersion.HasValue)
+            var entityType = entity.GetType();
+            if (entityType.GetInterfaces().Where(t => t == typeof(IRowVersion)).Count() > 0)
             {
-                entity.RowVersion = Guid.Empty;
+                PropertyInfo rowVersionProp = entityType.GetProperty(nameof(IRowVersion.RowVersion));
+                rowVersionProp.SetValue(entity, Guid.Empty);
             }
             return await this._client.Insertable<TEntity>(entity).ExecuteReturnEntityAsync();
+        }
+
+        /// <summary>
+        /// 添加对象集合
+        /// </summary>
+        /// <param name="list">list集合</param>
+        /// <returns></returns>
+        public async Task<int> AddEntityListAsync(List<TEntity> list)
+        {
+            return await this._client.Insertable<TEntity>(list).ExecuteCommandAsync();
         }
 
         /// <summary>
@@ -130,14 +193,44 @@ namespace ZeroOne.Repository
         /// </summary>
         /// <param name="id">对象Id</param>
         /// <param name="rowVersion">版本号</param>
+        /// <param name="userId">用户Id</param>
         /// <returns></returns>
         public async Task<bool> DeleteByIdAsync(TPrimaryKey id, Guid rowVersion, Guid? userId = null)
         {
-            ConcurrentProcess(new TEntity() { Id = id, RowVersion = rowVersion });
-            Guid newGuid = Guid.NewGuid();
-            int affecedRows = await this._client.Updateable<TEntity>()
-                .SetColumns(t => new TEntity { IsDeleted = true, DeleterUserId = userId, DeletionTime = DateTime.Now, RowVersion = newGuid })
+            var entity = new TEntity();
+            entity.Id = id;
+            var entityType = entity.GetType();
+            PropertyInfo rowVersionProp = null;
+            if (entityType.GetInterfaces().Where(t => t == typeof(IRowVersion)).Count() > 0)
+            {
+                rowVersionProp = entityType.GetProperty(nameof(IRowVersion.RowVersion));
+                rowVersionProp.SetValue(entity, rowVersion);
+                ConcurrentProcess(entity);
+            }
+
+            if (rowVersionProp != null)
+            {
+                rowVersionProp.SetValue(entity, Guid.NewGuid());
+            }
+            entity.IsDeleted = true;
+            entity.DeleterUserId = userId;
+            entity.DeletionTime = DateTime.Now;
+            int affecedRows = await this._client.Updateable(entity).IgnoreColumns(true)
                 .Where(t => t.Id.Equals(id) && SqlFunc.IsNull(t.IsDeleted, false) == false).ExecuteCommandAsync();
+            return affecedRows > 0;
+        }
+
+        /// <summary>
+        /// 删除对象数据
+        /// </summary>
+        /// <param name="id">对象Id</param>
+        /// <param name="userId">用户Id</param>
+        /// <returns></returns>
+        public async Task<bool> DeleteByIdAsync(TPrimaryKey id, Guid? userId = null)
+        {
+            int affecedRows = await this._client.Updateable<TEntity>()
+            .SetColumns(t => new TEntity { IsDeleted = true, DeleterUserId = userId, DeletionTime = DateTime.Now })
+            .Where(t => t.Id.Equals(id) && SqlFunc.IsNull(t.IsDeleted, false) == false).ExecuteCommandAsync();
             return affecedRows > 0;
         }
 
@@ -148,8 +241,16 @@ namespace ZeroOne.Repository
         /// <returns></returns>
         public async Task<bool> UpdateEntityNotNullAsync(TEntity entity)
         {
-            ConcurrentProcess(entity);
-            entity.RowVersion = Guid.NewGuid();
+            var entityType = entity.GetType();
+            if (entity.GetType().GetInterfaces().Where(t => t == typeof(IRowVersion)).Count() > 0)
+            {
+                ConcurrentProcess(entity);
+                var rowVersionProp = entityType.GetProperty(nameof(IRowVersion.RowVersion));
+                if (rowVersionProp != null)
+                {
+                    rowVersionProp.SetValue(entity, Guid.NewGuid());
+                }
+            }
             int affecedRows = await this._client.Updateable(entity).IgnoreColumns(true).ExecuteCommandAsync();
             return affecedRows > 0;
         }
@@ -161,8 +262,16 @@ namespace ZeroOne.Repository
         /// <returns></returns>
         public async Task<bool> UpdateEntityAsync(TEntity entity)
         {
-            ConcurrentProcess(entity);
-            entity.RowVersion = Guid.NewGuid();
+            var entityType = entity.GetType();
+            if (entityType.GetInterfaces().Where(t => t == typeof(IRowVersion)).Count() > 0)
+            {
+                ConcurrentProcess(entity);
+                var rowVersionProp = entityType.GetProperty(nameof(IRowVersion.RowVersion));
+                if (rowVersionProp != null)
+                {
+                    rowVersionProp.SetValue(entity, Guid.NewGuid());
+                }
+            }
             int affecedRows = await this._client.Updateable(entity).ExecuteCommandAsync();
             return affecedRows > 0;
         }
@@ -176,7 +285,9 @@ namespace ZeroOne.Repository
             var searchModel = await this._client.Queryable<TEntity>().Where(t => t.Id.Equals(entity.Id) && SqlFunc.IsNull(t.IsDeleted, false) == false).FirstAsync();
             if (searchModel != null)
             {
-                if (searchModel.RowVersion != entity.RowVersion)
+                var searchProp = searchModel.GetType().GetProperty(nameof(IRowVersion.RowVersion));
+                var entityProp = entity.GetType().GetProperty(nameof(IRowVersion.RowVersion));
+                if (searchProp.GetValue(searchModel) != entityProp.GetValue(entity))
                 {
                     throw new DBConcurrencyException($"{nameof(entity.Id)}:{entity.Id} 数据已更新，请刷新后重试！");
                 }
@@ -587,7 +698,7 @@ namespace ZeroOne.Repository
             where TSearchResult : BaseSearchResult<TResult>, new()
         {
             //获取最终查询对象
-            var selectMethodResult = this.GetSelectResult<TResult, TSearchResult>(search);
+            var selectMethodResult = this.GetSelectResult<TResult>(search);
             var listMethod = selectMethodResult.GetType().GetMethod("ToListAsync");
             //获取最终结果对象
             object resultList = listMethod.Invoke(selectMethodResult, null);
@@ -600,6 +711,22 @@ namespace ZeroOne.Repository
                 searchResult.Items = await taskResult;
             }
             return searchResult;
+        }
+
+        public async Task<List<TResult>> GetResultListAsync<TResult>(TSearch search)
+            where TResult : IResult, new()
+        {
+            //获取最终查询对象
+            var selectMethodResult = this.GetSelectResult<TResult>(search);
+            var listMethod = selectMethodResult.GetType().GetMethod("ToListAsync");
+            //获取最终结果对象
+            object resultList = listMethod.Invoke(selectMethodResult, null);
+            if (resultList is Task<List<TResult>>)
+            {
+                var taskResult = resultList as Task<List<TResult>>;
+                return await taskResult;
+            }
+            return new List<TResult>();
         }
 
         /// <summary>
@@ -616,7 +743,7 @@ namespace ZeroOne.Repository
             where TPageSearchResult : PageSearchResult<TResult>, new()
         {
             //获取最终查询对象
-            var selectMethodResult = this.GetSelectResult<TResult, TPageSearchResult>(pageSearch);
+            var selectMethodResult = this.GetSelectResult<TResult>(pageSearch);
             if (selectMethodResult == null)
             {
                 throw new Exception("");
@@ -641,9 +768,8 @@ namespace ZeroOne.Repository
             return pageSearchResult;
         }
 
-        private object GetSelectResult<TResult, TSearchResult>(BaseSearch search)
+        private object GetSelectResult<TResult>(BaseSearch search)
             where TResult : IResult, new()
-            where TSearchResult : BaseSearchResult<TResult>
         {
             //Dictionary<Type, IList<PropertyInfo>> dicTypeProps = new Dictionary<Type, IList<PropertyInfo>>();
             //当前对象的类型，也就是主表对象类型
