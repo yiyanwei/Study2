@@ -11,6 +11,7 @@ using System.Linq.Expressions;
 using ZeroOne.Extension.Model;
 using ZeroOne.Entity;
 using NLog.Web;
+using Microsoft.AspNetCore.Builder;
 
 namespace ZeroOne.WebApi
 {
@@ -73,7 +74,8 @@ namespace ZeroOne.WebApi
         public static IHostBuilder CreateHostBuilder(string[] args) =>
             Host.CreateDefaultBuilder(args)
                 .ConfigureWebHostDefaults(webBuilder =>
-                {
+                {                    
+                    //webBuilder.Configure(app=>app.UseMiddleware())
                     webBuilder.UseStartup<Startup>()
                               .UseUrls("http://*:5002/");
                 });

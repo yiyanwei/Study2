@@ -59,7 +59,7 @@ namespace ZeroOne.WebApi
             .SetCompatibilityVersion(CompatibilityVersion.Version_3_0)
             .AddNewtonsoftJson(options =>
             {
-                //options.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore;
+                options.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore;
             });
 
             //映射
@@ -70,7 +70,7 @@ namespace ZeroOne.WebApi
             //允许跨域访问
             services.AddCors(options =>
             {
-                options.AddPolicy(globalCorsName, builder => builder.WithOrigins("http://localhost:8080").AllowAnyMethod().AllowAnyHeader());
+                options.AddPolicy(globalCorsName, builder => builder.WithOrigins("http://localhost:8080", "http://localhost:5000").AllowAnyMethod().AllowAnyHeader());
             });
 
             services.Configure<RouteOptions>(config =>
