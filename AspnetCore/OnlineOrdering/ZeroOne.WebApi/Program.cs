@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -12,6 +12,7 @@ using ZeroOne.Extension.Model;
 using ZeroOne.Entity;
 using NLog.Web;
 using Microsoft.AspNetCore.Builder;
+using System.Text.RegularExpressions;
 
 namespace ZeroOne.WebApi
 {
@@ -66,15 +67,25 @@ namespace ZeroOne.WebApi
             //    cfg.CreateMap<ProCategorySearchResult, ProCategoryResponse>()
             //    .ForMember(x => x.CreationTime, x => x.MapFrom(y => y.CreationTime.HasValue ? y.CreationTime.Value.ToString("yyyy-MM-dd HH:mm:ss") : string.Empty));
             //});
+            //char[] ss = "🥰".ToCharArray();
+            string name = "❤❤🥰";
+            var match = System.Text.RegularExpressions.Regex.Matches(name, "(\ud83c[\udf00-\udfff])|(\ud83d[\udc00-\ude4f])|(\ud83d[\ude80-\udeff])|(\ud83e\udd70)");
+            
+            var bytes = System.Text.Encoding.UTF8.GetBytes(name);
+            string formatName = System.Text.Encoding.UTF8.GetString(bytes);
+            foreach (var s in name)
+            {
 
-
+            }
+            //🥰
+            int len = name.Length;
             CreateHostBuilder(args).Build().Run();
         }
 
         public static IHostBuilder CreateHostBuilder(string[] args) =>
             Host.CreateDefaultBuilder(args)
                 .ConfigureWebHostDefaults(webBuilder =>
-                {                    
+                {
                     //webBuilder.Configure(app=>app.UseMiddleware())
                     webBuilder.UseStartup<Startup>()
                               .UseUrls("http://*:5002/");
