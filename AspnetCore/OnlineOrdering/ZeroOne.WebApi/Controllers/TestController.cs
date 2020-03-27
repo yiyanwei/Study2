@@ -62,5 +62,26 @@ namespace ZeroOne.WebApi.Controllers
 
             //5E9B1D3F36B152415BAC6FF4CAFF2A42D9
         }
+
+        [HttpGet("GetEmoji")]
+        public Tuple<string, string> GetEmoji()
+        {
+            IList<string> emojis = new List<string>();
+            IList<string> strBytes = new List<string>();
+            string name = string.Empty;
+            byte[] tempArray = new byte[] { 0x3d, 0xd8 };
+            for (byte i = 0x80; i < 0xff; i++)
+            {
+                List<byte> tempList = new List<byte>();
+                tempList.AddRange(tempArray);
+                tempList.Add(i);
+                tempList.Add(0xde);
+                name = System.Text.Encoding.Unicode.GetString(tempList.ToArray());
+                emojis.Add(name);
+                strBytes.Add(string.Join(",", tempList));
+                //Console.WriteLine(System.Text.Encoding.Unicode.GetString(tempList.ToArray()));
+            }
+            return new Tuple<string, string>(string.Join(",", emojis), string.Join("@", strBytes));
+        }
     }
 }

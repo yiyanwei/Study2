@@ -73,7 +73,7 @@ namespace ZeroOne.Extension.Global
                         }
                     }
                     //执行结果
-                    var actionResult = action.MethodInfo.Invoke(context.Controller, keyValuePairs != null && keyValuePairs.Keys != null ? keyValuePairs.Keys.ToArray() : null);
+                    var actionResult = action.MethodInfo.Invoke(context.Controller, keyValuePairs?.Keys?.ToArray());
 
                     //执行成功
                     result.StatusCode = 200;

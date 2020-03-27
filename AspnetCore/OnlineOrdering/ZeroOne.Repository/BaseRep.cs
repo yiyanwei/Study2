@@ -43,7 +43,7 @@ namespace ZeroOne.Repository
             var valType = value.GetType();
             if (valType.IsGenericType && value.GetType().GetGenericTypeDefinition() == typeof(Nullable<>))
             {
-                right = Expression.TypeAs(Expression.Constant(value), value.GetType().GenericTypeArguments[0]);
+                right = Expression.Convert(Expression.Constant(value), value.GetType().GenericTypeArguments[0]);
             }
             else
             {

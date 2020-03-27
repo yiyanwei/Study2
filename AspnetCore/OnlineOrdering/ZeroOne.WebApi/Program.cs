@@ -68,17 +68,35 @@ namespace ZeroOne.WebApi
             //    .ForMember(x => x.CreationTime, x => x.MapFrom(y => y.CreationTime.HasValue ? y.CreationTime.Value.ToString("yyyy-MM-dd HH:mm:ss") : string.Empty));
             //});
             //char[] ss = "🥰".ToCharArray();
-            string name = "❤❤🥰";
-            var match = System.Text.RegularExpressions.Regex.Matches(name, "(\ud83c[\udf00-\udfff])|(\ud83d[\udc00-\ude4f])|(\ud83d[\ude80-\udeff])|(\ud83e\udd70)");
-            
-            var bytes = System.Text.Encoding.UTF8.GetBytes(name);
-            string formatName = System.Text.Encoding.UTF8.GetString(bytes);
-            foreach (var s in name)
-            {
+            //string name = "❤❤🥰";
+            //|(\ud83e\udd70)
+            //var match = System.Text.RegularExpressions.Regex.Matches(name, "(\ud83c[\udf00-\udfff])|(\ud83d[\udc00-\ude4f])|(\ud83d[\ude80-\udeff])");
 
-            }
-            //🥰
-            int len = name.Length;
+            //byte[] unicodeBytes = System.Text.Encoding.Unicode.GetBytes("🥰");
+            ////byte[] utf8Bytes = System.Text.Encoding.UTF8.GetBytes("🥰");
+
+            //byte[] temp = new byte[] { 0x3e, 0xd8, 0x70, 0xdd };
+            //string name = System.Text.Encoding.Unicode.GetString(unicodeBytes);
+            ////Console.WriteLine();
+            //byte[] tempArray = new byte[] { 0x3c, 0xd8 };
+            //for (byte i = 0x00; i < 0xff; i++)
+            //{
+            //    List<byte> tempList = new List<byte>();
+            //    tempList.AddRange(tempArray);
+            //    tempList.Add(i);
+            //    tempList.Add(0xdf);
+            //    name = System.Text.Encoding.Unicode.GetString(tempList.ToArray());
+            //    //Console.WriteLine(System.Text.Encoding.Unicode.GetString(tempList.ToArray()));
+            //}
+
+            //var bytes = System.Text.Encoding.UTF8.GetBytes(name);
+            //string formatName = System.Text.Encoding.UTF8.GetString(bytes);
+            //foreach (var s in name)
+            //{
+
+            //}
+            ////🥰
+            //int len = name.Length;
             CreateHostBuilder(args).Build().Run();
         }
 
