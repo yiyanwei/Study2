@@ -91,8 +91,10 @@ namespace ZeroOne.WebApi.Controllers
             List<ZeroOne.Entity.FileInfo> fileList = new List<ZeroOne.Entity.FileInfo>();
             //上传文件返回对象
             FileInfoUploadResult result = new FileInfoUploadResult();
-            result.SourceFileUrls = new List<string>();
-            result.TargetFileUrls = new List<string>();
+            //result.SourceFileUrls = new List<string>();
+            //result.TargetFileUrls = new List<string>();
+            result.FileInfosResult = new List<FileInfoResult>();
+            FileInfoResult fileResult = new FileInfoResult();
             Guid uploadId = Guid.NewGuid();
             result.UploadId = uploadId;
             DateTime now = DateTime.Now;
@@ -134,8 +136,12 @@ namespace ZeroOne.WebApi.Controllers
                 fileInfo.SourceFileUrl = imgRootPath + sourceFileName;
                 fileInfo.TargetFileUrl = thumRootPath + thumFileName;
                 fileList.Add(fileInfo);
-                result.SourceFileUrls.Add(imgRootPath + sourceFileName);
-                result.TargetFileUrls.Add(thumRootPath + thumFileName);
+                fileResult = new FileInfoResult();
+                fileResult.Id = fileInfo.Id.Value;
+                fileResult.Name = fileInfo.FileName;
+                fileResult.SourceUrl = imgRootPath + sourceFileName;
+                fileResult.Url = thumRootPath + thumFileName;
+                result.FileInfosResult.Add(fileResult);
             }
             int affectRows = await this.FileService.AddEntityListAsync(fileList);
             return result;

@@ -19,7 +19,7 @@
     },
     "ZeroOne.WebApi": {
       "commandName": "Project",
-      "launchBrowser": true,
+      "launchBrowser": false,
       "launchUrl": "http://localhost:5002/api/proinfo",
       "applicationUrl": "http://localhost:5002",
       "environmentVariables": {

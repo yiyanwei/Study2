@@ -93,5 +93,9 @@ namespace ZeroOne.Entity
         /// 产品的基本单位
         /// </summary>
         public string ProBaseUnit { get; set; }
+        /// <summary>
+        /// 上传Id
+        /// </summary>
+        public Guid? UploadId { get; set; }
     }
 }

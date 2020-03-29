@@ -39,7 +39,7 @@ namespace ZeroOne.Extension
                         throw new Exception();
                     }
                     thumHeight = height.Value;
-                    proportion = (float)(thumHeight / originHeight);
+                    proportion = (float)thumHeight / (float)originHeight;
                     thumWidth = (int)(originWidth * proportion);
                     break;
                 case EThumbnailWay.Width:

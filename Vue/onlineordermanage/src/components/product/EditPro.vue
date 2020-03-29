@@ -19,49 +19,70 @@
     </el-form-item>
     <el-form-item label="产品图片" prop="uploadId">
       <el-upload
+        v-if="uploadVisible"
         :action="uploadAddr"
         :data="data"
         name="files"
         :file-list="fileList"
-        list-type="picture-card"
+        :show-file-list="false"
         :auto-upload="true"
         :limit="1"
         :v-model="form.uploadId"
         :on-success="uploadSuccess"
         :on-exceed="uploadExceed"
-        :on-preview="handlePictureCardPreview"
-        :on-remove="handleRemove"
       >
-        <i class="el-icon-plus"></i>
+        <el-button slot="trigger" size="small" type="primary">选取文件</el-button>
       </el-upload>
-      <el-dialog :visible.sync="dialogVisible" :modal="false">
-        <img width="100%" :src="dialogImageUrl" alt />
-      </el-dialog>
+      <ul class="el-upload-list el-upload-list--picture">
+        <li
+          :tabindex="i"
+          v-for="(item,i) in fileList"
+          :key="i"
+          class="el-upload-list__item is-success"
+          style
+        >
+          <VueHoverMask>
+            <!-- 默认插槽 -->
+            <img :src="item.url" alt class="el-upload-list__item-thumbnail" />
+            <template v-slot:action>
+              <i class="el-icon-zoom-in" @click="handlePicturePreview" :data-pid="item.id"></i>
+            </template>
+          </VueHoverMask>
+          <a class="el-upload-list__item-name">
+            <i class="el-icon-document"></i>
+            {{item.name}}
+          </a>
+          <label class="el-upload-list__item-status-label">
+            <i class="el-icon-upload-success el-icon-check"></i>
+          </label>
+          <i class="el-icon-close" @click="handleRemove" :data-pid="item.id"></i>
+          <i class="el-icon-close-tip">按 delete 键可删除</i>
+        </li>
+      </ul>
     </el-form-item>
     <el-form-item label="产品描述">
       <el-input type="textarea" v-model="form.proDesc"></el-input>
     </el-form-item>
     <el-form-item>
-      <el-button type="primary" @click="submitForm('ruleForm')">立即创建</el-button>
+      <el-button type="primary" @click="submitForm('ruleForm')">保存产品</el-button>
       <el-button @click="onCancel">取消</el-button>
     </el-form-item>
   </el-form>
 </template>
 <script>
 import http from "../../common/http/vueresource.js";
+import VueHoverMask from "vue-hover-mask";
 export default {
   data() {
     return {
       uploadAddr: http.rootApi + "/upload/UploadImageAndGenerateThum",
       fit: "contain",
       url: "",
-      dialogImageUrl: "",
-      dialogVisible: false,
       disabled: false,
-      uploadVisible: true,
+      uploadVisible: false,
       procateoptions: [],
       data: {
-        limitSize: 100
+        limitSize: 80
       },
       fileList: [],
       form: {
@@ -95,6 +116,9 @@ export default {
       }
     };
   },
+  components: {
+    VueHoverMask
+  },
   mounted() {
     //加载分类信息
     this.getCategoryList();
@@ -106,7 +130,16 @@ export default {
     uploadSuccess(data) {
       if (data.data && data.data.uploadId) {
         this.form.uploadId = data.data.uploadId;
-        
+        this.fileList = data.data.fileInfosResult;
+        //判断是否获取到了上传文件
+        if (this.fileList && this.fileList.length > 0) {
+          for (var key in this.fileList) {
+            this.fileList[key].url =
+              "http://localhost:5002" + this.fileList[key].url;
+          }
+        } else {
+          this.uploadVisible = true;
+        }
         this.$refs["ruleForm"].validate();
       }
     },
@@ -128,10 +161,18 @@ export default {
           this.form.categoryId = response.data.categoryId;
           this.form.proDesc = response.data.proDesc;
           this.form.rowVersion = response.data.rowVersion;
-          this.fileList = response.data.fileInfos;
-          for (var key in this.fileList) {
-            this.fileList[key].url =
-              "http://localhost:5002" + this.fileList[key].url;
+          //判断是否获取到了上传文件
+          if (
+            response.data.fileInfos &&
+            response.data.fileInfos.length > 0
+          ) {
+            this.fileList = response.data.fileInfos;
+            for (var key in this.fileList) {
+              this.fileList[key].url =
+                "http://localhost:5002" + this.fileList[key].url;
+            }
+          } else {
+            this.uploadVisible = true;
           }
         } else {
           //弹出错误信息提示
@@ -149,20 +190,43 @@ export default {
         }
       });
     },
-    handleRemove() {
-      this.form.uploadId = "";
-      this.$refs["ruleForm"].validate();
+    handleRemove(e) {
+      if (e.target.dataset && e.target.dataset.pid) {
+        var index = -1;
+        for (var i in this.fileList) {
+          //判断是否存在
+          if (this.fileList[i].id == e.target.dataset.pid) {
+            index = i;
+            break;
+          }
+        }
+        if (index > -1) {
+          this.fileList.splice(index, 1);
+        }
+        this.uploadVisible = true;
+        this.form.uploadId = "";
+        this.$refs["ruleForm"].validate();
+      }
     },
-    handlePictureCardPreview(file) {
-      this.dialogImageUrl = file.url;
-      this.dialogVisible = true;
+    handlePicturePreview(e) {
+      if (e.target.dataset && e.target.dataset.pid) {
+        for (var i in this.fileList) {
+          //判断是否存在
+          if (this.fileList[i].id == e.target.dataset.pid) {
+            this.$parent.$parent.imageUrl =
+              "http://localhost:5002" + this.fileList[i].sourceUrl;
+            this.$parent.$parent.imgdialogVisible = true;
+            break;
+          }
+        }
+      }
     },
     submitForm(formName) {
       this.$refs[formName].validate(valid => {
         //验证通过
         if (valid) {
-          var api = "/ProInfo/Add";
-          http.post(api, this.form, response => {
+          var api = "/ProInfo/Edit";
+          http.put(api, this.form, response => {
             if (response.success) {
               this.$message({
                 message: "产品保存成功",
@@ -171,7 +235,7 @@ export default {
               //获取父级窗口是否正确
               if (this.$parent.$parent) {
                 //关闭窗口
-                this.$parent.$parent.dialogAddProduct = false;
+                this.$parent.$parent.dialogEditProduct = false;
                 this.$parent.$parent.getData();
               }
             } else {
@@ -191,3 +255,28 @@ export default {
   }
 };
 </script>
+
+<style scoped>
+.el-upload-list .el-upload-list__item .vue-hover-mask {
+  float: left;
+  margin-left: -80px;
+  height: 80px;
+  width: 80px;
+  margin-top: -5px;
+}
+
+.el-upload-list
+  .el-upload-list__item
+  .vue-hover-mask
+  img.el-upload-list__item-thumbnail {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  margin: auto;
+  height: auto;
+  width: auto;
+  float: none;
+}
+</style>

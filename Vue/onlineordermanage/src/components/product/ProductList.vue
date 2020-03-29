@@ -71,6 +71,7 @@
     </div>
     <el-dialog
       title="新增产品"
+      style="z-index:2"
       :visible.sync="dialogAddProduct"
       width="30%"
       :close-on-click-modal="false"
@@ -78,11 +79,24 @@
     >
       <AddProduct v-if="dialogAddProduct" />
     </el-dialog>
-    <el-dialog title="编辑产品" 
-    width="30%"
-    :close-on-click-modal="false"
-    :visible.sync="dialogEditProduct">
+    <el-dialog
+      title="编辑产品"
+      style="z-index:3"
+      width="30%"
+      :close-on-click-modal="false"
+      :visible.sync="dialogEditProduct"
+    >
       <EditProduct v-if="dialogEditProduct" />
+    </el-dialog>
+
+    <el-dialog
+      :width="imgdialogWidth"
+      :visible.sync="imgdialogVisible"
+      :close-on-click-modal="false"
+      :modal="true"
+      :destroy-on-close="true"
+    >
+      <img :src="imageUrl" v-if="imgdialogVisible" v-on:load.stop="imgOnload" alt />
     </el-dialog>
   </div>
 </template>
@@ -107,6 +121,9 @@ import http from "../../common/http/vueresource.js";
 export default {
   data() {
     return {
+      imgdialogWidth: "0px",
+      imgdialogVisible: false,
+      imageUrl: "",
       currentId: "",
       dialogAddProduct: false,
       dialogEditProduct: false,
@@ -116,9 +133,9 @@ export default {
       form: {
         pageIndex: 0,
         pageSize: 10,
-        proName:"",
-        proCode:"",
-        categoryId:""
+        proName: "",
+        proCode: "",
+        categoryId: ""
       }
     };
   },
@@ -131,14 +148,8 @@ export default {
     this.getData();
   },
   methods: {
-    onSearch() {},
-    onEdit(row) {
-      this.currentId = row.id;
-      this.dialogEditProduct = true;
-    },
-    currentChange(pageIndex) {
-      this.form.pageIndex = pageIndex;
-      this.getData();
+    onSearch() {
+
     },
     getCategoryList() {
       var api = "/ProCategory/GetDropDownListAsync";
@@ -163,6 +174,19 @@ export default {
           this.tableData.clear();
         }
       });
+    },
+    imgOnload(e) {
+      if (e.path && e.path[0] && e.path[0].nodeName == "IMG") {
+        this.imgdialogWidth = (e.path[0].width + 40) + "px";
+      }
+    },
+    onEdit(row) {
+      this.currentId = row.id;
+      this.dialogEditProduct = true;
+    },
+    currentChange(pageIndex) {
+      this.form.pageIndex = pageIndex;
+      this.getData();
     }
   }
 };

@@ -15,6 +15,10 @@ namespace ZeroOne.Entity
     public class FileInfoResult
     {
         /// <summary>
+        /// 文件Id
+        /// </summary>
+        public Guid Id { get; set; }
+        /// <summary>
         /// 文件名称
         /// </summary>
         public string Name { get; set; }

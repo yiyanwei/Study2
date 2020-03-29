@@ -11,8 +11,13 @@ namespace ZeroOne.Entity
         /// </summary>
         public Guid? UploadId { get; set; }
 
-        public IList<string> SourceFileUrls { get; set; }
+        /// <summary>
+        /// 文件信息集合
+        /// </summary>
+        public IList<FileInfoResult> FileInfosResult { get; set; }
 
-        public IList<string> TargetFileUrls { get; set; }
+        //public IList<string> SourceFileUrls { get; set; }
+
+        //public IList<string> TargetFileUrls { get; set; }
     }
 }

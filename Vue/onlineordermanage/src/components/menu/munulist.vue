@@ -3,20 +3,24 @@
     <el-container style="border: 1px solid #eee">
       <el-aside width="250px">
         <el-menu router class="el-menu-vertical-demo" :default-active="this.$router.path">
-          <el-submenu v-for="(item,i) in navList" :key="i+1" v-show="item.second" index="item.name">
-            <template slot="title">{{ item.navItem }}</template>
+          <template v-for="item in navList">
+            <el-submenu v-if="item.second" :key="item.id" v-show="item.second" index="item.name">
+              <template slot="title">{{ item.navItem }}</template>
+              <el-menu-item
+                v-for="(sec) in item.second"
+                :key="sec.id"
+                :index="sec.name"
+              >{{ sec.navItem }}</el-menu-item>
+            </el-submenu>
+          </template>
+          <template v-for="item in navList">
             <el-menu-item
-              v-for="(sec,j) in item.second"
-              :key="(i+1)-(j+1)"
-              :index="sec.name"
-            >{{ sec.navItem }}</el-menu-item>
-          </el-submenu>
-          <el-menu-item
-            v-for="(item,i) in navList"
-            :key="(i+1)"
-            v-show="!item.second"
-            :index="item.name"
-          >{{ item.navItem }}</el-menu-item>
+              v-if="!item.second"
+              v-show="!item.second"
+              :key="item.id"
+              :index="item.name"
+            >{{ item.navItem }}</el-menu-item>
+          </template>
         </el-menu>
       </el-aside>
       <el-main>
@@ -39,11 +43,12 @@ export default {
     return {
       navList: [
         {
+          id: "1",
           name: "/prolist",
           navItem: "产品管理",
           second: [
-            { name: "/procategorylist", navItem: "产品分类管理" },
-            { name: "/prolist", navItem: "产品管理" }
+            { id: 2, name: "/procategorylist", navItem: "产品分类管理" },
+            { id: 3, name: "/prolist", navItem: "产品管理" }
           ]
         }
       ],
