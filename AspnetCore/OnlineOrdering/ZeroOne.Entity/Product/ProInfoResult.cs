@@ -9,29 +9,7 @@ namespace ZeroOne.Entity
 
     }
 
-    /// <summary>
-    /// 文件返回对象
-    /// </summary>
-    public class FileInfoResult
-    {
-        /// <summary>
-        /// 文件Id
-        /// </summary>
-        public Guid Id { get; set; }
-        /// <summary>
-        /// 文件名称
-        /// </summary>
-        public string Name { get; set; }
-        /// <summary>
-        /// 文件地址
-        /// </summary>
-        public string Url { get; set; }
-
-        /// <summary>
-        /// 源文件地址
-        /// </summary>
-        public string SourceUrl { get; set; }
-    }
+   
 
     /// <summary>
     /// 

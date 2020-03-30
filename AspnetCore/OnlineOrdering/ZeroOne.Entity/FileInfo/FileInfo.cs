@@ -6,8 +6,8 @@ namespace ZeroOne.Entity
     /// <summary>
     /// 上传文件对象
     /// </summary>
-    [SugarTable("file_info")]
-    public class FileInfo : IEntity<Guid?>, IDeleted
+    [SugarTable("fileinfo")]
+    public class FileInfo : IEntity<Guid>, IDeleted
     {
         /// <summary>
         /// 
@@ -21,7 +21,7 @@ namespace ZeroOne.Entity
         /// 主键id
         /// </summary>
         [SugarColumn(IsPrimaryKey = true)]
-        public Guid? Id { get; set; }
+        public Guid Id { get; set; }
 
         /// <summary>
         /// 上传Id

@@ -31,8 +31,7 @@ namespace ZeroOne.WebApi
             CreateMap<FileInfo, FileInfoResult>()
                 .ForMember(x => x.Name, x => x.MapFrom(t => t.FileName + t.FileExt))
                 .ForMember(x => x.Url, x => x.MapFrom(t => t.TargetFileUrl))
-                .ForMember(x => x.SourceUrl, x => x.MapFrom(t => t.SourceFileUrl))
-                .ForMember(x => x.Id, x => x.MapFrom(t => t.Id.HasValue ? t.Id.Value : Guid.Empty));
+                .ForMember(x => x.SourceUrl, x => x.MapFrom(t => t.SourceFileUrl));
         }
     }
 }

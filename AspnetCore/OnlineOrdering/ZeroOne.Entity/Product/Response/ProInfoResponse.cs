@@ -51,5 +51,13 @@ namespace ZeroOne.Entity
         /// 操作人
         /// </summary>
         public string RealName { get; set; }
+        /// <summary>
+        /// 缩略图
+        /// </summary>
+        public List<string> ThumbnailImgs { get; set; }
+        /// <summary>
+        /// 源图
+        /// </summary>
+        public List<string> SourceImgs { get; set; }
     }
 }

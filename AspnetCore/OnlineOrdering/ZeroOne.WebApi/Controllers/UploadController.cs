@@ -137,7 +137,7 @@ namespace ZeroOne.WebApi.Controllers
                 fileInfo.TargetFileUrl = thumRootPath + thumFileName;
                 fileList.Add(fileInfo);
                 fileResult = new FileInfoResult();
-                fileResult.Id = fileInfo.Id.Value;
+                fileResult.Id = fileInfo.Id;
                 fileResult.Name = fileInfo.FileName;
                 fileResult.SourceUrl = imgRootPath + sourceFileName;
                 fileResult.Url = thumRootPath + thumFileName;

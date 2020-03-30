@@ -8,12 +8,17 @@ namespace ZeroOne.Repository
     public interface IBaseRep<TEntity, TPrimaryKey> where TEntity : IEntity<TPrimaryKey>
     {
         Task<List<TEntity>> GetEntityListAsync(string propName, object value, ECompareOperator compareOperator = ECompareOperator.Equal);
-        ///// <summary>
-        ///// 获取结果对象
-        ///// </summary>
-        ///// <param name="id">主键Id</param>
-        ///// <returns></returns>
-        //Task<TResponse> GetResultByIdAsync<TResponse>(TPrimaryKey id) where TResponse : class, IResult, new();
+
+        /// <summary>
+        /// 获取结果集对象
+        /// </summary>
+        /// <typeparam name="TResult">结果对象</typeparam>
+        /// <typeparam name="TChildSearch">子集查询对象</typeparam>
+        /// <param name="search"></param>
+        /// <returns></returns>
+        Task<List<TResult>> GetResultListAsync<TResult, TChildSearch>(TChildSearch search)
+           where TResult : IResult, new()
+           where TChildSearch : BaseSearch;
 
         /// <summary>
         /// 获取实体对象
@@ -78,16 +83,16 @@ namespace ZeroOne.Repository
         /// <returns></returns>
         Task<IList<TEntity>> GetEntityListAsync(IList<BaseRepModel> items, TSearch search);
 
-        /// <summary>
-        /// 获取最终结果
-        /// </summary>
-        /// <typeparam name="TResult">结果类型</typeparam>
-        /// <typeparam name="TSearchResult">查询结果类型</typeparam>
-        /// <param name="search">查询对象</param>
-        /// <returns></returns>
-        Task<TSearchResult> SearchResultAsync<TResult, TSearchResult>(TSearch search)
-                where TResult : IResult, new()
-                where TSearchResult : BaseSearchResult<TResult>, new();
+        ///// <summary>
+        ///// 获取最终结果
+        ///// </summary>
+        ///// <typeparam name="TResult">结果类型</typeparam>
+        ///// <typeparam name="TSearchResult">查询结果类型</typeparam>
+        ///// <param name="search">查询对象</param>
+        ///// <returns></returns>
+        //Task<TSearchResult> SearchResultAsync<TResult, TSearchResult>(TSearch search)
+        //        where TResult : IResult, new()
+        //        where TSearchResult : BaseSearchResult<TResult>, new();
 
         /// <summary>
         /// 获取TResult对象的List集合

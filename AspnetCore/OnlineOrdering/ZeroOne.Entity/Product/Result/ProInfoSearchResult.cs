@@ -35,6 +35,11 @@ namespace ZeroOne.Entity
         public string ProBaseUnit { get; set; }
 
         /// <summary>
+        /// 图片上传id
+        /// </summary>
+        public Guid? UploadId { get; set; }
+
+        /// <summary>
         /// 产品图片地址
         /// </summary>
         public string ProImg { get; set; }

@@ -71,9 +71,9 @@ namespace ZeroOne.Application
         /// <typeparam name="TSearchResult">查询结果类型</typeparam>
         /// <param name="search">查询对象</param>
         /// <returns></returns>
-        Task<TSearchResult> SearchResultAsync<TResult, TSearchResult>(TSearch search)
-              where TResult : IResult, new()
-            where TSearchResult : BaseSearchResult<TResult>, new();
+        //Task<TSearchResult> SearchResultAsync<TResult, TSearchResult>(TSearch search)
+        //      where TResult : IResult, new()
+        //    where TSearchResult : BaseSearchResult<TResult>, new();
 
         /// <summary>
         /// 获取最终分页结果

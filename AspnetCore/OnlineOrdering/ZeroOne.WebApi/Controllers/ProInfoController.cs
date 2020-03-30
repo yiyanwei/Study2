@@ -36,8 +36,10 @@ namespace ZeroOne.WebApi.Controllers
         [HttpGet("SearchPageList")]
         public async Task<PageSearchResult<ProInfoResponse>> SearchPageList(ProInfoPageSearch pageSearch)
         {
-            var results = await this.Service.SearchPageResultAsync<ProInfoPageSearch, ProInfoSearchResult, PageSearchResult<ProInfoSearchResult>>(pageSearch);
-            return Mapper.Map<PageSearchResult<ProInfoResponse>>(results);
+            //var results = await this.Service.SearchPageResultAsync<ProInfoPageSearch, ProInfoSearchResult, PageSearchResult<ProInfoSearchResult>>(pageSearch);
+            ////获取所有的图片上传uploadid
+            //return Mapper.Map<PageSearchResult<ProInfoResponse>>(results);
+            return await this.Service.SearchPageListResponse(pageSearch);
         }
 
         /// <summary>

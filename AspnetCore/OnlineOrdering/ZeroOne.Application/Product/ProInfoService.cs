@@ -21,6 +21,36 @@ namespace ZeroOne.Application
             this.FileInfoRep = fileInfoRep;
         }
 
+        public async Task<PageSearchResult<ProInfoResponse>> SearchPageListResponse(ProInfoPageSearch pageSearch)
+        {
+            var results = await this.SearchPageResultAsync<ProInfoPageSearch, ProInfoSearchResult, PageSearchResult<ProInfoSearchResult>>(pageSearch);
+            //获取所有的上传文件uploadid集合
+            var proUploadIds = results.Items.Where(t => t.UploadId.HasValue).Select(t => new KeyValuePair<Guid, Guid>(t.Id.Value, t.UploadId.Value)).ToList();
+            var search = new ProductUploadFileSearch()
+            {
+                UploadId = proUploadIds.Select(t => t.Value).ToList()
+            };
+            //获取所有的图片上传uploadid
+            var imgList = await this.FileInfoRep.GetResultListAsync<ProductUploadFileResult, ProductUploadFileSearch>(search);
+
+            var res = Mapper.Map<PageSearchResult<ProInfoResponse>>(results);
+            if (imgList?.Count > 0)
+            {
+                res.Items = res.Items.Select(t =>
+                {
+                    var items = proUploadIds.Where(y => y.Key == t.Id.Value);
+                    if (items.Count() > 0)
+                    {
+                        var first = items.First();
+                        t.ThumbnailImgs = imgList.Where(x => x.UploadId == first.Value).Select(t => t.Url).ToList();
+                        t.SourceImgs = imgList.Where(x => x.UploadId == first.Value).Select(t => t.SourceUrl).ToList();
+                    }
+                    return t;
+                }).ToList();
+            }
+            return res;
+        }
+
         public async Task<ProInfoSingleResult> GetSingleProInfoAsync(Guid? id)
         {
             var entity = await this.ProInfoRep.GetEntityByIdAsync(id);

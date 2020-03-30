@@ -2,24 +2,24 @@
   <div>
     <el-container style="border: 1px solid #eee">
       <el-aside width="250px">
-        <el-menu router class="el-menu-vertical-demo" :default-active="this.$router.path">
-          <template v-for="item in navList">
-            <el-submenu v-if="item.second" :key="item.id" v-show="item.second" index="item.name">
-              <template slot="title">{{ item.navItem }}</template>
+        <el-menu router class="el-menu-vertical-demo" :default-active="this.$route.path" mode="vertical" >
+          <template v-for="item in menus">
+            <el-submenu v-if="item.second" :key="item.id" v-show="item.second" index="item.index">
+              <template slot="title">{{ item.name }}</template>
               <el-menu-item
                 v-for="(sec) in item.second"
                 :key="sec.id"
-                :index="sec.name"
-              >{{ sec.navItem }}</el-menu-item>
+                :index="sec.index"
+              >{{ sec.name }}</el-menu-item>
             </el-submenu>
           </template>
-          <template v-for="item in navList">
+          <template v-for="item in menus">
             <el-menu-item
               v-if="!item.second"
               v-show="!item.second"
               :key="item.id"
-              :index="item.name"
-            >{{ item.navItem }}</el-menu-item>
+              :index="item.index"
+            >{{ item.name }}</el-menu-item>
           </template>
         </el-menu>
       </el-aside>
@@ -41,15 +41,20 @@
 export default {
   data() {
     return {
-      navList: [
+      menus: [
         {
           id: "1",
-          name: "/prolist",
-          navItem: "产品管理",
+          index: "/prolist",
+          name: "产品管理",
           second: [
-            { id: 2, name: "/procategorylist", navItem: "产品分类管理" },
-            { id: 3, name: "/prolist", navItem: "产品管理" }
+            { id: 2, index: "/procategorylist", name: "产品分类管理" },
+            { id: 3, index: "/prolist", name: "产品管理" }
           ]
+        },
+        {
+          id:"4",
+          index:"/suplist",
+          name:"供应商管理"
         }
       ],
       isCollapse: true

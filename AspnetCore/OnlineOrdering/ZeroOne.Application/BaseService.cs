@@ -36,12 +36,12 @@ namespace ZeroOne.Application
             return new List<TEntity>();
         }
 
-        public async Task<TSearchResult> SearchResultAsync<TResult, TSearchResult>(TSearch search)
-              where TResult : IResult, new()
-            where TSearchResult : BaseSearchResult<TResult>, new()
-        {
-            return await this.Rep.SearchResultAsync<TResult, TSearchResult>(search);
-        }
+        //public async Task<TSearchResult> SearchResultAsync<TResult, TSearchResult>(TSearch search)
+        //      where TResult : IResult, new()
+        //    where TSearchResult : BaseSearchResult<TResult>, new()
+        //{
+        //    return await this.Rep.SearchResultAsync<TResult, TSearchResult>(search);
+        //}
 
         /// <summary>
         /// 获取最终分页结果

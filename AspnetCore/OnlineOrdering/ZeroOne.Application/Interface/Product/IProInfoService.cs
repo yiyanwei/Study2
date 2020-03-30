@@ -14,5 +14,7 @@ namespace ZeroOne.Application
         /// <param name="id"></param>
         /// <returns></returns>
         Task<ProInfoSingleResult> GetSingleProInfoAsync(Guid? id);
+
+        Task<PageSearchResult<ProInfoResponse>> SearchPageListResponse(ProInfoPageSearch pageSearch);
     }
 }

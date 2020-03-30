@@ -343,433 +343,9 @@ namespace ZeroOne.Repository
             //}
             //return method;
         }
-    }
 
-    public abstract class BaseRep<TEntity, TPrimaryKey, TSearch> : BaseRep<TEntity, TPrimaryKey>, IBaseRep<TEntity, TPrimaryKey, TSearch>
-        where TSearch : BaseSearch
-        where TEntity : BaseEntity<TPrimaryKey>, IRowVersion, new()
-    {
-        /// <summary>
-        /// 如果需要格式化结果，则重写该方法
-        /// </summary>
-        /// <typeparam name="TResult">类型参数</typeparam>
-        /// <param name="result">格式化的结果</param>
-        /// <returns></returns>
-
-        public BaseRep(ISqlSugarClient client) : base(client)
-        {
-
-        }
-
-        /// <summary>
-        /// 获取查询最终表达式
-        /// </summary>
-        /// <param name="items">数据库查询的运算对象集合</param>
-        /// <param name="model"></param>
-        /// <returns></returns>
-        private Expression GetExpressionResult(IList<BaseRepModel> items, TSearch model, ParameterExpression paramExpr)
-        {
-
-            //返回model的类型
-            var modelType = typeof(TEntity);
-            //获取model类型
-            var searchModelType = model.GetType();
-
-            //lambda类型参数别名
-            //ParameterExpression paramExpr = Expression.Parameter(modelType, "it");
-
-            PropertyInfo property;
-            string propTypeName = string.Empty;
-
-            Expression left = null;
-            Expression right = null;
-            Expression childExpression = null;
-            Expression tempExpression = null;
-            //ConditionalExpression 
-            foreach (var item in items)
-            {
-                property = searchModelType.GetProperty(item.Key);
-                //判断值是否存在
-                var value = property.GetValue(model);
-                if (value == null)
-                {
-                    continue;
-                }
-                propTypeName = property.PropertyType.FullName;
-                //判断是否实现了IEnumerable<>的集合对象
-                if (property.PropertyType != typeof(string) && property.PropertyType.GetInterfaces().Any(x => typeof(IEnumerable<>) == (x.IsGenericType ? x.GetGenericTypeDefinition() : x)))
-                {
-                    PropertyInfo compareProp = modelType.GetProperty(item.Key);
-
-                    MethodInfo containsMethod = this.GetContainsMethodByGenericArgType(property.PropertyType.GetGenericArguments()[0]);
-                    //判断属性值是否为Nullable类型值
-                    if (compareProp.PropertyType.GetGenericTypeDefinition() == typeof(Nullable<>))
-                    {
-                        var valProp = compareProp.PropertyType.GetProperty(nameof(Nullable<int>.Value));
-                        var valExpression = Expression.Property(Expression.Property(paramExpr, compareProp), valProp);
-                        var searchPropertyExpression = Expression.Property(Expression.Constant(model, searchModelType), property);
-                        childExpression = Expression.Call(containsMethod, searchPropertyExpression, valExpression);
-                    }
-                    else
-                    {
-                        var searchPropertyExpression = Expression.Property(Expression.Constant(model, searchModelType), property);
-                        childExpression = Expression.Call(containsMethod, searchPropertyExpression, Expression.Property(paramExpr, compareProp));
-                    }
-                }
-                else
-                {
-                    //等于运算各种基础类型一致
-                    if (item.CompareOperator == ECompareOperator.Equal)
-                    {
-                        left = Expression.Property(paramExpr, modelType.GetProperty(item.Key));
-                        right = Expression.Constant(value, property.PropertyType);
-                        childExpression = Expression.Equal(left, right);
-                    }
-                    else
-                    {
-                        if (propTypeName.Contains("String"))
-                        {
-                            if (item.CompareOperator == ECompareOperator.Contains)
-                            {
-                                string strVal = ((string)value).Trim();
-                                //常量表达式
-                                Expression valExpression = Expression.Constant(strVal, strVal.GetType());
-                                //调用的函数
-                                MethodInfo contains = (methodof<Func<string, bool>>)strVal.Contains;
-                                childExpression = Expression.Call(Expression.Property(paramExpr, modelType.GetProperty(item.Key)), contains, valExpression);
-                            }
-                        }
-                        else if (propTypeName.Contains("Int32") || propTypeName.Contains("Single")
-                                || propTypeName.Contains("Double") || propTypeName.Contains("Decimal")
-                                || propTypeName.Contains("DateTime"))
-                        {
-                            if (item.CompareOperator == ECompareOperator.GreaterThan)
-                            {
-                                childExpression = Expression.GreaterThan(Expression.Property(paramExpr, modelType.GetProperty(item.Key)), Expression.Constant(value, value.GetType()));
-                            }
-                            else if (item.CompareOperator == ECompareOperator.GreaterThanOrEqual)
-                            {
-                                childExpression = Expression.GreaterThanOrEqual(Expression.Property(paramExpr, modelType.GetProperty(item.Key)), Expression.Constant(value, value.GetType()));
-                            }
-                            else if (item.CompareOperator == ECompareOperator.LessThan)
-                            {
-                                childExpression = Expression.LessThan(Expression.Property(paramExpr, modelType.GetProperty(item.Key)), Expression.Constant(value, value.GetType()));
-                            }
-                            else if (item.CompareOperator == ECompareOperator.LessThanOrEqual)
-                            {
-                                childExpression = Expression.LessThanOrEqual(Expression.Property(paramExpr, modelType.GetProperty(item.Key)), Expression.Constant(value, value.GetType()));
-                            }
-                        }
-                    }
-                }
-
-                //表达式是否为空
-                if (childExpression != null)
-                {
-                    if (tempExpression == null)
-                    {
-                        tempExpression = childExpression;
-                    }
-                    else
-                    {
-                        if (item.LogicalOperatorType == ELogicalOperator.And)
-                        {
-                            tempExpression = Expression.AndAlso(tempExpression, childExpression);
-                        }
-                        else if (item.LogicalOperatorType == ELogicalOperator.Or)
-                        {
-                            tempExpression = Expression.OrElse(tempExpression, childExpression);
-                        }
-                    }
-                }
-            }
-            return tempExpression;
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="items">数据库基础查询对象集合</param>
-        /// <param name="model"></param>
-        /// <param name="client"></param>
-        /// <typeparam name="TSearchModel">查询对象</typeparam>
-        /// <typeparam name="TEntity"></typeparam>
-        /// <returns></returns>
-        public async Task<IList<TEntity>> GetEntityListAsync(IList<BaseRepModel> items, TSearch model)
-        {
-
-            //返回model的类型
-            var modelType = typeof(TEntity);
-
-            //lambda类型参数别名
-            ParameterExpression paramExpr = Expression.Parameter(modelType, "it");
-
-            //PropertyInfo property;
-
-
-            if (items.Count > 0)
-            {
-                Expression tempExpression = this.GetExpressionResult(items, model, paramExpr);
-                #region 注释代码
-                //Expression left;
-                //Expression right;
-                //Expression childExpression = null;
-                //Expression totalExpression = null;
-
-                //string propTypeName = string.Empty;
-                ////ConditionalExpression 
-                //foreach (var item in items)
-                //{
-                //    property = searchModelType.GetProperty(item.Key);
-                //    //判断值是否存在
-                //    var value = property.GetValue(model);
-                //    if (value == null)
-                //    {
-                //        continue;
-                //    }
-                //    propTypeName = property.PropertyType.FullName;
-                //    //判断是泛型IEnumerable<>
-                //    if (property.PropertyType != typeof(string) && property.PropertyType.GetInterfaces().Any(x => typeof(IEnumerable<>) == (x.IsGenericType ? x.GetGenericTypeDefinition() : x)))
-                //    {
-                //        PropertyInfo compareProp = modelType.GetProperty(item.Key);
-
-                //        MethodInfo containsMethod = this.GetMethodByGenericArgType(property.PropertyType.GetGenericArguments()[0]);
-                //        //判断属性值是否为Nullable类型值
-                //        var parentTypes = compareProp.PropertyType.GetGenericTypeDefinition();
-                //        if (compareProp.PropertyType.GetGenericTypeDefinition() == typeof(Nullable<>))
-                //        {
-                //            var valProp = compareProp.PropertyType.GetProperty("Value");
-                //            var valExpression = Expression.Property(Expression.Property(paramExpr, compareProp), valProp);
-                //            var searchPropertyExpression = Expression.Property(Expression.Constant(model, searchModelType), property);
-                //            childExpression = Expression.Call(containsMethod, searchPropertyExpression, valExpression);
-                //        }
-                //        else
-                //        {
-                //            var searchPropertyExpression = Expression.Property(Expression.Constant(model, searchModelType), property);
-                //            childExpression = Expression.Call(containsMethod, searchPropertyExpression, Expression.Property(paramExpr, compareProp));
-                //        }
-                //    }
-                //    else
-                //    {
-                //        //等于运算各种基础类型一致
-                //        if (item.CompareOperator == ECompareOperator.Equal)
-                //        {
-                //            left = Expression.Property(paramExpr, modelType.GetProperty(item.Key));
-                //            right = Expression.Constant(value, property.PropertyType);
-                //            childExpression = Expression.Equal(left, right);
-                //        }
-                //        else
-                //        {
-                //            if (propTypeName.Contains("String"))
-                //            {
-                //                if (item.CompareOperator == ECompareOperator.Contains)
-                //                {
-                //                    string strVal = ((string)value).Trim();
-                //                    //常量表达式
-                //                    Expression valExpression = Expression.Constant(strVal, strVal.GetType());
-                //                    //调用的函数
-                //                    MethodInfo contains = (methodof<Func<string, bool>>)strVal.Contains;
-                //                    childExpression = Expression.Call(Expression.Property(paramExpr, modelType.GetProperty(item.Key)), contains, valExpression);
-                //                }
-                //            }
-                //            else if (propTypeName.Contains("Int32") || propTypeName.Contains("Single")
-                //                    || propTypeName.Contains("Double") || propTypeName.Contains("Decimal")
-                //                    || propTypeName.Contains("DateTime"))
-                //            {
-                //                if (item.CompareOperator == ECompareOperator.GreaterThan)
-                //                {
-                //                    childExpression = Expression.GreaterThan(Expression.Property(paramExpr, modelType.GetProperty(item.Key)), Expression.Constant(value, value.GetType()));
-                //                }
-                //                else if (item.CompareOperator == ECompareOperator.GreaterThanOrEqual)
-                //                {
-                //                    childExpression = Expression.GreaterThanOrEqual(Expression.Property(paramExpr, modelType.GetProperty(item.Key)), Expression.Constant(value, value.GetType()));
-                //                }
-                //                else if (item.CompareOperator == ECompareOperator.LessThan)
-                //                {
-                //                    childExpression = Expression.LessThan(Expression.Property(paramExpr, modelType.GetProperty(item.Key)), Expression.Constant(value, value.GetType()));
-                //                }
-                //                else if (item.CompareOperator == ECompareOperator.LessThanOrEqual)
-                //                {
-                //                    childExpression = Expression.LessThanOrEqual(Expression.Property(paramExpr, modelType.GetProperty(item.Key)), Expression.Constant(value, value.GetType()));
-                //                }
-                //            }
-                //        }
-                //    }
-
-                //    //表达式是否为空
-                //    if (childExpression != null)
-                //    {
-                //        if (totalExpression == null)
-                //        {
-                //            totalExpression = childExpression;
-                //        }
-                //        else
-                //        {
-                //            if (item.LogicalOperatorType == ELogicalOperatorType.And)
-                //            {
-                //                totalExpression = Expression.AndAlso(totalExpression, childExpression);
-                //            }
-                //            else if (item.LogicalOperatorType == ELogicalOperatorType.Or)
-                //            {
-                //                totalExpression = Expression.OrElse(totalExpression, childExpression);
-                //            }
-                //        }
-                //    }                
-                //}
-                #endregion
-                if (tempExpression != null)
-                {
-                    var lambdaExpression = Expression.Lambda<Func<TEntity, bool>>(tempExpression, new ParameterExpression[] { paramExpr });
-                    var query = this._client.Queryable<TEntity>().Where(lambdaExpression);
-                    var keyValues = query.ToSql();
-                    return await query.ToListAsync();
-                }
-            }
-            return new List<TEntity>();
-        }
-
-        /// <summary>
-        /// 获取数据对象集合
-        /// </summary>
-        /// <param name="groups">分组查询条件</param>
-        /// <param name="model">查询对象</param>
-        /// <returns></returns>
-        public async Task<IList<TEntity>> GetEntityListByWhereGroupAsync(List<Tuple<IList<BaseRepModel>, ELogicalOperator>> groups, TSearch model)
-        {
-            if (groups != null && groups.Count > 0)
-            {
-                //返回model的类型
-                var modelType = typeof(TEntity);
-
-                //lambda类型参数别名
-                ParameterExpression paramExpr = Expression.Parameter(modelType, "it");
-
-                //所有表达式合并
-                Expression totalExpression = null;
-                foreach (var group in groups)
-                {
-                    //判断List的组成员是否为空并且判断组成员下面的List集合是否为空
-                    if (group != null && group.Item1 != null && group.Item1.Count > 0)
-                    {
-                        Expression tempExpression = this.GetExpressionResult(group.Item1, model, paramExpr);
-
-                        if (tempExpression != null)
-                        {
-                            if (totalExpression == null)
-                            {
-                                totalExpression = tempExpression;
-                            }
-                            else
-                            {
-                                //判断是否与运算
-                                if (group.Item2 == ELogicalOperator.And)
-                                {
-                                    totalExpression = Expression.AndAlso(totalExpression, tempExpression);
-                                }
-                                //判断是否或运算
-                                else if (group.Item2 == ELogicalOperator.Or)
-                                {
-                                    totalExpression = Expression.OrElse(totalExpression, tempExpression);
-                                }
-                            }
-                        }
-                    }
-                }
-                //判断最终的表达式是否为空
-                if (totalExpression != null)
-                {
-                    var lambdaExpression = Expression.Lambda<Func<TEntity, bool>>(totalExpression, new ParameterExpression[] { paramExpr });
-                    return await this._client.Queryable<TEntity>().Where(lambdaExpression).ToListAsync();
-                }
-            }
-            return new List<TEntity>();
-        }
-
-
-        /// <summary>
-        /// 获取最终结果
-        /// </summary>
-        /// <typeparam name="TResult">结果类型</typeparam>
-        /// <typeparam name="TSearchResult">查询结果类型</typeparam>
-        /// <param name="search">查询对象</param>
-        /// <returns></returns>
-        public async Task<TSearchResult> SearchResultAsync<TResult, TSearchResult>(TSearch search)
-            where TResult : IResult, new()
-            where TSearchResult : BaseSearchResult<TResult>, new()
-        {
-            //获取最终查询对象
-            var selectMethodResult = this.GetSelectResult<TResult>(search);
-            var listMethod = selectMethodResult.GetType().GetMethod("ToListAsync");
-            //获取最终结果对象
-            object resultList = listMethod.Invoke(selectMethodResult, null);
-
-            //返回分页查询对象
-            TSearchResult searchResult = new TSearchResult();
-            if (resultList is Task<List<TResult>>)
-            {
-                var taskResult = resultList as Task<List<TResult>>;
-                searchResult.Items = await taskResult;
-            }
-            return searchResult;
-        }
-
-        public async Task<List<TResult>> GetResultListAsync<TResult>(TSearch search)
-            where TResult : IResult, new()
-        {
-            //获取最终查询对象
-            var selectMethodResult = this.GetSelectResult<TResult>(search);
-            var listMethod = selectMethodResult.GetType().GetMethod("ToListAsync");
-            //获取最终结果对象
-            object resultList = listMethod.Invoke(selectMethodResult, null);
-            if (resultList is Task<List<TResult>>)
-            {
-                var taskResult = resultList as Task<List<TResult>>;
-                return await taskResult;
-            }
-            return new List<TResult>();
-        }
-
-        /// <summary>
-        /// 获取最终分页结果
-        /// </summary>
-        /// <typeparam name="TPageSearch">分页查询类型参数</typeparam>
-        /// <typeparam name="TResult">集合里的成员对象类型</typeparam>
-        /// <typeparam name="TPageSearchResult">包括总页数以及分页的结果对象集合</typeparam>
-        /// <param name="pageSearch">查询对象</param>
-        /// <returns></returns>
-        public async Task<TPageSearchResult> SearchPageResultAsync<TPageSearch, TResult, TPageSearchResult>(TPageSearch pageSearch)
-            where TPageSearch : BaseSearch, IPageSearch
-            where TResult : IResult, new()
-            where TPageSearchResult : PageSearchResult<TResult>, new()
-        {
-            //获取最终查询对象
-            var selectMethodResult = this.GetSelectResult<TResult>(pageSearch);
-            if (selectMethodResult == null)
-            {
-                throw new Exception("");
-            }
-
-            object resultList = null;
-            int intTotalCount = 0;
-            var totalCount = new RefAsync<int>(intTotalCount);
-            var pagetListMethod = selectMethodResult.GetType().GetMethod("ToPageListAsync", new Type[] { typeof(int), typeof(int), totalCount.GetType() });
-            //获取最终结果对象
-            object[] parameters = new object[] { pageSearch.PageIndex, pageSearch.PageSize, totalCount };
-            resultList = pagetListMethod.Invoke(selectMethodResult, parameters);
-
-            //返回分页查询对象
-            TPageSearchResult pageSearchResult = new TPageSearchResult();
-            if (resultList is Task<List<TResult>>)
-            {
-                var taskResult = resultList as Task<List<TResult>>;
-                pageSearchResult.Items = await taskResult;
-                pageSearchResult.TotalCount = totalCount;
-            }
-            return pageSearchResult;
-        }
-
-        private object GetSelectResult<TResult>(BaseSearch search)
-            where TResult : IResult, new()
+        protected object GetSelectResult<TResult>(BaseSearch search)
+        where TResult : IResult, new()
         {
             //Dictionary<Type, IList<PropertyInfo>> dicTypeProps = new Dictionary<Type, IList<PropertyInfo>>();
             //当前对象的类型，也就是主表对象类型
@@ -1162,7 +738,6 @@ namespace ZeroOne.Repository
             //最终的Queryable的参数
             Expression joinExp = Expression.Lambda(Expression.New(constructor, joinList.Select(t => t.Value)), paramExps.Select(t => t.Value));
             //查询方法
-
             //var typeList = dicTypePropMappings.Select(t => t.Key.Value).ToList();
             //typeList.Insert(0,entityType);
             var joinExpType = joinExp.GetType();
@@ -1299,6 +874,30 @@ namespace ZeroOne.Repository
         }
 
         /// <summary>
+        /// 获取结果集
+        /// </summary>
+        /// <typeparam name="TResult">结果对象</typeparam>
+        /// <typeparam name="TChildSearch">查询对象</typeparam>
+        /// <param name="search"></param>
+        /// <returns></returns>
+        public async Task<List<TResult>> GetResultListAsync<TResult, TChildSearch>(TChildSearch search)
+           where TResult : IResult, new()
+           where TChildSearch : BaseSearch
+        {
+            //获取最终查询对象
+            var selectMethodResult = this.GetSelectResult<TResult>(search);
+            var listMethod = selectMethodResult.GetType().GetMethod("ToListAsync");
+            //获取最终结果对象
+            object resultList = listMethod.Invoke(selectMethodResult, null);
+            if (resultList is Task<List<TResult>>)
+            {
+                var taskResult = resultList as Task<List<TResult>>;
+                return await taskResult;
+            }
+            return new List<TResult>();
+        }
+
+        /// <summary>
         /// 
         /// </summary>
         /// <param name="operAttrs"></param>
@@ -1307,7 +906,7 @@ namespace ZeroOne.Repository
         /// <param name="dicPropNums"></param>
         /// <returns></returns>
 
-        private Expression GetWhereExpression(IList<DbOperationAttribute> operAttrs, IList<KeyValuePair<int, ParameterExpression>> keyValues, IList<KeyValuePair<int, Type>> numTypes, Dictionary<string, int> dicPropNums)
+        protected Expression GetWhereExpression(IList<DbOperationAttribute> operAttrs, IList<KeyValuePair<int, ParameterExpression>> keyValues, IList<KeyValuePair<int, Type>> numTypes, Dictionary<string, int> dicPropNums)
         {
             var groups = operAttrs.GroupBy(t => t.GroupKey);
             //Dictionary<int?, KeyValuePair<int?, Expression>> dicGroupExps = new Dictionary<int?, KeyValuePair<int?, Expression>>();
@@ -1471,6 +1070,433 @@ namespace ZeroOne.Repository
                 }
             }
         }
+    }
+
+    public abstract class BaseRep<TEntity, TPrimaryKey, TSearch> : BaseRep<TEntity, TPrimaryKey>, IBaseRep<TEntity, TPrimaryKey, TSearch>
+        where TSearch : BaseSearch
+        where TEntity : BaseEntity<TPrimaryKey>, IRowVersion, new()
+    {
+        /// <summary>
+        /// 如果需要格式化结果，则重写该方法
+        /// </summary>
+        /// <typeparam name="TResult">类型参数</typeparam>
+        /// <param name="result">格式化的结果</param>
+        /// <returns></returns>
+
+        public BaseRep(ISqlSugarClient client) : base(client)
+        {
+
+        }
+
+        /// <summary>
+        /// 获取查询最终表达式
+        /// </summary>
+        /// <param name="items">数据库查询的运算对象集合</param>
+        /// <param name="model"></param>
+        /// <returns></returns>
+        private Expression GetExpressionResult(IList<BaseRepModel> items, TSearch model, ParameterExpression paramExpr)
+        {
+
+            //返回model的类型
+            var modelType = typeof(TEntity);
+            //获取model类型
+            var searchModelType = model.GetType();
+
+            //lambda类型参数别名
+            //ParameterExpression paramExpr = Expression.Parameter(modelType, "it");
+
+            PropertyInfo property;
+            string propTypeName = string.Empty;
+
+            Expression left = null;
+            Expression right = null;
+            Expression childExpression = null;
+            Expression tempExpression = null;
+            //ConditionalExpression 
+            foreach (var item in items)
+            {
+                property = searchModelType.GetProperty(item.Key);
+                //判断值是否存在
+                var value = property.GetValue(model);
+                if (value == null)
+                {
+                    continue;
+                }
+                propTypeName = property.PropertyType.FullName;
+                //判断是否实现了IEnumerable<>的集合对象
+                if (property.PropertyType != typeof(string) && property.PropertyType.GetInterfaces().Any(x => typeof(IEnumerable<>) == (x.IsGenericType ? x.GetGenericTypeDefinition() : x)))
+                {
+                    PropertyInfo compareProp = modelType.GetProperty(item.Key);
+
+                    MethodInfo containsMethod = this.GetContainsMethodByGenericArgType(property.PropertyType.GetGenericArguments()[0]);
+                    //判断属性值是否为Nullable类型值
+                    if (compareProp.PropertyType.GetGenericTypeDefinition() == typeof(Nullable<>))
+                    {
+                        var valProp = compareProp.PropertyType.GetProperty(nameof(Nullable<int>.Value));
+                        var valExpression = Expression.Property(Expression.Property(paramExpr, compareProp), valProp);
+                        var searchPropertyExpression = Expression.Property(Expression.Constant(model, searchModelType), property);
+                        childExpression = Expression.Call(containsMethod, searchPropertyExpression, valExpression);
+                    }
+                    else
+                    {
+                        var searchPropertyExpression = Expression.Property(Expression.Constant(model, searchModelType), property);
+                        childExpression = Expression.Call(containsMethod, searchPropertyExpression, Expression.Property(paramExpr, compareProp));
+                    }
+                }
+                else
+                {
+                    //等于运算各种基础类型一致
+                    if (item.CompareOperator == ECompareOperator.Equal)
+                    {
+                        left = Expression.Property(paramExpr, modelType.GetProperty(item.Key));
+                        right = Expression.Constant(value, property.PropertyType);
+                        childExpression = Expression.Equal(left, right);
+                    }
+                    else
+                    {
+                        if (propTypeName.Contains("String"))
+                        {
+                            if (item.CompareOperator == ECompareOperator.Contains)
+                            {
+                                string strVal = ((string)value).Trim();
+                                //常量表达式
+                                Expression valExpression = Expression.Constant(strVal, strVal.GetType());
+                                //调用的函数
+                                MethodInfo contains = (methodof<Func<string, bool>>)strVal.Contains;
+                                childExpression = Expression.Call(Expression.Property(paramExpr, modelType.GetProperty(item.Key)), contains, valExpression);
+                            }
+                        }
+                        else if (propTypeName.Contains("Int32") || propTypeName.Contains("Single")
+                                || propTypeName.Contains("Double") || propTypeName.Contains("Decimal")
+                                || propTypeName.Contains("DateTime"))
+                        {
+                            if (item.CompareOperator == ECompareOperator.GreaterThan)
+                            {
+                                childExpression = Expression.GreaterThan(Expression.Property(paramExpr, modelType.GetProperty(item.Key)), Expression.Constant(value, value.GetType()));
+                            }
+                            else if (item.CompareOperator == ECompareOperator.GreaterThanOrEqual)
+                            {
+                                childExpression = Expression.GreaterThanOrEqual(Expression.Property(paramExpr, modelType.GetProperty(item.Key)), Expression.Constant(value, value.GetType()));
+                            }
+                            else if (item.CompareOperator == ECompareOperator.LessThan)
+                            {
+                                childExpression = Expression.LessThan(Expression.Property(paramExpr, modelType.GetProperty(item.Key)), Expression.Constant(value, value.GetType()));
+                            }
+                            else if (item.CompareOperator == ECompareOperator.LessThanOrEqual)
+                            {
+                                childExpression = Expression.LessThanOrEqual(Expression.Property(paramExpr, modelType.GetProperty(item.Key)), Expression.Constant(value, value.GetType()));
+                            }
+                        }
+                    }
+                }
+
+                //表达式是否为空
+                if (childExpression != null)
+                {
+                    if (tempExpression == null)
+                    {
+                        tempExpression = childExpression;
+                    }
+                    else
+                    {
+                        if (item.LogicalOperatorType == ELogicalOperator.And)
+                        {
+                            tempExpression = Expression.AndAlso(tempExpression, childExpression);
+                        }
+                        else if (item.LogicalOperatorType == ELogicalOperator.Or)
+                        {
+                            tempExpression = Expression.OrElse(tempExpression, childExpression);
+                        }
+                    }
+                }
+            }
+            return tempExpression;
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="items">数据库基础查询对象集合</param>
+        /// <param name="model"></param>
+        /// <param name="client"></param>
+        /// <typeparam name="TSearchModel">查询对象</typeparam>
+        /// <typeparam name="TEntity"></typeparam>
+        /// <returns></returns>
+        public async Task<IList<TEntity>> GetEntityListAsync(IList<BaseRepModel> items, TSearch model)
+        {
+
+            //返回model的类型
+            var modelType = typeof(TEntity);
+
+            //lambda类型参数别名
+            ParameterExpression paramExpr = Expression.Parameter(modelType, "it");
+
+            //PropertyInfo property;
+
+
+            if (items.Count > 0)
+            {
+                Expression tempExpression = this.GetExpressionResult(items, model, paramExpr);
+                #region 注释代码
+                //Expression left;
+                //Expression right;
+                //Expression childExpression = null;
+                //Expression totalExpression = null;
+
+                //string propTypeName = string.Empty;
+                ////ConditionalExpression 
+                //foreach (var item in items)
+                //{
+                //    property = searchModelType.GetProperty(item.Key);
+                //    //判断值是否存在
+                //    var value = property.GetValue(model);
+                //    if (value == null)
+                //    {
+                //        continue;
+                //    }
+                //    propTypeName = property.PropertyType.FullName;
+                //    //判断是泛型IEnumerable<>
+                //    if (property.PropertyType != typeof(string) && property.PropertyType.GetInterfaces().Any(x => typeof(IEnumerable<>) == (x.IsGenericType ? x.GetGenericTypeDefinition() : x)))
+                //    {
+                //        PropertyInfo compareProp = modelType.GetProperty(item.Key);
+
+                //        MethodInfo containsMethod = this.GetMethodByGenericArgType(property.PropertyType.GetGenericArguments()[0]);
+                //        //判断属性值是否为Nullable类型值
+                //        var parentTypes = compareProp.PropertyType.GetGenericTypeDefinition();
+                //        if (compareProp.PropertyType.GetGenericTypeDefinition() == typeof(Nullable<>))
+                //        {
+                //            var valProp = compareProp.PropertyType.GetProperty("Value");
+                //            var valExpression = Expression.Property(Expression.Property(paramExpr, compareProp), valProp);
+                //            var searchPropertyExpression = Expression.Property(Expression.Constant(model, searchModelType), property);
+                //            childExpression = Expression.Call(containsMethod, searchPropertyExpression, valExpression);
+                //        }
+                //        else
+                //        {
+                //            var searchPropertyExpression = Expression.Property(Expression.Constant(model, searchModelType), property);
+                //            childExpression = Expression.Call(containsMethod, searchPropertyExpression, Expression.Property(paramExpr, compareProp));
+                //        }
+                //    }
+                //    else
+                //    {
+                //        //等于运算各种基础类型一致
+                //        if (item.CompareOperator == ECompareOperator.Equal)
+                //        {
+                //            left = Expression.Property(paramExpr, modelType.GetProperty(item.Key));
+                //            right = Expression.Constant(value, property.PropertyType);
+                //            childExpression = Expression.Equal(left, right);
+                //        }
+                //        else
+                //        {
+                //            if (propTypeName.Contains("String"))
+                //            {
+                //                if (item.CompareOperator == ECompareOperator.Contains)
+                //                {
+                //                    string strVal = ((string)value).Trim();
+                //                    //常量表达式
+                //                    Expression valExpression = Expression.Constant(strVal, strVal.GetType());
+                //                    //调用的函数
+                //                    MethodInfo contains = (methodof<Func<string, bool>>)strVal.Contains;
+                //                    childExpression = Expression.Call(Expression.Property(paramExpr, modelType.GetProperty(item.Key)), contains, valExpression);
+                //                }
+                //            }
+                //            else if (propTypeName.Contains("Int32") || propTypeName.Contains("Single")
+                //                    || propTypeName.Contains("Double") || propTypeName.Contains("Decimal")
+                //                    || propTypeName.Contains("DateTime"))
+                //            {
+                //                if (item.CompareOperator == ECompareOperator.GreaterThan)
+                //                {
+                //                    childExpression = Expression.GreaterThan(Expression.Property(paramExpr, modelType.GetProperty(item.Key)), Expression.Constant(value, value.GetType()));
+                //                }
+                //                else if (item.CompareOperator == ECompareOperator.GreaterThanOrEqual)
+                //                {
+                //                    childExpression = Expression.GreaterThanOrEqual(Expression.Property(paramExpr, modelType.GetProperty(item.Key)), Expression.Constant(value, value.GetType()));
+                //                }
+                //                else if (item.CompareOperator == ECompareOperator.LessThan)
+                //                {
+                //                    childExpression = Expression.LessThan(Expression.Property(paramExpr, modelType.GetProperty(item.Key)), Expression.Constant(value, value.GetType()));
+                //                }
+                //                else if (item.CompareOperator == ECompareOperator.LessThanOrEqual)
+                //                {
+                //                    childExpression = Expression.LessThanOrEqual(Expression.Property(paramExpr, modelType.GetProperty(item.Key)), Expression.Constant(value, value.GetType()));
+                //                }
+                //            }
+                //        }
+                //    }
+
+                //    //表达式是否为空
+                //    if (childExpression != null)
+                //    {
+                //        if (totalExpression == null)
+                //        {
+                //            totalExpression = childExpression;
+                //        }
+                //        else
+                //        {
+                //            if (item.LogicalOperatorType == ELogicalOperatorType.And)
+                //            {
+                //                totalExpression = Expression.AndAlso(totalExpression, childExpression);
+                //            }
+                //            else if (item.LogicalOperatorType == ELogicalOperatorType.Or)
+                //            {
+                //                totalExpression = Expression.OrElse(totalExpression, childExpression);
+                //            }
+                //        }
+                //    }                
+                //}
+                #endregion
+                if (tempExpression != null)
+                {
+                    var lambdaExpression = Expression.Lambda<Func<TEntity, bool>>(tempExpression, new ParameterExpression[] { paramExpr });
+                    var query = this._client.Queryable<TEntity>().Where(lambdaExpression);
+                    var keyValues = query.ToSql();
+                    return await query.ToListAsync();
+                }
+            }
+            return new List<TEntity>();
+        }
+
+        /// <summary>
+        /// 获取数据对象集合
+        /// </summary>
+        /// <param name="groups">分组查询条件</param>
+        /// <param name="model">查询对象</param>
+        /// <returns></returns>
+        public async Task<IList<TEntity>> GetEntityListByWhereGroupAsync(List<Tuple<IList<BaseRepModel>, ELogicalOperator>> groups, TSearch model)
+        {
+            if (groups != null && groups.Count > 0)
+            {
+                //返回model的类型
+                var modelType = typeof(TEntity);
+
+                //lambda类型参数别名
+                ParameterExpression paramExpr = Expression.Parameter(modelType, "it");
+
+                //所有表达式合并
+                Expression totalExpression = null;
+                foreach (var group in groups)
+                {
+                    //判断List的组成员是否为空并且判断组成员下面的List集合是否为空
+                    if (group != null && group.Item1 != null && group.Item1.Count > 0)
+                    {
+                        Expression tempExpression = this.GetExpressionResult(group.Item1, model, paramExpr);
+
+                        if (tempExpression != null)
+                        {
+                            if (totalExpression == null)
+                            {
+                                totalExpression = tempExpression;
+                            }
+                            else
+                            {
+                                //判断是否与运算
+                                if (group.Item2 == ELogicalOperator.And)
+                                {
+                                    totalExpression = Expression.AndAlso(totalExpression, tempExpression);
+                                }
+                                //判断是否或运算
+                                else if (group.Item2 == ELogicalOperator.Or)
+                                {
+                                    totalExpression = Expression.OrElse(totalExpression, tempExpression);
+                                }
+                            }
+                        }
+                    }
+                }
+                //判断最终的表达式是否为空
+                if (totalExpression != null)
+                {
+                    var lambdaExpression = Expression.Lambda<Func<TEntity, bool>>(totalExpression, new ParameterExpression[] { paramExpr });
+                    return await this._client.Queryable<TEntity>().Where(lambdaExpression).ToListAsync();
+                }
+            }
+            return new List<TEntity>();
+        }
+
+
+        ///// <summary>
+        ///// 获取最终结果
+        ///// </summary>
+        ///// <typeparam name="TResult">结果类型</typeparam>
+        ///// <typeparam name="TSearchResult">查询结果类型</typeparam>
+        ///// <param name="search">查询对象</param>
+        ///// <returns></returns>
+        //public async Task<TSearchResult> SearchResultAsync<TResult, TSearchResult>(TSearch search)
+        //    where TResult : IResult, new()
+        //    where TSearchResult : BaseSearchResult<TResult>, new()
+        //{
+        //    //获取最终查询对象
+        //    var selectMethodResult = this.GetSelectResult<TResult>(search);
+        //    var listMethod = selectMethodResult.GetType().GetMethod("ToListAsync");
+        //    //获取最终结果对象
+        //    object resultList = listMethod.Invoke(selectMethodResult, null);
+
+        //    //返回分页查询对象
+        //    TSearchResult searchResult = new TSearchResult();
+        //    if (resultList is Task<List<TResult>>)
+        //    {
+        //        var taskResult = resultList as Task<List<TResult>>;
+        //        searchResult.Items = await taskResult;
+        //    }
+        //    return searchResult;
+        //}
+
+        public async Task<List<TResult>> GetResultListAsync<TResult>(TSearch search)
+            where TResult : IResult, new()
+        {
+            //获取最终查询对象
+            var selectMethodResult = this.GetSelectResult<TResult>(search);
+            var listMethod = selectMethodResult.GetType().GetMethod("ToListAsync");
+            //获取最终结果对象
+            object resultList = listMethod.Invoke(selectMethodResult, null);
+            if (resultList is Task<List<TResult>>)
+            {
+                var taskResult = resultList as Task<List<TResult>>;
+                return await taskResult;
+            }
+            return new List<TResult>();
+        }
+
+
+        /// <summary>
+        /// 获取最终分页结果
+        /// </summary>
+        /// <typeparam name="TPageSearch">分页查询类型参数</typeparam>
+        /// <typeparam name="TResult">集合里的成员对象类型</typeparam>
+        /// <typeparam name="TPageSearchResult">包括总页数以及分页的结果对象集合</typeparam>
+        /// <param name="pageSearch">查询对象</param>
+        /// <returns></returns>
+        public async Task<TPageSearchResult> SearchPageResultAsync<TPageSearch, TResult, TPageSearchResult>(TPageSearch pageSearch)
+            where TPageSearch : BaseSearch, IPageSearch
+            where TResult : IResult, new()
+            where TPageSearchResult : PageSearchResult<TResult>, new()
+        {
+            //获取最终查询对象
+            var selectMethodResult = this.GetSelectResult<TResult>(pageSearch);
+            if (selectMethodResult == null)
+            {
+                throw new Exception("");
+            }
+
+            object resultList = null;
+            int intTotalCount = 0;
+            var totalCount = new RefAsync<int>(intTotalCount);
+            var pagetListMethod = selectMethodResult.GetType().GetMethod("ToPageListAsync", new Type[] { typeof(int), typeof(int), totalCount.GetType() });
+            //获取最终结果对象
+            object[] parameters = new object[] { pageSearch.PageIndex, pageSearch.PageSize, totalCount };
+            resultList = pagetListMethod.Invoke(selectMethodResult, parameters);
+
+            //返回分页查询对象
+            TPageSearchResult pageSearchResult = new TPageSearchResult();
+            if (resultList is Task<List<TResult>>)
+            {
+                var taskResult = resultList as Task<List<TResult>>;
+                pageSearchResult.Items = await taskResult;
+                pageSearchResult.TotalCount = totalCount;
+            }
+            return pageSearchResult;
+        }
+
+
     }
 
 

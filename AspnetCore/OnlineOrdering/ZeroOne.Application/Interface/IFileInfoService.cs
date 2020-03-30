@@ -8,7 +8,7 @@ namespace ZeroOne.Application
     /// <summary>
     /// 上传文件数据库记录服务
     /// </summary>
-    public interface IFileInfoService : IBaseService<FileInfo, Guid?>
+    public interface IFileInfoService : IBaseService<FileInfo, Guid>
     {
 
     }

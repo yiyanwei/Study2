@@ -42,6 +42,15 @@
             <el-form-item label="创建时间">
               <span>{{ props.row.creationTime }}</span>
             </el-form-item>
+             <el-form-item label="产品图片">
+              <VueHoverMask>
+            <!-- 默认插槽 -->
+            <img :src="props.row" alt class="el-upload-list__item-thumbnail" />
+            <template v-slot:action>
+              <i class="el-icon-zoom-in" @click="handlePicturePreview" :data-pid="item.id"></i>
+            </template>
+          </VueHoverMask>
+            </el-form-item>
             <el-form-item label="产品描述">
               <span>{{ props.row.proDesc }}</span>
             </el-form-item>
@@ -101,6 +110,29 @@
   </div>
 </template>
 <style>
+.el-upload-list .el-upload-list__item .vue-hover-mask {
+  float: left;
+  margin-left: -80px;
+  height: 80px;
+  width: 80px;
+  margin-top: -5px;
+}
+
+.el-upload-list
+  .el-upload-list__item
+  .vue-hover-mask
+  img.el-upload-list__item-thumbnail {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  margin: auto;
+  height: auto;
+  width: auto;
+  float: none;
+}
+
 .demo-table-expand {
   font-size: 0;
 }
@@ -115,6 +147,7 @@
 }
 </style>
 <script>
+import VueHoverMask from "vue-hover-mask";
 import AddProduct from "./AddPro.vue";
 import EditProduct from "./EditPro.vue";
 import http from "../../common/http/vueresource.js";
@@ -141,7 +174,8 @@ export default {
   },
   components: {
     AddProduct,
-    EditProduct
+    EditProduct,
+    VueHoverMask
   },
   mounted() {
     this.getCategoryList();

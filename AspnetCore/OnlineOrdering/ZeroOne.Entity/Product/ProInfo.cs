@@ -6,7 +6,7 @@ namespace ZeroOne.Entity
     /// <summary>
     /// 产品对象
     /// </summary>
-    [SugarTable("pro_info")]
+    [SugarTable("proinfo")]
     public class ProInfo : BaseEntity<Guid?>, IRowVersion
     {
         /// <summary>

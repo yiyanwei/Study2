@@ -6,7 +6,7 @@ using ZeroOne.Repository;
 
 namespace ZeroOne.Application
 {
-    public class FileInfoService : BaseService<FileInfo, Guid?>, IFileInfoService
+    public class FileInfoService : BaseService<FileInfo, Guid>, IFileInfoService
     {
         public FileInfoService(IFileInfoRep rep) : base(rep)
         {
