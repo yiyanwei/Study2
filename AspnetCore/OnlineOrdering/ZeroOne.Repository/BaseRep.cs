@@ -731,27 +731,39 @@ namespace ZeroOne.Repository
                 memberBindings.Add(Expression.Bind(prop, bindingExp));
             }
 
-
-
-            //根据参数获取JoinQueryInfos的构造函数
-            var constructor = typeof(JoinQueryInfos).GetConstructor(joinList.Select(t => t.Key).ToArray());
-            //最终的Queryable的参数
-            Expression joinExp = Expression.Lambda(Expression.New(constructor, joinList.Select(t => t.Value)), paramExps.Select(t => t.Value));
-            //查询方法
-            //var typeList = dicTypePropMappings.Select(t => t.Key.Value).ToList();
-            //typeList.Insert(0,entityType);
-            var joinExpType = joinExp.GetType();
-            var queryableMethods = this._client.GetType().GetMethods().Where(
-                t => t.Name == nameof(this._client.Queryable)
-                && t.GetGenericArguments().Count() == orderEntityTypeAndIsSamples.Count
-                && t.ToString().Contains(nameof(JoinQueryInfos)));
-            if (queryableMethods.Count() <= 0)
-            {
-                throw new Exception("");
-            }
-            var queryableMethod = queryableMethods.ToList()[0].MakeGenericMethod(orderEntityTypeAndIsSamples.Select(t => t.Item2).ToArray());
             //执行返回查询对象
-            var queryObject = queryableMethod.Invoke(this._client, new object[] { joinExp });
+            object queryObject = null;
+            if (joinList?.Count > 0)
+            {
+                //根据参数获取JoinQueryInfos的构造函数
+                var constructor = typeof(JoinQueryInfos).GetConstructor(joinList.Select(t => t.Key).ToArray());
+                //最终的Queryable的参数
+                Expression joinExp = Expression.Lambda(Expression.New(constructor, joinList.Select(t => t.Value)), paramExps.Select(t => t.Value));
+                //查询方法
+                //var typeList = dicTypePropMappings.Select(t => t.Key.Value).ToList();
+                //typeList.Insert(0,entityType);
+                var joinExpType = joinExp.GetType();
+                var queryableMethods = this._client.GetType().GetMethods().Where(
+                    t => t.Name == nameof(this._client.Queryable)
+                    && t.GetGenericArguments().Count() == orderEntityTypeAndIsSamples.Count
+                    && t.ToString().Contains(nameof(JoinQueryInfos)));
+                if (queryableMethods.Count() <= 0)
+                {
+                    throw new Exception("");
+                }
+                var queryableMethod = queryableMethods.ToList()[0].MakeGenericMethod(orderEntityTypeAndIsSamples.Select(t => t.Item2).ToArray());
+                queryObject = queryableMethod.Invoke(this._client, new object[] { joinExp });
+            }
+            else
+            {
+                var queryableMethods = this._client.GetType().GetMethods().Where(
+                    t => t.Name == nameof(this._client.Queryable)
+                    && t.GetGenericArguments().Count() == orderEntityTypeAndIsSamples.Count 
+                    && t.GetParameters().Length == 0).ToList();
+                var queryableMethod = queryableMethods[0].MakeGenericMethod(orderEntityTypeAndIsSamples.Select(t => t.Item2).ToArray());
+                queryObject = queryableMethod.Invoke(this._client, null);
+            }
+            //this._client.Queryable<FileInfo>()
             //判断查询对象是否为空
             object whereObject = null;
             if (search != null)

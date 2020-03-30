@@ -32,7 +32,6 @@ namespace ZeroOne.Application
             };
             //获取所有的图片上传uploadid
             var imgList = await this.FileInfoRep.GetResultListAsync<ProductUploadFileResult, ProductUploadFileSearch>(search);
-
             var res = Mapper.Map<PageSearchResult<ProInfoResponse>>(results);
             if (imgList?.Count > 0)
             {
