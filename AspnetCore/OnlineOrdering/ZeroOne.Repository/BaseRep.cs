@@ -83,10 +83,10 @@ namespace ZeroOne.Repository
                     var containsMethod = strType.GetMethod(nameof(string.Contains), new Type[] { strType });
                     compareExp = Expression.Call(left, containsMethod, right);
                 }
-                else if (value.GetType().GetInterfaces().Any(x => typeof(IEnumerable<>) == (x.IsGenericType ? x.GetGenericTypeDefinition() : x)))
+                else if (value.GetType().GetInterfaces().Any(x => typeof(ICollection<>) == (x.IsGenericType ? x.GetGenericTypeDefinition() : x)))
                 {
                     var containsMethod = this.GetContainsMethodByGenericArgType(prop.PropertyType);
-                    compareExp = Expression.Call(containsMethod, right, left);
+                    compareExp = Expression.Call(right, containsMethod, left);
                 }
                 else
                 {
@@ -305,7 +305,17 @@ namespace ZeroOne.Repository
         /// <returns></returns>
         protected MethodInfo GetContainsMethodByGenericArgType(Type type)
         {
-            var enumerableType = typeof(IEnumerable<>).MakeGenericType(type);
+            Type typeArgument = null;
+            if (type.GetGenericTypeDefinition() == typeof(Nullable<>))
+            {
+                typeArgument = type.GetGenericArguments()[0];
+            }
+            else
+            {
+                typeArgument = type;
+            }
+
+            var enumerableType = typeof(ICollection<>).MakeGenericType(typeArgument);
             var containMethod = enumerableType.GetMethod(nameof(string.Contains));
             return containMethod;
 
@@ -625,22 +635,22 @@ namespace ZeroOne.Repository
                     {
                         compareExp = Expression.LessThanOrEqual(left, right);
                     }
-                    //字符串就是like，IEnumerable<>就是in
+                    //字符串就是like，ICollection<>就是in
                     else if (joinItem.CompareOperator == ECompareOperator.Contains)
                     {
-                        //当前对象表属性不为空值不为空，并且目标类型为IEnumerable<>类型
-                        if (joinItem.Property != null && joinItem.PropValue != null && joinItem.PropValue.GetType().GetInterfaces().Any(x => typeof(IEnumerable<>) == (x.IsGenericType ? x.GetGenericTypeDefinition() : x)))
+                        //当前对象表属性不为空值不为空，并且目标类型为ICollection<>类型
+                        if (joinItem.Property != null && joinItem.PropValue != null && joinItem.PropValue.GetType().GetInterfaces().Any(x => typeof(ICollection<>) == (x.IsGenericType ? x.GetGenericTypeDefinition() : x)))
                         {
                             var property = joinItem.Property;
                             var containsMethod = this.GetContainsMethodByGenericArgType(property.PropertyType);
-                            compareExp = Expression.Call(containsMethod, right, left);
+                            compareExp = Expression.Call(right, containsMethod, left);
                         }
-                        //目标属性不为空目标值不为空，并且目标值类型为IEnumerable<>类型
-                        else if (joinItem.DestProperty != null && joinItem.DestPropValue != null && joinItem.DestPropValue.GetType().GetInterfaces().Any(x => typeof(IEnumerable<>) == (x.IsGenericType ? x.GetGenericTypeDefinition() : x)))
+                        //目标属性不为空目标值不为空，并且目标值类型为ICollection<>类型
+                        else if (joinItem.DestProperty != null && joinItem.DestPropValue != null && joinItem.DestPropValue.GetType().GetInterfaces().Any(x => typeof(ICollection<>) == (x.IsGenericType ? x.GetGenericTypeDefinition() : x)))
                         {
                             var property = joinItem.DestProperty;
                             var containsMethod = this.GetContainsMethodByGenericArgType(property.PropertyType);
-                            compareExp = Expression.Call(containsMethod, right, left);
+                            compareExp = Expression.Call(right, containsMethod, left);
                         }
                         //目标值不为空并且目标值是string类型
                         //当前属性值不为空并且值类型是string类型
@@ -758,7 +768,7 @@ namespace ZeroOne.Repository
             {
                 var queryableMethods = this._client.GetType().GetMethods().Where(
                     t => t.Name == nameof(this._client.Queryable)
-                    && t.GetGenericArguments().Count() == orderEntityTypeAndIsSamples.Count 
+                    && t.GetGenericArguments().Count() == orderEntityTypeAndIsSamples.Count
                     && t.GetParameters().Length == 0).ToList();
                 var queryableMethod = queryableMethods[0].MakeGenericMethod(orderEntityTypeAndIsSamples.Select(t => t.Item2).ToArray());
                 queryObject = queryableMethod.Invoke(this._client, null);
@@ -788,8 +798,14 @@ namespace ZeroOne.Repository
                         }
                         else
                         {
-                            //if (attribute.EntityType == null) { attribute.EntityType = entityType; }
-                            if (string.IsNullOrEmpty(attribute.PropName)) { attribute.PropName = prop.Name; }
+                            if (attribute.EntityType == null)
+                            {
+                                attribute.EntityType = entityType;
+                            }
+                            if (string.IsNullOrEmpty(attribute.PropName))
+                            {
+                                attribute.PropName = prop.Name;
+                            }
                         }
 
                         if (!string.IsNullOrWhiteSpace(attribute.MainTablePropName) && dicMainTablePropMapOrder.ContainsKey(attribute.MainTablePropName))
@@ -803,6 +819,7 @@ namespace ZeroOne.Repository
                         }
                         else
                         {
+
                             throw new Exception("");
                         }
                         attribute.Value = val;
@@ -1001,11 +1018,16 @@ namespace ZeroOne.Repository
                                 var containsMethod = strType.GetMethod(nameof(string.Contains), new Type[] { strType });
                                 compareExp = Expression.Call(left, containsMethod, right);
                             }
-                            else if (current.Value.GetType().GetInterfaces().Any(x => typeof(IEnumerable<>) == (x.IsGenericType ? x.GetGenericTypeDefinition() : x)))
+                            else if (current.Value.GetType().GetInterfaces().Any(x => typeof(ICollection<>) == (x.IsGenericType ? x.GetGenericTypeDefinition() : x)))
                             {
                                 var property = current.Prop;
+                                if (property.PropertyType.GetGenericTypeDefinition() == typeof(Nullable<>))
+                                {
+                                    var valProp = property.PropertyType.GetProperty(nameof(Nullable<int>.Value));
+                                    left = Expression.Property(left, valProp);
+                                }
                                 var containsMethod = this.GetContainsMethodByGenericArgType(property.PropertyType);
-                                compareExp = Expression.Call(containsMethod, right, left);
+                                compareExp = Expression.Call(right, containsMethod, left);
                             }
                             else
                             {
@@ -1135,24 +1157,33 @@ namespace ZeroOne.Repository
                     continue;
                 }
                 propTypeName = property.PropertyType.FullName;
-                //判断是否实现了IEnumerable<>的集合对象
-                if (property.PropertyType != typeof(string) && property.PropertyType.GetInterfaces().Any(x => typeof(IEnumerable<>) == (x.IsGenericType ? x.GetGenericTypeDefinition() : x)))
+                //判断是否实现了ICollection<>的集合对象
+                if (property.PropertyType != typeof(string) && property.PropertyType.GetInterfaces().Any(x => typeof(ICollection<>) == (x.IsGenericType ? x.GetGenericTypeDefinition() : x)))
                 {
                     PropertyInfo compareProp = modelType.GetProperty(item.Key);
 
-                    MethodInfo containsMethod = this.GetContainsMethodByGenericArgType(property.PropertyType.GetGenericArguments()[0]);
+                    Type typeArgument = null;
+                    if (property.PropertyType.GetGenericArguments()[0].GetGenericTypeDefinition() == typeof(Nullable<>))
+                    {
+                        typeArgument = property.PropertyType.GetGenericArguments()[0].GetGenericArguments()[0];
+                    }
+                    else
+                    {
+                        typeArgument = property.PropertyType.GetGenericArguments()[0];
+                    }
+                    MethodInfo containsMethod = this.GetContainsMethodByGenericArgType(typeArgument);
                     //判断属性值是否为Nullable类型值
                     if (compareProp.PropertyType.GetGenericTypeDefinition() == typeof(Nullable<>))
                     {
                         var valProp = compareProp.PropertyType.GetProperty(nameof(Nullable<int>.Value));
                         var valExpression = Expression.Property(Expression.Property(paramExpr, compareProp), valProp);
                         var searchPropertyExpression = Expression.Property(Expression.Constant(model, searchModelType), property);
-                        childExpression = Expression.Call(containsMethod, searchPropertyExpression, valExpression);
+                        childExpression = Expression.Call(searchPropertyExpression, containsMethod, valExpression);
                     }
                     else
                     {
                         var searchPropertyExpression = Expression.Property(Expression.Constant(model, searchModelType), property);
-                        childExpression = Expression.Call(containsMethod, searchPropertyExpression, Expression.Property(paramExpr, compareProp));
+                        childExpression = Expression.Call(searchPropertyExpression, containsMethod, Expression.Property(paramExpr, compareProp));
                     }
                 }
                 else

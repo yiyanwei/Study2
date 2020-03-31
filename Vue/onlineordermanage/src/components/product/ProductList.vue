@@ -42,14 +42,22 @@
             <el-form-item label="创建时间">
               <span>{{ props.row.creationTime }}</span>
             </el-form-item>
-             <el-form-item label="产品图片">
+            <el-form-item label="产品图片">
               <VueHoverMask>
-            <!-- 默认插槽 -->
-            <img :src="props.row" alt class="el-upload-list__item-thumbnail" />
-            <template v-slot:action>
-              <i class="el-icon-zoom-in" @click="handlePicturePreview" :data-pid="item.id"></i>
-            </template>
-          </VueHoverMask>
+                <!-- 默认插槽 -->
+                <img
+                  :src="getThumUrl(props.row.thumbnailImgs)"
+                  alt
+                  class="el-upload-list__item-thumbnail"
+                />
+                <template v-slot:action>
+                  <i
+                    class="el-icon-zoom-in"
+                    @click="handlePicturePreview"
+                    :data-sourceimgs="props.row.sourceImgs"
+                  ></i>
+                </template>
+              </VueHoverMask>
             </el-form-item>
             <el-form-item label="产品描述">
               <span>{{ props.row.proDesc }}</span>
@@ -110,18 +118,13 @@
   </div>
 </template>
 <style>
-.el-upload-list .el-upload-list__item .vue-hover-mask {
-  float: left;
-  margin-left: -80px;
+.vue-hover-mask {
   height: 80px;
   width: 80px;
   margin-top: -5px;
 }
 
-.el-upload-list
-  .el-upload-list__item
-  .vue-hover-mask
-  img.el-upload-list__item-thumbnail {
+.vue-hover-mask img.el-upload-list__item-thumbnail {
   position: absolute;
   left: 0;
   right: 0;
@@ -182,8 +185,21 @@ export default {
     this.getData();
   },
   methods: {
+    handlePicturePreview(e) {
+      if (e.target.dataset && e.target.dataset.sourceimgs) {
+        this.imageUrl = "http://localhost:5002" + e.target.dataset.sourceimgs;
+        this.imgdialogVisible = true;
+      }
+    },
+    getThumUrl(thums) {
+      if (thums && thums.length > 0) {
+        return "http://localhost:5002" + thums[0];
+      }
+      return "";
+    },
     onSearch() {
-
+      this.pageIndex = 0;
+      this.getData();
     },
     getCategoryList() {
       var api = "/ProCategory/GetDropDownListAsync";
@@ -211,7 +227,7 @@ export default {
     },
     imgOnload(e) {
       if (e.path && e.path[0] && e.path[0].nodeName == "IMG") {
-        this.imgdialogWidth = (e.path[0].width + 40) + "px";
+        this.imgdialogWidth = e.path[0].width + 40 + "px";
       }
     },
     onEdit(row) {
