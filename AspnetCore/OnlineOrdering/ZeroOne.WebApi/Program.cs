@@ -13,6 +13,8 @@ using ZeroOne.Entity;
 using NLog.Web;
 using Microsoft.AspNetCore.Builder;
 using System.Text.RegularExpressions;
+using Hangfire;
+using Hangfire.MySql;
 
 namespace ZeroOne.WebApi
 {
@@ -24,7 +26,8 @@ namespace ZeroOne.WebApi
         //    return x;
         //}
         public static void Main(string[] args)
-        {
+        {            
+            //BackgroundJob.Enqueue(() => Console.WriteLine("Fire-and-forget!"));
             //DateTime now = DateTime.Now;
             //long ticks = (now.ToUniversalTime().Ticks - 621355968000000000) / 10000;
             //Console.WriteLine(ticks);

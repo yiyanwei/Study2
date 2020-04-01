@@ -27,6 +27,8 @@ using ZeroOne.Extension.Model;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.PlatformAbstractions;
+using Hangfire.MySql;
+using Hangfire;
 
 namespace ZeroOne.WebApi
 {
@@ -47,6 +49,7 @@ namespace ZeroOne.WebApi
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+
             services.AddControllers(options =>
             {
                 ////优先使用客户端指定的数据格式，资源的表述
@@ -87,7 +90,8 @@ namespace ZeroOne.WebApi
             services.AddTransient<IFileInfoService, FileInfoService>();
 
             //数据库连接配置
-            services.Configure<ConnectionConfig>(Configuration.GetSection("ConnectionConfig"));
+            var conncfg = Configuration.GetSection(nameof(ConnectionConfig));
+            services.Configure<ConnectionConfig>(conncfg);
             services.AddTransient<ISqlSugarClient>(t =>
             {
                 var connConfig = t.GetRequiredService<IOptions<ConnectionConfig>>().Value;
@@ -103,6 +107,12 @@ namespace ZeroOne.WebApi
                 connConfig.ConfigureExternalServices.SqlFuncServices = extMethodList;
                 return new SqlSugarClient(connConfig);
             });
+
+
+            #region 配置hangfire
+            //运用MySql存储，对应web.config中的connectionStrings中的name
+            GlobalConfiguration.Configuration.UseStorage(new MySqlStorage(conncfg["ConnectionString"], new MySqlStorageOptions() { TablesPrefix = "hg" }));
+            #endregion
 
             //配置Jwt信息
             services.Configure<JwtSettings>(Configuration.GetSection("JwtSettings"));
@@ -147,8 +157,9 @@ namespace ZeroOne.WebApi
             });
 
             //文件上传配置
-           var uploadSettingSection = Configuration.GetSection(nameof(UploadSettings));
-            services.Configure<UploadSettings>(options => {
+            var uploadSettingSection = Configuration.GetSection(nameof(UploadSettings));
+            services.Configure<UploadSettings>(options =>
+            {
                 options.SourceImgRootPath = uploadSettingSection[nameof(UploadSettings.SourceImgRootPath)];
                 options.ThumbnailImgRootPath = uploadSettingSection[nameof(UploadSettings.ThumbnailImgRootPath)];
             });
@@ -191,6 +202,10 @@ namespace ZeroOne.WebApi
                 Path.Combine(Directory.GetCurrentDirectory(), @"MyStaticFiles/Upload")),
                 RequestPath = new PathString()
             });
+
+            app.UseHangfireDashboard();//配置后台仪表盘
+            app.UseHangfireServer();//开始使用Hangfire服务
+
             app.UseHttpsRedirection();
             //启用身份验证中间件
             app.UseAuthentication();
