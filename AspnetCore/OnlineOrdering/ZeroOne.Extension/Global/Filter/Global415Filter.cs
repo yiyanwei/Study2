@@ -75,16 +75,22 @@ namespace ZeroOne.Extension.Global
                     //执行结果
                     var actionResult = action.MethodInfo.Invoke(context.Controller, keyValuePairs?.Keys?.ToArray());
 
-                    //执行成功
-                    result.StatusCode = 200;
                     var resultProp = actionResult.GetType().GetProperty("Result");
                     if (resultProp != null)
                     {
-                        result.Value = resultProp.GetValue(actionResult);
-                    }
-                    else
-                    {
-                        result.Value = actionResult;
+                        result.StatusCode = 200;
+                        object tempResult = resultProp.GetValue(actionResult);
+                        if (tempResult != null)
+                        {
+                            if (tempResult.GetType() == typeof(FileStreamResult))
+                            {
+                                context.Result = tempResult as FileStreamResult;
+                            }
+                            else
+                            {
+                                result.Value = tempResult;
+                            }
+                        }
                     }
                 }
             }
