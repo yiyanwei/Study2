@@ -29,6 +29,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.PlatformAbstractions;
 using Hangfire.MySql;
 using Hangfire;
+using ZeroOne.WebApi.Hubs;
 
 namespace ZeroOne.WebApi
 {
@@ -65,6 +66,9 @@ namespace ZeroOne.WebApi
                 options.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore;
             });
 
+            services.AddSingleton<CountService>();
+            services.AddSignalR();
+
             //映射
             var config = new MapperConfiguration(e => e.AddProfile<ViewMappingProfile>());
             var mapper = config.CreateMapper();
@@ -73,7 +77,12 @@ namespace ZeroOne.WebApi
             //允许跨域访问
             services.AddCors(options =>
             {
-                options.AddPolicy(globalCorsName, builder => builder.WithOrigins("http://localhost:8080", "http://localhost:5000").AllowAnyMethod().AllowAnyHeader());
+                //options.AddPolicy(globalCorsName, set =>
+                //{
+                //    set.AllowAnyOrigin().AllowAnyHeader().AllowAnyMethod().AllowCredentials();
+                //});
+
+                options.AddPolicy(globalCorsName, builder => builder.WithOrigins("http://localhost:8080", "http://localhost:5000").AllowAnyMethod().AllowAnyHeader().AllowCredentials());
             });
 
             services.Configure<RouteOptions>(config =>
@@ -111,7 +120,8 @@ namespace ZeroOne.WebApi
 
             #region 配置hangfire
             //运用MySql存储，对应web.config中的connectionStrings中的name
-            GlobalConfiguration.Configuration.UseStorage(new MySqlStorage(conncfg["ConnectionString"], new MySqlStorageOptions() { TablesPrefix = "hg" }));
+            //GlobalConfiguration.Configuration.UseStorage(new MySqlStorage(conncfg["ConnectionString"], new MySqlStorageOptions() { TablesPrefix = "hg" }));
+            //services.AddHangfire(cfg => cfg.UseStorage(new MySqlStorage(conncfg["ConnectionString"], new MySqlStorageOptions() { TablesPrefix = "hg" })));
             #endregion
 
             //配置Jwt信息
@@ -194,6 +204,8 @@ namespace ZeroOne.WebApi
                 app.UseDeveloperExceptionPage();
             }
 
+
+
             app.UseCors(globalCorsName);
             //允许访问静态文件
             app.UseStaticFiles(new StaticFileOptions()
@@ -203,8 +215,9 @@ namespace ZeroOne.WebApi
                 RequestPath = new PathString()
             });
 
-            app.UseHangfireDashboard();//配置后台仪表盘
-            app.UseHangfireServer();//开始使用Hangfire服务
+            //app.UseHangfireDashboard();//配置后台仪表盘
+            //app.UseHangfireServer();//开始使用Hangfire服务
+            //RecurringJob.AddOrUpdate("test", () => Console.WriteLine("每1秒执行任务"), "*/1 * * * * *");
 
             app.UseHttpsRedirection();
             //启用身份验证中间件
@@ -223,6 +236,7 @@ namespace ZeroOne.WebApi
 
             app.UseEndpoints(endpoints =>
             {
+                endpoints.MapHub<CountHub>("/count");
                 endpoints.MapControllers();
             });
         }
