@@ -1,6 +1,6 @@
 <template>
   <div id="app">
-    <SignalRCom />
+    <MenuList />
   </div>
 </template>
 
@@ -9,15 +9,14 @@
 // import AddCategory from "./components/procategory/AddCategory.vue";
 // import CategoryList from "./components/procategory/CategoryList.vue";
 // import ProInfoList from "./components/product/ProductList.vue";
-// import MenuList from "./components/menu/munulist.vue";
-import SignalRCom from "./components/SignalR.vue";
+import MenuList from "./components/menu/munulist.vue";
+// import SignalRCom from "./components/SignalR.vue";
 
 export default {
   name: "App",
   components: {
-    SignalRCom
-    // HelloWorld,
-    //MenuList
+    // SignalRCom
+    MenuList
     // CategoryList,
     // ProInfoList
   }
