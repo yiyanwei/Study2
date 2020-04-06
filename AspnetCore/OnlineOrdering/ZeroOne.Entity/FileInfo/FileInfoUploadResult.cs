@@ -48,7 +48,7 @@ namespace ZeroOne.Entity
     /// <summary>
     /// 产品上传图片结果对象
     /// </summary>
-    public class ProductUploadFileResult : Result
+    public class UploadFileResult : Result
     {
 
         /// <summary>

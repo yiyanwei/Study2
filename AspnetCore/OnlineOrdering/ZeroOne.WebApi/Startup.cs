@@ -97,6 +97,7 @@ namespace ZeroOne.WebApi
             services.AddTransient<IProCategoryService, ProCategoryService>();
             services.AddTransient<IUserInfoService, UserInfoService>();
             services.AddTransient<IFileInfoService, FileInfoService>();
+            services.AddTransient<ISupplierService, SupplierService>();
 
             //数据库连接配置
             var conncfg = Configuration.GetSection(nameof(ConnectionConfig));

@@ -124,6 +124,15 @@ namespace ZeroOne.Entity
         }
     }
 
+    [AttributeUsage(AttributeTargets.Property | AttributeTargets.Field)]
+    public class ResultPropIgnoreAttribute : Attribute
+    {
+        public ResultPropIgnoreAttribute()
+        {
+
+        }
+    }
+
     [AttributeUsage(AttributeTargets.Class, AllowMultiple = true)]
     public class DbOrderingAttribute : Attribute
     {

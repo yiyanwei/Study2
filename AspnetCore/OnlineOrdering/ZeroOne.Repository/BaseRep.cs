@@ -17,7 +17,7 @@ namespace ZeroOne.Repository
 {
 
     public abstract class BaseRep<TEntity, TPrimaryKey> : IBaseRep<TEntity, TPrimaryKey>
-        where TEntity : class, IEntity<TPrimaryKey>, IDeleted, new()
+        where TEntity : class, IEntity<TPrimaryKey>, new()
     {
         public async Task<List<TEntity>> GetEntityListAsync(string propName, object value, ECompareOperator compareOperator = ECompareOperator.Equal)
         {
@@ -128,7 +128,23 @@ namespace ZeroOne.Repository
         /// <returns></returns>
         protected async Task<IList<TEntity>> GetListAsync()
         {
-            return await this.Queryable.Where(t => (bool)SqlFunc.IsNull(t.IsDeleted, false) == false).ToListAsync();
+            var entityType = typeof(TEntity);
+            if (entityType.GetInterface(nameof(IDeleted)) != null)
+            {
+                var paramExp = Expression.Parameter(entityType, "t");
+                Expression delPropExp = Expression.Property(paramExp, entityType.GetProperty(nameof(IDeleted.IsDeleted)));
+                //执行SqlFunc.IsNull方法
+                var sqlFuncType = typeof(SqlFunc);
+                var isnull = sqlFuncType.GetMethod(nameof(SqlFunc.IsNull));
+                Expression callExp = Expression.Call(isnull, delPropExp, Expression.Constant(false));
+                var typeAsExp = Expression.TypeAs(callExp, typeof(bool?));
+                Expression<Func<TEntity, bool>> lambda = Expression.Lambda<Func<TEntity, bool>>(typeAsExp, paramExp);
+                return await this.Queryable.Where(lambda).ToListAsync();
+            }
+            else
+            {
+                return await this.Queryable.ToListAsync();
+            }
         }
 
         ///// <summary>
@@ -152,13 +168,63 @@ namespace ZeroOne.Repository
         public async Task<TEntity> GetEntityByIdAsync(TPrimaryKey id)
         {
             var query = this._client.Queryable<TEntity>();
-            return await query.Where(t => t.Id.Equals(id) && SqlFunc.IsNull(t.IsDeleted, false) == false).FirstAsync();
+            var entityType = typeof(TEntity);
+            var paramExp = Expression.Parameter(entityType, "t");
+            Expression isnullEqualExp = null;
+            if (entityType.GetInterface(nameof(IDeleted)) != null)
+            {
+                Expression delPropExp = Expression.Property(paramExp, entityType.GetProperty(nameof(IDeleted.IsDeleted)));
+                //执行SqlFunc.IsNull方法
+                var sqlFuncType = typeof(SqlFunc);
+                var isnull = sqlFuncType.GetMethod(nameof(SqlFunc.IsNull));
+                Expression callExp = Expression.Call(isnull, delPropExp, Expression.Constant(false));
+                Expression typeAsExp = Expression.TypeAs(callExp, typeof(bool?));
+                isnullEqualExp = Expression.Equal(typeAsExp, Expression.Constant(false));
+            }
+            Expression tempExp = null;
+            var idprop = entityType.GetProperty(nameof(IEntity<Guid>.Id));
+            Expression idEqlExp = Expression.Equal(Expression.Property(paramExp, idprop), Expression.Constant(id));
+            if (isnullEqualExp == null)
+            {
+                tempExp = Expression.AndAlso(idEqlExp, isnullEqualExp);
+            }
+            else
+            {
+                tempExp = idEqlExp;
+            }
+            Expression<Func<TEntity, bool>> lambda = Expression.Lambda<Func<TEntity, bool>>(tempExp, paramExp);
+            return await query.Where(lambda).FirstAsync();
         }
 
         public TEntity GetEntityById(TPrimaryKey id)
         {
             var query = this._client.Queryable<TEntity>();
-            return query.Where(t => t.Id.Equals(id) && SqlFunc.IsNull(t.IsDeleted, false) == false).First();
+            var entityType = typeof(TEntity);
+            var paramExp = Expression.Parameter(entityType, "t");
+            Expression isnullEqualExp = null;
+            if (entityType.GetInterface(nameof(IDeleted)) != null)
+            {
+                Expression delPropExp = Expression.Property(paramExp, entityType.GetProperty(nameof(IDeleted.IsDeleted)));
+                //执行SqlFunc.IsNull方法
+                var sqlFuncType = typeof(SqlFunc);
+                var isnull = sqlFuncType.GetMethod(nameof(SqlFunc.IsNull));
+                Expression callExp = Expression.Call(isnull, delPropExp, Expression.Constant(false));
+                Expression typeAsExp = Expression.TypeAs(callExp, typeof(bool?));
+                isnullEqualExp = Expression.Equal(typeAsExp, Expression.Constant(false));
+            }
+            Expression tempExp = null;
+            var idprop = entityType.GetProperty(nameof(IEntity<Guid>.Id));
+            Expression idEqlExp = Expression.Equal(Expression.Property(paramExp, idprop), Expression.Constant(id));
+            if (isnullEqualExp == null)
+            {
+                tempExp = Expression.AndAlso(idEqlExp, isnullEqualExp);
+            }
+            else
+            {
+                tempExp = idEqlExp;
+            }
+            Expression<Func<TEntity, bool>> lambda = Expression.Lambda<Func<TEntity, bool>>(tempExp, paramExp);
+            return query.Where(lambda).First();
         }
 
 
@@ -200,23 +266,38 @@ namespace ZeroOne.Repository
             var entity = new TEntity();
             entity.Id = id;
             var entityType = entity.GetType();
+            if (entityType.GetInterface(nameof(IDeleted)) == null)
+            {
+                throw new Exception($"使用此方法，请将类型{entityType.FullName}实现接口{nameof(IDeleted)}");
+            }
+            else
+            {
+                PropertyInfo property = entityType.GetProperty(nameof(IDeleted.IsDeleted));
+                if (property != null)
+                {
+                    property.SetValue(entity, true);
+                }
+                property = entityType.GetProperty(nameof(IDeleted.DeleterUserId));
+                if (property != null)
+                {
+                    property.SetValue(entity, userId);
+                }
+                property = entityType.GetProperty(nameof(IDeleted.DeletionTime));
+                if (property != null)
+                {
+                    property.SetValue(entity, DateTime.Now);
+                }
+            }
             PropertyInfo rowVersionProp = null;
+
             if (entityType.GetInterfaces().Where(t => t == typeof(IRowVersion)).Count() > 0)
             {
                 rowVersionProp = entityType.GetProperty(nameof(IRowVersion.RowVersion));
                 rowVersionProp.SetValue(entity, rowVersion);
                 ConcurrentProcess(entity);
             }
-
-            if (rowVersionProp != null)
-            {
-                rowVersionProp.SetValue(entity, Guid.NewGuid());
-            }
-            entity.IsDeleted = true;
-            entity.DeleterUserId = userId;
-            entity.DeletionTime = DateTime.Now;
             int affecedRows = await this._client.Updateable(entity).IgnoreColumns(true)
-                .Where(t => t.Id.Equals(id) && SqlFunc.IsNull(t.IsDeleted, false) == false).ExecuteCommandAsync();
+                .Where(t => t.Id.Equals(id)).ExecuteCommandAsync();
             return affecedRows > 0;
         }
 
@@ -228,9 +309,23 @@ namespace ZeroOne.Repository
         /// <returns></returns>
         public async Task<bool> DeleteByIdAsync(TPrimaryKey id, Guid? userId = null)
         {
+            //Expression.Bind(targetProp, sourcePropExp)
+            var entityType = typeof(TEntity);
+            if (entityType.GetInterface(nameof(IDeleted)) == null)
+            {
+                throw new Exception($"使用此方法，请将类型{entityType.FullName}实现接口{nameof(IDeleted)}");
+            }
+            ParameterExpression paramExp = Expression.Parameter(entityType, "t");
+            var memberBindings = new List<MemberBinding>();
+            memberBindings.Add(Expression.Bind(entityType.GetProperty(nameof(IDeleted.IsDeleted)), Expression.Constant(true)));
+            memberBindings.Add(Expression.Bind(entityType.GetProperty(nameof(IDeleted.DeleterUserId)), Expression.Constant(userId)));
+            memberBindings.Add(Expression.Bind(entityType.GetProperty(nameof(IDeleted.DeletionTime)), Expression.Constant(DateTime.Now)));
+            var memerInitExp = Expression.MemberInit(Expression.New(entityType), memberBindings);
+            var lambdaExp = Expression.Lambda<Func<TEntity, TEntity>>(memerInitExp, paramExp);
             int affecedRows = await this._client.Updateable<TEntity>()
-            .SetColumns(t => new TEntity { IsDeleted = true, DeleterUserId = userId, DeletionTime = DateTime.Now })
-            .Where(t => t.Id.Equals(id) && SqlFunc.IsNull(t.IsDeleted, false) == false).ExecuteCommandAsync();
+            .SetColumns(lambdaExp)
+            .IgnoreColumns(true)
+            .Where(t => t.Id.Equals(id)).ExecuteCommandAsync();
             return affecedRows > 0;
         }
 
@@ -282,7 +377,33 @@ namespace ZeroOne.Repository
         private async void ConcurrentProcess(TEntity entity)
         {
             //GetBaseWhereExpression(model.Id)
-            var searchModel = await this._client.Queryable<TEntity>().Where(t => t.Id.Equals(entity.Id) && SqlFunc.IsNull(t.IsDeleted, false) == false).FirstAsync();
+            var entityType = typeof(TEntity);
+            var paramExp = Expression.Parameter(entityType, "t");
+            Expression isnullEqualExp = null;
+            if (entityType.GetInterface(nameof(IDeleted)) != null)
+            {
+                Expression delPropExp = Expression.Property(paramExp, entityType.GetProperty(nameof(IDeleted.IsDeleted)));
+                //执行SqlFunc.IsNull方法
+                var sqlFuncType = typeof(SqlFunc);
+                var isnull = sqlFuncType.GetMethod(nameof(SqlFunc.IsNull));
+                Expression callExp = Expression.Call(isnull, delPropExp, Expression.Constant(false));
+                Expression typeAsExp = Expression.TypeAs(callExp, typeof(bool?));
+                isnullEqualExp = Expression.Equal(typeAsExp, Expression.Constant(false));
+            }
+            Expression tempExp = null;
+            var idprop = entityType.GetProperty(nameof(IEntity<Guid>.Id));
+            Expression idEqlExp = Expression.Equal(Expression.Property(paramExp, idprop), Expression.Constant(entity.Id));
+            if (isnullEqualExp == null)
+            {
+                tempExp = Expression.AndAlso(idEqlExp, isnullEqualExp);
+            }
+            else
+            {
+                tempExp = idEqlExp;
+            }
+            Expression<Func<TEntity, bool>> lambda = Expression.Lambda<Func<TEntity, bool>>(tempExp, paramExp);
+
+            var searchModel = await this._client.Queryable<TEntity>().Where(lambda).FirstAsync();
             if (searchModel != null)
             {
                 var searchProp = searchModel.GetType().GetProperty(nameof(IRowVersion.RowVersion));
@@ -638,8 +759,21 @@ namespace ZeroOne.Repository
                     //字符串就是like，ICollection<>就是in
                     else if (joinItem.CompareOperator == ECompareOperator.Contains)
                     {
+                        //目标值不为空并且目标值是string类型
+                        //当前属性值不为空并且值类型是string类型
+                        //当前属性不为空目标属性不为空并且字符串类型
+                        if (
+                                 (joinItem.DestPropValue != null && joinItem.DestPropValue.GetType() == typeof(string))
+                                 || (joinItem.PropValue != null && joinItem.PropValue.GetType() == typeof(string))
+                                 || (joinItem.Property != null && joinItem.DestProperty != null && joinItem.Property.PropertyType == typeof(string) && joinItem.DestProperty.PropertyType == typeof(string))
+                             )
+                        {
+                            var strType = typeof(string);
+                            var containsMethod = strType.GetMethod(nameof(string.Contains), new Type[] { strType });
+                            compareExp = Expression.Call(left, containsMethod, right);
+                        }
                         //当前对象表属性不为空值不为空，并且目标类型为ICollection<>类型
-                        if (joinItem.Property != null && joinItem.PropValue != null && joinItem.PropValue.GetType().GetInterfaces().Any(x => typeof(ICollection<>) == (x.IsGenericType ? x.GetGenericTypeDefinition() : x)))
+                        else if(joinItem.Property != null && joinItem.PropValue != null && joinItem.PropValue.GetType().GetInterfaces().Any(x => typeof(ICollection<>) == (x.IsGenericType ? x.GetGenericTypeDefinition() : x)))
                         {
                             var property = joinItem.Property;
                             var containsMethod = this.GetContainsMethodByGenericArgType(property.PropertyType);
@@ -652,19 +786,7 @@ namespace ZeroOne.Repository
                             var containsMethod = this.GetContainsMethodByGenericArgType(property.PropertyType);
                             compareExp = Expression.Call(right, containsMethod, left);
                         }
-                        //目标值不为空并且目标值是string类型
-                        //当前属性值不为空并且值类型是string类型
-                        //当前属性不为空目标属性不为空并且字符串类型
-                        else if (
-                                (joinItem.DestPropValue != null && joinItem.DestPropValue.GetType() == typeof(string))
-                                || (joinItem.PropValue != null && joinItem.PropValue.GetType() == typeof(string))
-                                || (joinItem.Property != null && joinItem.DestProperty != null && joinItem.Property.PropertyType == typeof(string) && joinItem.DestProperty.PropertyType == typeof(string))
-                            )
-                        {
-                            var strType = typeof(string);
-                            var containsMethod = strType.GetMethod(nameof(string.Contains), new Type[] { strType });
-                            compareExp = Expression.Call(left, containsMethod, right);
-                        }
+                        
                         else
                         {
                             throw new Exception("");
@@ -726,7 +848,7 @@ namespace ZeroOne.Repository
             }
 
             //设置了当前EntityPropNameAttribute的属性 或者啥特性都没有设置
-            var entityProps = totalProps.Where(t => t.GetCustomAttribute<MainTableRelationAttribute>() == null);
+            var entityProps = totalProps.Where(t => t.GetCustomAttribute<MainTableRelationAttribute>() == null && t.GetCustomAttribute<ResultPropIgnoreAttribute>() == null);
             var firstType = orderEntityTypeAndIsSamples.First(t => t.Item2 == entityType);
             foreach (var prop in entityProps)
             {
@@ -1103,6 +1225,45 @@ namespace ZeroOne.Repository
                     }
                 }
             }
+        }
+
+        /// <summary>
+        /// 获取最终分页结果
+        /// </summary>
+        /// <typeparam name="TPageSearch">分页查询类型参数</typeparam>
+        /// <typeparam name="TResult">集合里的成员对象类型</typeparam>
+        /// <typeparam name="TPageSearchResult">包括总页数以及分页的结果对象集合</typeparam>
+        /// <param name="pageSearch">查询对象</param>
+        /// <returns></returns>
+        public async Task<TPageSearchResult> SearchPageResultAsync<TPageSearch, TResult, TPageSearchResult>(TPageSearch pageSearch)
+            where TPageSearch : BaseSearch, IPageSearch
+            where TResult : IResult, new()
+            where TPageSearchResult : PageSearchResult<TResult>, new()
+        {
+            //获取最终查询对象
+            var selectMethodResult = this.GetSelectResult<TResult>(pageSearch);
+            if (selectMethodResult == null)
+            {
+                throw new Exception("");
+            }
+
+            object resultList = null;
+            int intTotalCount = 0;
+            var totalCount = new RefAsync<int>(intTotalCount);
+            var pagetListMethod = selectMethodResult.GetType().GetMethod("ToPageListAsync", new Type[] { typeof(int), typeof(int), totalCount.GetType() });
+            //获取最终结果对象
+            object[] parameters = new object[] { pageSearch.PageIndex, pageSearch.PageSize, totalCount };
+            resultList = pagetListMethod.Invoke(selectMethodResult, parameters);
+
+            //返回分页查询对象
+            TPageSearchResult pageSearchResult = new TPageSearchResult();
+            if (resultList is Task<List<TResult>>)
+            {
+                var taskResult = resultList as Task<List<TResult>>;
+                pageSearchResult.Items = await taskResult;
+                pageSearchResult.TotalCount = totalCount;
+            }
+            return pageSearchResult;
         }
     }
 
@@ -1498,47 +1659,6 @@ namespace ZeroOne.Repository
             }
             return new List<TResult>();
         }
-
-
-        /// <summary>
-        /// 获取最终分页结果
-        /// </summary>
-        /// <typeparam name="TPageSearch">分页查询类型参数</typeparam>
-        /// <typeparam name="TResult">集合里的成员对象类型</typeparam>
-        /// <typeparam name="TPageSearchResult">包括总页数以及分页的结果对象集合</typeparam>
-        /// <param name="pageSearch">查询对象</param>
-        /// <returns></returns>
-        public async Task<TPageSearchResult> SearchPageResultAsync<TPageSearch, TResult, TPageSearchResult>(TPageSearch pageSearch)
-            where TPageSearch : BaseSearch, IPageSearch
-            where TResult : IResult, new()
-            where TPageSearchResult : PageSearchResult<TResult>, new()
-        {
-            //获取最终查询对象
-            var selectMethodResult = this.GetSelectResult<TResult>(pageSearch);
-            if (selectMethodResult == null)
-            {
-                throw new Exception("");
-            }
-
-            object resultList = null;
-            int intTotalCount = 0;
-            var totalCount = new RefAsync<int>(intTotalCount);
-            var pagetListMethod = selectMethodResult.GetType().GetMethod("ToPageListAsync", new Type[] { typeof(int), typeof(int), totalCount.GetType() });
-            //获取最终结果对象
-            object[] parameters = new object[] { pageSearch.PageIndex, pageSearch.PageSize, totalCount };
-            resultList = pagetListMethod.Invoke(selectMethodResult, parameters);
-
-            //返回分页查询对象
-            TPageSearchResult pageSearchResult = new TPageSearchResult();
-            if (resultList is Task<List<TResult>>)
-            {
-                var taskResult = resultList as Task<List<TResult>>;
-                pageSearchResult.Items = await taskResult;
-                pageSearchResult.TotalCount = totalCount;
-            }
-            return pageSearchResult;
-        }
-
 
     }
 

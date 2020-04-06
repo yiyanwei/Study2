@@ -4,7 +4,7 @@ using System.Text;
 
 namespace ZeroOne.Entity
 {
-    public class ProductUploadFileSearch : BaseSearch
+    public class UploadFileSearch : BaseSearch
     {
         /// <summary>
         /// 产品对应的上传图片Uploadid

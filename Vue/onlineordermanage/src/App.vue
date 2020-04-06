@@ -16,7 +16,7 @@ export default {
   name: "App",
   components: {
     // SignalRCom
-    MenuList
+     MenuList
     // CategoryList,
     // ProInfoList
   }

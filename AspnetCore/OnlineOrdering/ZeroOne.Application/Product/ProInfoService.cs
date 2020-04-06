@@ -26,12 +26,12 @@ namespace ZeroOne.Application
             var results = await this.SearchPageResultAsync<ProInfoPageSearch, ProInfoSearchResult, PageSearchResult<ProInfoSearchResult>>(pageSearch);
             //获取所有的上传文件uploadid集合
             var proUploadIds = results.Items.Where(t => t.UploadId.HasValue).Select(t => new KeyValuePair<Guid, Guid>(t.Id.Value, t.UploadId.Value)).ToList();
-            var search = new ProductUploadFileSearch()
+            var search = new UploadFileSearch()
             {
                 UploadId = proUploadIds.Select(t => t.Value).ToList()
             };
             //获取所有的图片上传uploadid
-            var imgList = await this.FileInfoRep.GetResultListAsync<ProductUploadFileResult, ProductUploadFileSearch>(search);
+            var imgList = await this.FileInfoRep.GetResultListAsync<UploadFileResult, UploadFileSearch>(search);
             var res = Mapper.Map<PageSearchResult<ProInfoResponse>>(results);
             if (imgList?.Count > 0)
             {

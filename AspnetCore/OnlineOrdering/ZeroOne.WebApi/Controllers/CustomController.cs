@@ -12,7 +12,7 @@ namespace ZeroOne.WebApi.Controllers
 {
 
     public class CustomController<TEntity, TPrimaryKey, TAddRequest, TEditRequest> : ControllerBase
-            where TEntity : BaseEntity<TPrimaryKey>
+            where TEntity : IEntity<TPrimaryKey>
     where TAddRequest : IAddRequest, IEntity<TPrimaryKey>
     where TEditRequest : IEditRequest, IEntity<TPrimaryKey>
     {

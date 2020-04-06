@@ -43,20 +43,7 @@ namespace ZeroOne.Application
         //    return await this.Rep.SearchResultAsync<TResult, TSearchResult>(search);
         //}
 
-        /// <summary>
-        /// 获取最终分页结果
-        /// </summary>
-        /// <typeparam name="TPageSearch">分页查询类型参数</typeparam>
-        /// <typeparam name="TResult">集合里的成员对象类型</typeparam>
-        /// <typeparam name="TPageSearchResult">包括总页数以及分页的结果对象集合</typeparam>
-        /// <param name="pageSearch">查询对象</param>
-        public async Task<TPageSearchResult> SearchPageResultAsync<TPageSearch, TResult, TPageSearchResult>(TPageSearch pageSearch)
-            where TPageSearch : BaseSearch, IPageSearch
-            where TResult : IResult, new()
-            where TPageSearchResult : PageSearchResult<TResult>, new()
-        {
-            return await this.Rep.SearchPageResultAsync<TPageSearch, TResult, TPageSearchResult>(pageSearch);
-        }
+
     }
 
     public abstract class BaseService<TEntity, TPrimaryKey> : IBaseService<TEntity, TPrimaryKey>
@@ -124,5 +111,34 @@ namespace ZeroOne.Application
             return await this.Rep.UpdateEntityNotNullAsync(entity);
         }
 
+        /// <summary>
+        /// 获取最终分页结果
+        /// </summary>
+        /// <typeparam name="TPageSearch">分页查询类型参数</typeparam>
+        /// <typeparam name="TResult">集合里的成员对象类型</typeparam>
+        /// <typeparam name="TPageSearchResult">包括总页数以及分页的结果对象集合</typeparam>
+        /// <param name="pageSearch">查询对象</param>
+        public async Task<TPageSearchResult> SearchPageResultAsync<TPageSearch, TResult, TPageSearchResult>(TPageSearch pageSearch)
+            where TPageSearch : BaseSearch, IPageSearch
+            where TResult : IResult, new()
+            where TPageSearchResult : PageSearchResult<TResult>, new()
+        {
+            return await this.Rep.SearchPageResultAsync<TPageSearch, TResult, TPageSearchResult>(pageSearch);
+        }
+
+
+        /// <summary>
+        /// 获取最终分页结果
+        /// </summary>
+        /// <typeparam name="TPageSearch">分页查询类型参数</typeparam>
+        /// <typeparam name="TResult">集合里的成员对象类型</typeparam>
+        /// <typeparam name="TPageSearchResult">包括总页数以及分页的结果对象集合</typeparam>
+        /// <param name="pageSearch">查询对象</param>
+        public async Task<PageSearchResult<TResult>> SearchPageResultAsync<TPageSearch, TResult>(TPageSearch pageSearch)
+            where TPageSearch : BaseSearch, IPageSearch
+            where TResult : IResult, new()
+        {
+            return await this.Rep.SearchPageResultAsync<TPageSearch, TResult, PageSearchResult<TResult>>(pageSearch);
+        }
     }
 }

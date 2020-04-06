@@ -12,19 +12,23 @@ Vue.config.productionTip = false;
 //1、引入组件，用来配置路由
 import CategoryList from './components/procategory/CategoryList.vue';
 import ProductList from './components/product/ProductList.vue';
+import SupplierList from "./components/supplier/SupplierList.vue";
 
 //2、配置路由
-const routes=[
+const routes = [
   {
-    path:'/procategorylist',component:CategoryList
+    path: '/procategorylist', component: CategoryList
   },
   {
-    path:'/prolist',component:ProductList
+    path: '/prolist', component: ProductList
+  },
+  {
+    path: '/suplist', component: SupplierList
   }
 ];
 
 //3、实例化路由
-const router =new VueRouter({
+const router = new VueRouter({
   routes
 });
 
