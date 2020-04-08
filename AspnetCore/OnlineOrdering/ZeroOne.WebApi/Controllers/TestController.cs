@@ -5,6 +5,7 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using ZeroOne.Entity;
@@ -16,6 +17,11 @@ namespace ZeroOne.WebApi.Controllers
     [ApiController]
     public class TestController : ControllerBase
     {
+        protected IWebHostEnvironment Enviroment { get; set; }
+        public TestController(IWebHostEnvironment env)
+        {
+            this.Enviroment = env;
+        }
         // GET: api/Test
         //[HttpGet("Get")]
         //public string Get(BoolEnum @bool)
@@ -82,6 +88,12 @@ namespace ZeroOne.WebApi.Controllers
                 //Console.WriteLine(System.Text.Encoding.Unicode.GetString(tempList.ToArray()));
             }
             return new Tuple<string, string>(string.Join(",", emojis), string.Join("@", strBytes));
+        }
+
+        [HttpGet("GetSystemPath")]
+        public Tuple<string, string> GetSystemPath()
+        {
+            return new Tuple<string, string>(Enviroment.ContentRootPath, Enviroment.WebRootPath);
         }
     }
 }

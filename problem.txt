@@ -1,1 +1,5 @@
 1、Object must implement IConvertible.   2019-12-25
+
+2、asp.net core 自定义文件夹发布的时候未生成
+
+3、asp.net core 获取IWebHostEnvironment.WebRootPath值为null
