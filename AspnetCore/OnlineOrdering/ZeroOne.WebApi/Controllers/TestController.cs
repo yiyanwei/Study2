@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Newtonsoft.Json;
 using ZeroOne.Entity;
 using ZeroOne.Extension.Global;
 
@@ -35,6 +36,35 @@ namespace ZeroOne.WebApi.Controllers
         //    string name = "zhangsan";
         //    return name;
         //}
+
+        [HttpGet("GetData")]
+        public string GetData([FromQuery]string tag)
+        {
+            TagPosition tagPosition = null;
+            string filePath = Enviroment.ContentRootPath + "/mydata.txt";
+            if (System.IO.File.Exists(filePath))
+            {
+                var fileStream = System.IO.File.OpenRead(filePath);
+                System.IO.StreamReader streamReader = new System.IO.StreamReader(fileStream);
+                string val = streamReader.ReadToEnd();
+                if (!string.IsNullOrEmpty(val))
+                {
+                    tagPosition = JsonConvert.DeserializeObject<TagPosition>(val);
+                    if (tag?.Length > 0)
+                    {
+                        tag = tag.Trim(',');
+                        string[] tags = tag.Split(',');
+                        tagPosition.tags = tagPosition.tags.Where(t => tags.Contains(t.id)).ToList();
+                    }
+                }
+            }
+            if (tagPosition == null)
+            {
+                tagPosition = new TagPosition();
+            }
+            return JsonConvert.SerializeObject(tagPosition);
+            //return tagPosition;
+        }
 
         /// <summary>
         /// 

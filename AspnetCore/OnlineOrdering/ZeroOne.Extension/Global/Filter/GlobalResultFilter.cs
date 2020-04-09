@@ -33,6 +33,16 @@ namespace ZeroOne.Extension.Global
                         IActionResult result2;
                         if (!(result is EmptyResult))
                         {
+                            var valProp = result.GetType().GetProperty(nameof(ObjectResult.Value));
+                            if (valProp != null)
+                            {
+                                var val = valProp.GetValue(result);
+                                if (val.GetType() == typeof(string))
+                                {
+                                    base.OnResultExecuting(context);
+                                    return;
+                                }
+                            }
                             result2 = result;
                         }
                         else
