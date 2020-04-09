@@ -91,7 +91,6 @@ namespace ZeroOne.WebApi
                 //config.ConstraintMap.Add(nameof(GetUrlParamToObjConstraint), typeof(GetUrlParamToObjConstraint));
             });
 
-            
 
             //添加服务到服务容器
             services.AddRepository();
@@ -207,11 +206,11 @@ namespace ZeroOne.WebApi
                 app.UseDeveloperExceptionPage();
             }
 
-            //string temp = $"AppDomain.BaseDirectory：{AppDomain.BaseDirectory}";
-            //Console.WriteLine();
-            Console.WriteLine(env.EnvironmentName);
-            Console.WriteLine(env.ContentRootPath);
-            Console.WriteLine(env.WebRootPath);
+            //string temp = $"AppDomain.BaseDirectory：{AppDomain.BaseDirectory}"; 
+            Console.WriteLine(string.Format("EnvironmentName:{0}", env.EnvironmentName));
+            Console.WriteLine(string.Format("AppContext.BaseDirectory:{0}", AppContext.BaseDirectory));
+            Console.WriteLine(string.Format("IWebHostEnvironment.ContentRootPath:{0}", env.ContentRootPath));
+            Console.WriteLine(string.Format("IWebHostEnvironment.WebRootPath:{0}", env.WebRootPath));
 
             app.UseCors(globalCorsName);
             //允许访问静态文件
@@ -227,7 +226,7 @@ namespace ZeroOne.WebApi
             //app.UseHangfireDashboard();//配置后台仪表盘
             //app.UseHangfireServer();//开始使用Hangfire服务
             //RecurringJob.AddOrUpdate("test", () => Console.WriteLine("每1秒执行任务"), "*/1 * * * * *");
-            
+
 
             app.UseHttpsRedirection();
             //启用身份验证中间件
