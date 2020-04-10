@@ -207,8 +207,10 @@ namespace ZeroOne.WebApi
             }
 
             //string temp = $"AppDomain.BaseDirectory：{AppDomain.BaseDirectory}"; 
+            
             Console.WriteLine(string.Format("EnvironmentName:{0}", env.EnvironmentName));
             Console.WriteLine(string.Format("AppContext.BaseDirectory:{0}", AppContext.BaseDirectory));
+            Console.WriteLine(string.Format("AppDomain.CurrentDomain.BaseDirectory:{0}", AppDomain.CurrentDomain.BaseDirectory));
             Console.WriteLine(string.Format("IWebHostEnvironment.ContentRootPath:{0}", env.ContentRootPath));
             Console.WriteLine(string.Format("IWebHostEnvironment.WebRootPath:{0}", env.WebRootPath));
 
