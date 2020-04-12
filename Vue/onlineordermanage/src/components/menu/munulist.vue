@@ -54,7 +54,12 @@ export default {
         {
           id:"4",
           index:"/suplist",
-          name:"供应商管理"
+          name:"供应商管理",
+          second: [
+            { id: 4, index: "/suplist", name: "供应商管理" }
+            // ,
+            // { id: 3, index: "/prolist", name: "产品管理" }
+          ]
         }
       ],
       isCollapse: true

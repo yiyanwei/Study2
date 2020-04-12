@@ -36,7 +36,7 @@ export default {
   },
   methods: {
     initData() {
-      var api = "/ProCategory/GetDropDownListAsync";
+      var api = "/api/ProCategory/GetDropDownListAsync";
       http.get(api, null, response => {
         if (response && response.success && response.data) {
           this.form.procateoptions = response.data;
@@ -46,7 +46,7 @@ export default {
       });
     },
     onSubmit() {
-      var api = "/ProCategory/Add";
+      var api = "/api/ProCategory/Add";
       var data = {
         ParentId: this.form.ParentId,
         CategoryName: this.form.CategoryName

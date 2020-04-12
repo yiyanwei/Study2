@@ -75,7 +75,7 @@ import VueHoverMask from "vue-hover-mask";
 export default {
   data() {
     return {
-      uploadAddr: http.rootApi + "/upload/UploadImageAndGenerateThum",
+      uploadAddr: http.rootApi + "/api/upload/UploadImageAndGenerateThum",
       fit: "contain",
       url: "",
       disabled: false,
@@ -135,7 +135,7 @@ export default {
         if (this.fileList && this.fileList.length > 0) {
           for (var key in this.fileList) {
             this.fileList[key].url =
-              "http://localhost:5002" + this.fileList[key].url;
+              http.rootApi + this.fileList[key].url;
           }
         } else {
           this.uploadVisible = true;
@@ -148,7 +148,7 @@ export default {
     },
     getProInfo() {
       //获取分类详情信息
-      var getApi = "/ProInfo/GetProInfo";
+      var getApi = "/api/ProInfo/GetProInfo";
       var data = {
         id: this.form.id
       };
@@ -169,7 +169,7 @@ export default {
             this.fileList = response.data.fileInfos;
             for (var key in this.fileList) {
               this.fileList[key].url =
-                "http://localhost:5002" + this.fileList[key].url;
+                http.rootApi + this.fileList[key].url;
             }
           } else {
             this.uploadVisible = true;
@@ -181,7 +181,7 @@ export default {
       });
     },
     getCategoryList() {
-      var api = "/ProCategory/GetDropDownListAsync";
+      var api = "/api/ProCategory/GetDropDownListAsync";
       http.get(api, null, response => {
         if (response && response.success && response.data) {
           this.procateoptions = response.data;
@@ -214,7 +214,7 @@ export default {
           //判断是否存在
           if (this.fileList[i].id == e.target.dataset.pid) {
             this.$parent.$parent.imageUrl =
-              "http://localhost:5002" + this.fileList[i].sourceUrl;
+              http.rootApi + this.fileList[i].sourceUrl;
             this.$parent.$parent.imgdialogVisible = true;
             break;
           }
@@ -225,7 +225,7 @@ export default {
       this.$refs[formName].validate(valid => {
         //验证通过
         if (valid) {
-          var api = "/ProInfo/Edit";
+          var api = "/api/ProInfo/Edit";
           http.put(api, this.form, response => {
             if (response.success) {
               this.$message({

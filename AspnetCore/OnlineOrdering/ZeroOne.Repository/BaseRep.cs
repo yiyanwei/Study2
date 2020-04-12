@@ -136,10 +136,13 @@ namespace ZeroOne.Repository
                 //执行SqlFunc.IsNull方法
                 var sqlFuncType = typeof(SqlFunc);
                 var isnull = sqlFuncType.GetMethod(nameof(SqlFunc.IsNull));
-                Expression callExp = Expression.Call(isnull, delPropExp, Expression.Constant(false));
-                var typeAsExp = Expression.TypeAs(callExp, typeof(bool?));
-                Expression<Func<TEntity, bool>> lambda = Expression.Lambda<Func<TEntity, bool>>(typeAsExp, paramExp);
+                isnull = isnull.MakeGenericMethod(typeof(bool));
+                Expression constantExp = Expression.Constant(false);
+                Expression callExp = Expression.Call(isnull, Expression.Convert(delPropExp, typeof(bool)), constantExp);
+                Expression isnullEqualExp = Expression.Equal(callExp, constantExp);
+                Expression<Func<TEntity, bool>> lambda = Expression.Lambda<Func<TEntity, bool>>(isnullEqualExp, paramExp);
                 return await this.Queryable.Where(lambda).ToListAsync();
+
             }
             else
             {
@@ -177,9 +180,10 @@ namespace ZeroOne.Repository
                 //执行SqlFunc.IsNull方法
                 var sqlFuncType = typeof(SqlFunc);
                 var isnull = sqlFuncType.GetMethod(nameof(SqlFunc.IsNull));
-                Expression callExp = Expression.Call(isnull, delPropExp, Expression.Constant(false));
-                Expression typeAsExp = Expression.TypeAs(callExp, typeof(bool?));
-                isnullEqualExp = Expression.Equal(typeAsExp, Expression.Constant(false));
+                isnull = isnull.MakeGenericMethod(typeof(bool));
+                Expression constantExp = Expression.Constant(false);
+                Expression callExp = Expression.Call(isnull, Expression.Convert(delPropExp, typeof(bool)), constantExp);
+                isnullEqualExp = Expression.Equal(callExp, constantExp);
             }
             Expression tempExp = null;
             var idprop = entityType.GetProperty(nameof(IEntity<Guid>.Id));
@@ -208,9 +212,10 @@ namespace ZeroOne.Repository
                 //执行SqlFunc.IsNull方法
                 var sqlFuncType = typeof(SqlFunc);
                 var isnull = sqlFuncType.GetMethod(nameof(SqlFunc.IsNull));
-                Expression callExp = Expression.Call(isnull, delPropExp, Expression.Constant(false));
-                Expression typeAsExp = Expression.TypeAs(callExp, typeof(bool?));
-                isnullEqualExp = Expression.Equal(typeAsExp, Expression.Constant(false));
+                isnull = isnull.MakeGenericMethod(typeof(bool));
+                Expression constantExp = Expression.Constant(false);
+                Expression callExp = Expression.Call(isnull, Expression.Convert(delPropExp, typeof(bool)), constantExp);
+                isnullEqualExp = Expression.Equal(callExp, constantExp);
             }
             Expression tempExp = null;
             var idprop = entityType.GetProperty(nameof(IEntity<Guid>.Id));
@@ -773,7 +778,7 @@ namespace ZeroOne.Repository
                             compareExp = Expression.Call(left, containsMethod, right);
                         }
                         //当前对象表属性不为空值不为空，并且目标类型为ICollection<>类型
-                        else if(joinItem.Property != null && joinItem.PropValue != null && joinItem.PropValue.GetType().GetInterfaces().Any(x => typeof(ICollection<>) == (x.IsGenericType ? x.GetGenericTypeDefinition() : x)))
+                        else if (joinItem.Property != null && joinItem.PropValue != null && joinItem.PropValue.GetType().GetInterfaces().Any(x => typeof(ICollection<>) == (x.IsGenericType ? x.GetGenericTypeDefinition() : x)))
                         {
                             var property = joinItem.Property;
                             var containsMethod = this.GetContainsMethodByGenericArgType(property.PropertyType);
@@ -786,7 +791,7 @@ namespace ZeroOne.Repository
                             var containsMethod = this.GetContainsMethodByGenericArgType(property.PropertyType);
                             compareExp = Expression.Call(right, containsMethod, left);
                         }
-                        
+
                         else
                         {
                             throw new Exception("");

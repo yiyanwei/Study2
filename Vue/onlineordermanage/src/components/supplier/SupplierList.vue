@@ -22,7 +22,7 @@
         </el-form-item>
         <el-form-item>
           <el-button type="primary" @click="onSearch">查询</el-button>
-          <el-button type="primary" @click="dialogAddProduct = true">新增</el-button>
+          <el-button type="primary" @click="dialogAddSupplier = true">新增</el-button>
         </el-form-item>
       </el-form>
     </header>
@@ -82,6 +82,17 @@
       </el-table-column>
     </el-table>
     <el-dialog
+      title="新增供应商"
+      style="z-index:2"
+      :visible.sync="dialogAddSupplier"
+      width="30%"
+      :close-on-click-modal="false"
+      :destroy-on-close="true"
+    >
+      <AddSupplier v-if="dialogAddSupplier" />
+    </el-dialog>
+
+    <el-dialog
       :width="imgdialogWidth"
       :visible.sync="imgdialogVisible"
       :close-on-click-modal="false"
@@ -95,9 +106,11 @@
 <script>
 import VueHoverMask from "vue-hover-mask";
 import http from "../../common/http/vueresource.js";
+import AddSupplier from "./AddSupplier.vue";
 export default {
   data() {
     return {
+      dialogAddSupplier:false,
       imgdialogWidth: "0px",
       imgdialogVisible: false,
       imageUrl: "",
@@ -115,7 +128,8 @@ export default {
     };
   },
   components: {
-    VueHoverMask
+    VueHoverMask,
+    AddSupplier
   },
   mounted() {
     this.getData();
@@ -129,19 +143,19 @@ export default {
     handlePicturePreview(e) {
       console.log(e);
       if (e.target.dataset && e.target.dataset.sourceimgs) {
-        this.imageUrl = "http://localhost:5002" + e.target.dataset.sourceimgs;
+        this.imageUrl = http.rootApi + e.target.dataset.sourceimgs;
         this.imgdialogVisible = true;
       }
     },
     getThumUrl(thums) {
       if (thums && thums.length > 0) {
-        return "http://localhost:5002" + thums[0];
+        return http.rootApi + thums[0];
       }
       return "";
     },
     getData() {
       //请求查询数据
-      var api = "/Supplier/SearchPageList";
+      var api = "/api/Supplier/SearchPageList";
       http.get(api, JSON.stringify(this.form), response => {
         if (response && response.success && response.data) {
           //绑定列表

@@ -32,7 +32,7 @@ Vue.http.interceptors.push((request, next) => {
 
 
 /*用户登录*/
-const loginUrl = '/User/UserLogin';
+const loginUrl = '/api/User/UserLogin';
 export function login(data) {
   post(loginUrl, data, successInfo => {
     //设置token
@@ -61,7 +61,7 @@ function newUrl(url, data) {
 }
 
 //根目录
-const rootApi = "http://localhost:5002/api";
+const rootApi = "http://localhost:5002";
 
 /*get方式请求数据*/
 function get(url, data, success, error) {

@@ -216,6 +216,7 @@ namespace ZeroOne.WebApi
 
             app.UseCors(globalCorsName);
             //允许访问静态文件
+            app.UseStaticFiles();
             //app.UseStaticFiles(new StaticFileOptions()
             //{
             //    FileProvider = new PhysicalFileProvider(

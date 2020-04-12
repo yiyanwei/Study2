@@ -105,7 +105,7 @@ export default {
     },
     getData() {
       //请求查询数据
-      var api = "/ProCategory/SearchPageList";
+      var api = "/api/ProCategory/SearchPageList";
       //this.form.pageIndex = pIndex;
       http.get(api, JSON.stringify(this.form), response => {
         if (response && response.success && response.data) {

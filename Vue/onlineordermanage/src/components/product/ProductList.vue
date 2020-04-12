@@ -187,13 +187,13 @@ export default {
   methods: {
     handlePicturePreview(e) {
       if (e.target.dataset && e.target.dataset.sourceimgs) {
-        this.imageUrl = "http://localhost:5002" + e.target.dataset.sourceimgs;
+        this.imageUrl = http.rootApi + e.target.dataset.sourceimgs;
         this.imgdialogVisible = true;
       }
     },
     getThumUrl(thums) {
       if (thums && thums.length > 0) {
-        return "http://localhost:5002" + thums[0];
+        return http.rootApi + thums[0];
       }
       return "";
     },
@@ -202,7 +202,7 @@ export default {
       this.getData();
     },
     getCategoryList() {
-      var api = "/ProCategory/GetDropDownListAsync";
+      var api = "/api/ProCategory/GetDropDownListAsync";
       http.get(api, null, response => {
         if (response && response.success && response.data) {
           this.procateoptions = response.data;
@@ -213,7 +213,7 @@ export default {
     },
     getData() {
       //请求查询数据
-      var api = "/ProInfo/SearchPageList";
+      var api = "/api/ProInfo/SearchPageList";
       http.get(api, JSON.stringify(this.form), response => {
         if (response && response.success && response.data) {
           //绑定列表

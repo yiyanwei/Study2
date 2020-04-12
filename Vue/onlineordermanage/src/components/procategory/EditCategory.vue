@@ -40,7 +40,7 @@ export default {
   methods: {
     getCategory() {
       //获取分类详情信息
-      var getApi = "/ProCategory/GetEntityById";
+      var getApi = "/api/ProCategory/GetEntityById";
       var data = {
         id: this.form.id
       };
@@ -57,7 +57,7 @@ export default {
       });
     },
     initData() {
-      var api = "/ProCategory/GetDropDownListAsync";
+      var api = "/api/ProCategory/GetDropDownListAsync";
       http.get(api, null, response => {
         if (response && response.success && response.data) {
           this.procateoptions = response.data;
@@ -69,7 +69,7 @@ export default {
       });
     },
     onSubmit() {
-      var api = "/ProCategory/Edit";
+      var api = "/api/ProCategory/Edit";
       http.post(api, this.form, response => {
         if (response.success) {
           this.$message({
