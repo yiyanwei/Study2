@@ -37,8 +37,8 @@ namespace ZeroOne.Repository
 
             //实体类名
             Type modelType = typeof(TEntity);
-            var tableAttribute = modelType.GetCustomAttribute<TableAttribute>();
-            string tempTableName = tableAttribute != null ? tableAttribute.Name : modelType.Name;
+            //var tableAttribute = modelType.GetCustomAttribute<TableAttribute>();
+            //string tempTableName = tableAttribute != null ? tableAttribute.Name : modelType.Name;
             var properties = modelType.GetProperties(BindingFlags.Instance | BindingFlags.Public);
             if (properties != null && properties.Count() > 0)
             {
@@ -51,8 +51,8 @@ namespace ZeroOne.Repository
                     //执行批量插入之前是否有操作
                     beforeAction?.Invoke(this._client, modelType, models);
                     //获取所有公共属性名
-                    var columnNames = properties.Select(t => t.Name);
-                    var parameterColNames = properties.Select(t => "@" + t.Name).ToList();
+                    //var columnNames = properties.Select(t => t.Name);
+                    //var parameterColNames = properties.Select(t => "@" + t.Name).ToList();
                     int step = 0;
                     bool isExactDivision = (length % bulkAddRecords == 0);
                     //批量插入数据
@@ -80,8 +80,8 @@ namespace ZeroOne.Repository
                         {
                             stepSize = bulkAddRecords;
                         }
-                        StringBuilder insertSql = new StringBuilder();
-                        insertSql.Append($" INSERT INTO {tempTableName}({string.Join(",", columnNames)}) VALUES ({string.Join(",", parameterColNames)}); ");
+                        //StringBuilder insertSql = new StringBuilder();
+                        //insertSql.Append($" INSERT INTO {tempTableName}({string.Join(",", columnNames)}) VALUES ({string.Join(",", parameterColNames)}); ");
                         affecedRows += await this._client.Insertable<TEntity>(models.Skip(skip).Take(stepSize).ToList()).ExecuteCommandAsync();
                         //await conn.ExecuteAsync(insertSql.ToString(), models.Skip(skip).Take(stepSize).ToList(), trans);
                     }
@@ -241,7 +241,6 @@ namespace ZeroOne.Repository
                 Expression isnullEqualExp = Expression.Equal(callExp, constantExp);
                 Expression<Func<TEntity, bool>> lambda = Expression.Lambda<Func<TEntity, bool>>(isnullEqualExp, paramExp);
                 return await this.Queryable.Where(lambda).ToListAsync();
-
             }
             else
             {

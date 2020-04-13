@@ -75,7 +75,7 @@ namespace ZeroOne.WebApi.Controllers
                                 t.CreationTime = now;
                                 return t;
                             }).ToList();
-                            var rows = await this.DistrictService.AddEntityListAsync(districts);
+                            var rows = await this.DistrictService.BulkAddAsync(districts);
                         }
                     }
                 }

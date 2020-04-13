@@ -12,7 +12,7 @@ namespace ZeroOne.Application
     public class ProCategoryService : BaseService<ProCategory, Guid?, ProCategorySearch>, IProCategoryService
     {
 
-        private IProCategoryRep Rep;
+        private new IProCategoryRep Rep;
         public ProCategoryService(IProCategoryRep rep, IMapper mapper) : base(rep, mapper)
         {
             this.Rep = rep;

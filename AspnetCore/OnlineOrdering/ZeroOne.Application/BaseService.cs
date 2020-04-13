@@ -19,7 +19,7 @@ namespace ZeroOne.Application
         /// <returns></returns>
         protected abstract IList<BaseRepModel> GetBaseRepBySearch(TSearch search);
 
-        private IBaseRep<TEntity, TPrimaryKey, TSearch> Rep;
+        private new IBaseRep<TEntity, TPrimaryKey, TSearch> Rep;
         public BaseService(IBaseRep<TEntity, TPrimaryKey, TSearch> rep, IMapper mapper) : base(rep)
         {
             this.Rep = rep;
@@ -62,7 +62,7 @@ namespace ZeroOne.Application
 
         protected IMapper Mapper { get; set; }
 
-        private IBaseRep<TEntity, TPrimaryKey> Rep;
+        protected IBaseRep<TEntity, TPrimaryKey> Rep;
         public BaseService(IBaseRep<TEntity, TPrimaryKey> rep)
         {
             this.Rep = rep;
@@ -88,7 +88,6 @@ namespace ZeroOne.Application
         {
             return await this.Rep.AddEntityListAsync(list);
         }
-
 
 
         public async Task<bool> DeleteAsync(TPrimaryKey id, Guid rowVersion, Guid? userId)

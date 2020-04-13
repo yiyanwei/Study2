@@ -11,7 +11,7 @@ namespace ZeroOne.Application
 {
     public class SupplierService : BaseService<Supplier, Guid>, ISupplierService
     {
-        protected ISupplierRep Rep { get; set; }
+        protected new ISupplierRep Rep { get; set; }
 
         protected IFileInfoRep FileRep { get; set; }
         public SupplierService(ISupplierRep rep,IFileInfoRep fileRep, IMapper mapper) : base(rep)
