@@ -2,11 +2,33 @@ using System;
 using ZeroOne.Entity;
 using System.Threading.Tasks;
 using System.Collections.Generic;
+using SqlSugar;
 
 namespace ZeroOne.Repository
 {
     public interface IBaseRep<TEntity, TPrimaryKey> where TEntity : IEntity<TPrimaryKey>
     {
+
+        /// <summary>
+        /// 分批次添加数据到数据库
+        /// </summary>
+        /// <param name="models">数据集合</param>
+        /// <param name="bulkAddRecords">步长，默认：1000，一次添加1000条数据</param>
+        /// <param name="beforeAction"></param>
+        /// <param name="afterAction"></param>
+        /// <param name="isTrans">是否开启事务，默认开启</param>
+        /// <returns></returns>
+        Task<object> BulkAddAsync(IList<TEntity> models, int bulkAddRecords = 1000,
+        Func<ISqlSugarClient, Type, IList<TEntity>, object> beforeAction = null,
+        Func<ISqlSugarClient, Type, IList<TEntity>, object> afterAction = null, bool isTrans = true);
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="propName"></param>
+        /// <param name="value"></param>
+        /// <param name="compareOperator"></param>
+        /// <returns></returns>
         Task<List<TEntity>> GetEntityListAsync(string propName, object value, ECompareOperator compareOperator = ECompareOperator.Equal);
 
         /// <summary>

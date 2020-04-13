@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using ZeroOne.Entity;
+using ZeroOne.Extension.Model;
 
 namespace ZeroOne.WebApi
 {
@@ -32,6 +33,9 @@ namespace ZeroOne.WebApi
                 .ForMember(x => x.Name, x => x.MapFrom(t => t.FileName + t.FileExt))
                 .ForMember(x => x.Url, x => x.MapFrom(t => t.TargetFileUrl))
                 .ForMember(x => x.SourceUrl, x => x.MapFrom(t => t.SourceFileUrl));
+
+            //添加地区映射
+            CreateMap<Districts, District>();
         }
     }
 }

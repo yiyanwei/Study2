@@ -4,13 +4,16 @@ using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
+using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
+using ZeroOne.Application;
 using ZeroOne.Entity;
 using ZeroOne.Extension.Global;
+using ZeroOne.Extension.Model;
 
 namespace ZeroOne.WebApi.Controllers
 {
@@ -18,10 +21,18 @@ namespace ZeroOne.WebApi.Controllers
     [ApiController]
     public class TestController : ControllerBase
     {
+        private static int count = 1;
         protected IWebHostEnvironment Enviroment { get; set; }
-        public TestController(IWebHostEnvironment env)
+
+        protected IMapper Mapper { get; set; }
+
+        protected IDistrictService DistrictService { get; set; }
+
+        public TestController(IWebHostEnvironment env, IDistrictService districtService, IMapper mapper)
         {
             this.Enviroment = env;
+            this.Mapper = mapper;
+            this.DistrictService = districtService;
         }
         // GET: api/Test
         //[HttpGet("Get")]
@@ -37,11 +48,67 @@ namespace ZeroOne.WebApi.Controllers
         //    return name;
         //}
 
+        [HttpGet("GetDistrict")]
+        public async void GetDistrict()
+        {
+            string filePath = Enviroment.ContentRootPath + "/Data/District.json";
+            DistrictResponse districtResponse = null;
+            if (System.IO.File.Exists(filePath))
+            {
+                var fileStream = System.IO.File.OpenRead(filePath);
+                System.IO.StreamReader streamReader = new System.IO.StreamReader(fileStream);
+                string val = streamReader.ReadToEnd();
+                if (!string.IsNullOrEmpty(val))
+                {
+                    val = System.Text.RegularExpressions.Regex.Replace(val, "\"citycode\":.?\\[\\]", "\"citycode\": null");
+                    districtResponse = JsonConvert.DeserializeObject<DistrictResponse>(val);
+                    if (districtResponse?.districts?.Count > 0 && districtResponse.districts[0].districts?.Count > 0)
+                    {
+                        //目标对象
+                        List<District> districts = new List<District>();
+                        this.AddList(districts, districtResponse.districts[0].districts, null);
+                        if (districts?.Count > 0)
+                        {
+                            DateTime now = DateTime.Now;
+                            districts = districts.Select(t =>
+                            {
+                                t.CreationTime = now;
+                                return t;
+                            }).ToList();
+                            var rows = await this.DistrictService.AddEntityListAsync(districts);
+                        }
+                    }
+                }
+            }
+
+            //return JsonConvert.SerializeObject(districtResponse);
+        }
+
+        private void AddList(List<District> targets, List<Districts> sources, Guid? parentId)
+        {
+            if (sources?.Count > 0)
+            {
+                foreach (var item in sources)
+                {
+                    District target = Mapper.Map<District>(item);
+                    target.Id = Guid.NewGuid();
+                    target.ParentId = parentId;
+                    targets.Add(target);
+                    this.AddList(targets, item.districts, target.Id);
+                }
+            }
+        }
+
         [HttpGet("GetData")]
         public string GetData([FromQuery]string tag)
         {
+            count++;
+            if (count > 100)
+            {
+                count = 2;
+            }
             TagPosition tagPosition = null;
-            string filePath = Enviroment.ContentRootPath + "/mydata.txt";
+            string filePath = Enviroment.ContentRootPath + "/mydata1.txt";
             if (System.IO.File.Exists(filePath))
             {
                 var fileStream = System.IO.File.OpenRead(filePath);
@@ -54,7 +121,15 @@ namespace ZeroOne.WebApi.Controllers
                     {
                         tag = tag.Trim(',');
                         string[] tags = tag.Split(',');
-                        tagPosition.tags = tagPosition.tags.Where(t => tags.Contains(t.id)).ToList();
+                        tagPosition.tags = tagPosition.tags.Where(t => tags.Contains(t.id)).Select((t, i) =>
+                        {
+                            if (t.smoothedPosition?.Length >= 2)
+                            {
+                                t.smoothedPosition[0] = t.smoothedPosition[0] + i + 1;
+                                t.smoothedPosition[1] = t.smoothedPosition[1] + i + 1 + count;
+                            }
+                            return t;
+                        }).ToList();
                     }
                 }
             }

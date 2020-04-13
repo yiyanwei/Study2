@@ -19,6 +19,105 @@ namespace ZeroOne.Repository
     public abstract class BaseRep<TEntity, TPrimaryKey> : IBaseRep<TEntity, TPrimaryKey>
         where TEntity : class, IEntity<TPrimaryKey>, new()
     {
+
+        public async Task<object> BulkAddAsync(IList<TEntity> models, int bulkAddRecords = 1000,
+        Func<ISqlSugarClient, Type, IList<TEntity>, object> beforeAction = null,
+        Func<ISqlSugarClient, Type, IList<TEntity>, object> afterAction = null, bool isTrans = true)
+        {
+            object retVal = null;
+            int length = 0;
+            if (models == null || models.Count() <= 0)
+            {
+                throw new Exception("数据集为空");
+            }
+            else
+            {
+                length = models.Count();
+            }
+
+            //实体类名
+            Type modelType = typeof(TEntity);
+            var tableAttribute = modelType.GetCustomAttribute<TableAttribute>();
+            string tempTableName = tableAttribute != null ? tableAttribute.Name : modelType.Name;
+            var properties = modelType.GetProperties(BindingFlags.Instance | BindingFlags.Public);
+            if (properties != null && properties.Count() > 0)
+            {
+                try
+                {
+                    if (isTrans)
+                    {
+                        this._client.Ado.BeginTran();
+                    }
+                    //执行批量插入之前是否有操作
+                    beforeAction?.Invoke(this._client, modelType, models);
+                    //获取所有公共属性名
+                    var columnNames = properties.Select(t => t.Name);
+                    var parameterColNames = properties.Select(t => "@" + t.Name).ToList();
+                    int step = 0;
+                    bool isExactDivision = (length % bulkAddRecords == 0);
+                    //批量插入数据
+                    if (isExactDivision)
+                    {
+                        step = length / bulkAddRecords;
+                    }
+                    else
+                    {
+                        step = (int)(length / bulkAddRecords) + 1;
+                    }
+
+                    int skip = 0;
+                    int affecedRows = 0;
+                    for (int i = 0; i < step; i++)
+                    {
+                        skip = bulkAddRecords * i;
+                        int stepSize = 0;
+                        //判断是否为最后一段
+                        if (step - i - 1 == 0)
+                        {
+                            stepSize = length - skip;
+                        }
+                        else
+                        {
+                            stepSize = bulkAddRecords;
+                        }
+                        StringBuilder insertSql = new StringBuilder();
+                        insertSql.Append($" INSERT INTO {tempTableName}({string.Join(",", columnNames)}) VALUES ({string.Join(",", parameterColNames)}); ");
+                        affecedRows += await this._client.Insertable<TEntity>(models.Skip(skip).Take(stepSize).ToList()).ExecuteCommandAsync();
+                        //await conn.ExecuteAsync(insertSql.ToString(), models.Skip(skip).Take(stepSize).ToList(), trans);
+                    }
+                    //如果插入成功的数据与传入的数据量一致
+                    retVal = affecedRows;
+                    //1.数据操作对象，2：操作目标表对象类型，3：临时表对象类型，4：批量操作标识数据，5：返回对象
+                    if (afterAction != null)
+                    {
+                        retVal = afterAction(this._client, modelType, models);
+                        if (retVal is Task<object>)
+                        {
+                            retVal = await (retVal as Task<object>);
+                        }
+                    }
+                    if (isTrans)
+                    {
+                        //提交事务
+                        this._client.Ado.CommitTran();
+                    }
+                }
+                catch (Exception ex)
+                {
+                    if (isTrans)
+                    {
+                        this._client.Ado.RollbackTran();
+                    }
+                    throw ex;
+                }
+                return retVal;
+            }
+            else
+            {
+                throw new Exception($"该{nameof(TEntity)}类没有可实例化的公共属性");
+            }
+        }
+
         public async Task<List<TEntity>> GetEntityListAsync(string propName, object value, ECompareOperator compareOperator = ECompareOperator.Equal)
         {
             //比较运算

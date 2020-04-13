@@ -5,6 +5,10 @@
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <NoWarn>$(NoWarn);1591</NoWarn>
   </PropertyGroup>
+
+  <ItemGroup>
+    <Content Remove="Data\District.json" />
+  </ItemGroup>
   
   <ItemGroup>
     <ProjectReference Include="..\ZeroOne.Application\ZeroOne.Application.csproj" />
@@ -37,6 +41,10 @@
     <Folder Include="Models\Request\" />
     <Folder Include="MyStaticFiles\Upload\" />
     <Folder Include="wwwroot\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="Data\District.json" />
   </ItemGroup>
 
 
