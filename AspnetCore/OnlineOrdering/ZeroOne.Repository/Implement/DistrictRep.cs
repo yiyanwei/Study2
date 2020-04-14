@@ -17,6 +17,10 @@ namespace ZeroOne.Repository
 
         }
 
+        /// <summary>
+        /// 获取省市区递归数据
+        /// </summary>
+        /// <returns></returns>
         public async Task<IList<SelectItem<string, Guid>>> GetSelectItems()
         {
             var dbResult = (await this.Queryable.Where(t => t.Level != "street" && SqlFunc.IsNull(t.IsDeleted, false) == false).ToListAsync()).Select(t => new SelectItem<string, Guid>()

@@ -177,6 +177,10 @@ namespace ZeroOne.WebApi
                 options.ThumbnailImgRootPath = uploadSettingSection[nameof(UploadSettings.ThumbnailImgRootPath)];
             });
 
+            //高德行政区域查询配置
+            var districtSettingSection = Configuration.GetSection(nameof(DistrictSettings));
+            services.Configure<DistrictSettings>(districtSettingSection);
+
             //add swagger
             services.AddSwaggerGen(c =>
             {
@@ -208,8 +212,9 @@ namespace ZeroOne.WebApi
             }
 
             //string temp = $"AppDomain.BaseDirectory：{AppDomain.BaseDirectory}"; 
-            
+
             Console.WriteLine(string.Format("EnvironmentName:{0}", env.EnvironmentName));
+            Console.WriteLine(string.Format("WebHostDefaults.StartupAssemblyKey:{0}", WebHostDefaults.StartupAssemblyKey));
             Console.WriteLine(string.Format("AppContext.BaseDirectory:{0}", AppContext.BaseDirectory));
             Console.WriteLine(string.Format("AppDomain.CurrentDomain.BaseDirectory:{0}", AppDomain.CurrentDomain.BaseDirectory));
             Console.WriteLine(string.Format("IWebHostEnvironment.ContentRootPath:{0}", env.ContentRootPath));

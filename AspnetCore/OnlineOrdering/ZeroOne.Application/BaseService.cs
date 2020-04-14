@@ -20,10 +20,9 @@ namespace ZeroOne.Application
         protected abstract IList<BaseRepModel> GetBaseRepBySearch(TSearch search);
 
         private new IBaseRep<TEntity, TPrimaryKey, TSearch> Rep;
-        public BaseService(IBaseRep<TEntity, TPrimaryKey, TSearch> rep, IMapper mapper) : base(rep)
+        public BaseService(IBaseRep<TEntity, TPrimaryKey, TSearch> rep, IMapper mapper) : base(rep, mapper)
         {
             this.Rep = rep;
-            this.Mapper = mapper;
         }
 
         public async Task<IList<TEntity>> GetEntitiesAsync(TSearch search)
@@ -63,9 +62,10 @@ namespace ZeroOne.Application
         protected IMapper Mapper { get; set; }
 
         protected IBaseRep<TEntity, TPrimaryKey> Rep;
-        public BaseService(IBaseRep<TEntity, TPrimaryKey> rep)
+        public BaseService(IBaseRep<TEntity, TPrimaryKey> rep, IMapper mapper)
         {
             this.Rep = rep;
+            this.Mapper = mapper;
         }
 
         public async Task<TEntity> AddAndReturnAsync<TRequest>(TRequest request) where TRequest : IAddRequest

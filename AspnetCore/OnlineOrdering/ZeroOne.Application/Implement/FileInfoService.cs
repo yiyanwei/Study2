@@ -1,4 +1,5 @@
-﻿using System;
+﻿using AutoMapper;
+using System;
 using System.Collections.Generic;
 using System.Text;
 using ZeroOne.Entity;
@@ -8,7 +9,7 @@ namespace ZeroOne.Application
 {
     public class FileInfoService : BaseService<FileInfo, Guid>, IFileInfoService
     {
-        public FileInfoService(IFileInfoRep rep) : base(rep)
+        public FileInfoService(IFileInfoRep rep,IMapper mapper) : base(rep, mapper)
         {
 
         }

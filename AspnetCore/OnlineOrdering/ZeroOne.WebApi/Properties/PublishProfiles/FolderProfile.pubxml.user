@@ -8,4 +8,12 @@
     <TimeStampOfAssociatedLegacyPublishXmlFile />
     <_PublishTargetUrl>D:\wwwroot\OnlineOrdering</_PublishTargetUrl>
   </PropertyGroup>
+  <ItemGroup>
+    <File Include="mydata.txt">
+      <publishTime>04/09/2020 13:54:46</publishTime>
+    </File>
+    <File Include="mydata1.txt">
+      <publishTime>04/13/2020 09:39:26</publishTime>
+    </File>
+  </ItemGroup>
 </Project>
