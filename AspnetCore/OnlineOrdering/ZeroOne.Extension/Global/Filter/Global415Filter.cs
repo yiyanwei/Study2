@@ -73,22 +73,42 @@ namespace ZeroOne.Extension.Global
                         }
                     }
                     //执行结果
-                    var actionResult = action.MethodInfo.Invoke(context.Controller, keyValuePairs?.Keys?.ToArray());
-
-                    var resultProp = actionResult.GetType().GetProperty("Result");
-                    if (resultProp != null)
+                    try
                     {
-                        result.StatusCode = 200;
-                        object tempResult = resultProp.GetValue(actionResult);
-                        if (tempResult != null)
+                        var actionResult = action.MethodInfo.Invoke(context.Controller, keyValuePairs?.Keys?.ToArray());
+                        var resultProp = actionResult.GetType().GetProperty("Result");
+                        if (resultProp != null)
                         {
-                            if (tempResult.GetType() == typeof(FileStreamResult))
+                            result.StatusCode = 200;
+                            object tempResult = resultProp.GetValue(actionResult);
+                            if (tempResult != null)
                             {
-                                context.Result = tempResult as FileStreamResult;
+                                if (tempResult.GetType() == typeof(FileStreamResult))
+                                {
+                                    context.Result = tempResult as FileStreamResult;
+                                }
+                                else
+                                {
+                                    result.Value = tempResult;
+                                }
+                            }
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        if (ex.InnerException?.InnerException != null)
+                        {
+                            throw ex.InnerException.InnerException;
+                        }
+                        else
+                        {
+                            if (ex.InnerException != null)
+                            {
+                                throw ex.InnerException;
                             }
                             else
                             {
-                                result.Value = tempResult;
+                                throw ex;
                             }
                         }
                     }

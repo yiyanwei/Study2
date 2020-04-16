@@ -56,5 +56,12 @@ https://blog.csdn.net/LawssssCat/article/details/104879668
 mvn dependency:get -DremoteRepositories=https://mvnrepository.com/artifact/io.github.swagger2markup/swagger2markup -DgroupId=io.github.swagger2markup -DartifactId=swagger2markup -Dversion=1.3.3
 mvn dependency:get -DremoteRepositories=https://mvnrepository.com/artifact/nl.jworks.markdown_to_asciidoc/markdown_to_asciidoc -DgroupId=nl.jworks.markdown_to_asciidoc -DartifactId=markdown_to_asciidoc -Dversion=1.0
 
-mvn install:install-file -Dfile=D:\package\markdown_to_asciidoc-1.0.jar -DgroupId=nl.jworks.markdown_to_asciidoc -DartifactId=markdown_to_asciidoc -Dversion=1.0 -Dpackaging=jar
-mvn install:install-file -Dfile=D:\package\paleo-core-0.10.2.jar -DgroupId=ch.netzwerg -DartifactId=paleo-core -Dversion=0.10.2 -Dpackaging=jar
+mvn install:install-file -Dfile=E:\Study\JavaPackage\markdown_to_asciidoc-1.0.jar -DgroupId=nl.jworks.markdown_to_asciidoc -DartifactId=markdown_to_asciidoc -Dversion=1.0 -Dpackaging=jar
+mvn install:install-file -Dfile=E:\Study\JavaPackage\paleo-core-0.10.2.jar -DgroupId=ch.netzwerg -DartifactId=paleo-core -Dversion=0.10.2 -Dpackaging=jar
+mvn install:install-file -Dfile=E:\Study\JavaPackage\java.io-0.1.0.jar -DgroupId=me.moocar -DartifactId=java.io -Dversion=0.1.0 -Dpackaging=jar
+
+        <dependency>
+            <groupId>me.moocar</groupId>
+            <artifactId>java.io</artifactId>
+            <version>0.1.0</version>
+        </dependency>
