@@ -183,8 +183,9 @@ namespace ZeroOne.WebApi
 
             //add swagger
             services.AddSwaggerGen(c =>
-            {
-                c.SwaggerDoc("v1", new OpenApiInfo { Title = "ZeroOne", Version = "v1", Contact = new OpenApiContact { Name = "yiyanwei", Url = new Uri("http://www.baidu.com"), Email = "yiyanwei@live.com" } });
+            {                
+                c.SwaggerDoc("v3", new OpenApiInfo { Title = "ZeroOne", Version = "v1", Contact = new OpenApiContact { Name = "yiyanwei", Url = new Uri("http://www.baidu.com"), Email = "yiyanwei@live.com" } });
+                //c.DocumentFilter<>
                 //为 Swagger JSON and UI设置xml文档注释路径
                 var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
                 var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
@@ -249,7 +250,7 @@ namespace ZeroOne.WebApi
             app.UseSwagger();
             app.UseSwaggerUI(c =>
             {
-                c.SwaggerEndpoint("/swagger/v1/swagger.json", "ApiHelp V1");
+                c.SwaggerEndpoint("/swagger/v3/swagger.json", "ApiHelp v3");
             });
 
             app.UseEndpoints(endpoints =>

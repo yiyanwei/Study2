@@ -19,7 +19,7 @@ namespace ZeroOne.WebApi.Controllers
             this._countHub = countHub;
         }
 
-        [HttpPost]
+        [HttpPost("Post")]
         public async Task<IActionResult> Post()
         {
             await _countHub.Clients.All.SendAsync("someFunc", new { random = "abcd" });

@@ -40,7 +40,7 @@ export default {
 
       document.getElementById("submit").addEventListener("click", e => {
         e.preventDefault();
-        fetch("http://localhost:5002/api/count", {
+        fetch("http://localhost:5002/api/count/post", {
           method: "POST"
         })
           .then(response => response.text())
