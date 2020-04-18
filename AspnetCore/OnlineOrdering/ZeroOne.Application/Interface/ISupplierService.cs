@@ -9,5 +9,12 @@ namespace ZeroOne.Application
     public interface ISupplierService:IBaseService<Supplier,Guid>
     {
         Task<PageSearchResult<SupplierSearchResult>> SearchPageListResponse(SupplierPageSearch pageSearch);
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
+        Task<SupplierDetailResult> GetResultById(Guid id);
     }
 }

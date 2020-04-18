@@ -9,13 +9,14 @@ using NLog.Web;
 using ZeroOne.Entity;
 using ZeroOne.Application;
 using AutoMapper;
+using System.ComponentModel.DataAnnotations;
 
 namespace ZeroOne.WebApi.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
     [Authorize]
-    public class ProInfoController : CustomController<ProInfo, Guid?, ProInfoAddRequest, ProInfoEditRequest, ProInfoResult, ProInfoSearch>
+    public class ProInfoController : CustomController<ProInfo, Guid, ProInfoAddRequest, ProInfoEditRequest, ProInfoResult, ProInfoSearch>
     {
         /// <summary>
         /// 具体的服务接口
@@ -48,7 +49,7 @@ namespace ZeroOne.WebApi.Controllers
         /// <param name="id"></param>
         /// <returns></returns>
         [HttpGet("GetProInfo")]
-        public async Task<ProInfoSingleResult> GetProInfo(Guid? id)
+        public async Task<ProInfoSingleResult> GetProInfo([Required]Guid id)
         {
             return await this.Service.GetSingleProInfoAsync(id);
         }

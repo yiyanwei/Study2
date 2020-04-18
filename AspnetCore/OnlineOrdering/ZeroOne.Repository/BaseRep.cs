@@ -1152,6 +1152,32 @@ namespace ZeroOne.Repository
         }
 
         /// <summary>
+        /// 根据Id获取数据
+        /// </summary>
+        /// <typeparam name="TResult"></typeparam>
+        /// <param name="id"></param>
+        /// <returns></returns>
+        public async Task<TResult> GetResultAsync<TResult>(TPrimaryKey id)
+               where TResult : class, IResult, new()
+        {
+            IDSearch<TPrimaryKey> idSearch = new IDSearch<TPrimaryKey>();
+            idSearch.Id = id;
+            //获取最终查询对象
+            var selectMethodResult = this.GetSelectResult<TResult>(idSearch);
+            //获取单条记录
+            var firstMethod = selectMethodResult.GetType().GetMethods().First(t => t.Name.Equals("FirstAsync") && t.GetParameters()?.Length <= 0);
+            //var firstMethod = selectMethodResult.GetType().GetMethod("FirstAsync");
+            //获取最终结果对象
+            object resultList = firstMethod.Invoke(selectMethodResult, null);
+            if (resultList is Task<TResult>)
+            {
+                var taskResult = resultList as Task<TResult>;
+                return await taskResult;
+            }
+            return null;
+        }
+
+        /// <summary>
         /// 
         /// </summary>
         /// <param name="operAttrs"></param>

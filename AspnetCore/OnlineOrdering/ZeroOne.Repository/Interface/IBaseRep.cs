@@ -43,6 +43,15 @@ namespace ZeroOne.Repository
            where TChildSearch : BaseSearch;
 
         /// <summary>
+        /// 根据Id获取单个结果
+        /// </summary>
+        /// <typeparam name="TResult"></typeparam>
+        /// <param name="id"></param>
+        /// <returns></returns>
+        Task<TResult> GetResultAsync<TResult>(TPrimaryKey id)
+               where TResult : class, IResult, new();
+
+        /// <summary>
         /// 获取实体对象
         /// </summary>
         /// <param name="id">对象id</param>
@@ -137,7 +146,7 @@ namespace ZeroOne.Repository
         /// <returns></returns>
         Task<List<TResult>> GetResultListAsync<TResult>(TSearch search) where TResult : IResult, new();
 
- 
+
     }
 
     //public interface IBaseRep<TEntity, TPrimaryKey, TSearch,TResult> : IBaseRep<TEntity, TPrimaryKey, TSearch>

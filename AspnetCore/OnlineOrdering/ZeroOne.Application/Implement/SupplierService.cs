@@ -50,5 +50,18 @@ namespace ZeroOne.Application
             }
             return results;
         }
+
+        public async Task<SupplierDetailResult> GetResultById(Guid id)
+        {
+            var supplierResult = await this.Rep.GetResultAsync<SupplierDetailResult>(id);
+            if (supplierResult != null && supplierResult.BusinessLicense.HasValue)
+            {
+                Guid uploadId = supplierResult.BusinessLicense.Value;
+                var fileEntityList = await this.FileRep.GetEntityListAsync(nameof(FileInfo.UploadId), uploadId);
+                var fileResultList = Mapper.Map<List<FileInfoResult>>(fileEntityList);
+                supplierResult.FileInfos = fileResultList;
+            }
+            return supplierResult;
+        }
     }
 }

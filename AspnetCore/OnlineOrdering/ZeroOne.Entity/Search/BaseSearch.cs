@@ -11,6 +11,14 @@ namespace ZeroOne.Entity
 
     }
 
+    public class IDSearch<TPrimaryKey> : BaseSearch
+    {
+        /// <summary>
+        /// 主键Id
+        /// </summary>
+        public TPrimaryKey Id { get; set; }
+    }
+
     public interface IPageSearch
     {
         public int PageIndex { get; set; }

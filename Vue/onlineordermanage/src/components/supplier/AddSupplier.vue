@@ -12,16 +12,18 @@
     <el-form-item label="联系电话" prop="contactPhone">
       <el-input v-model="form.contactPhone" placeholder="请输入联系电话" style="width:80%;"></el-input>
     </el-form-item>
-    <!-- <el-form-item label="省市区" prop="categoryId">
+    <el-form-item label="省市区" prop="districtValue">
       <el-cascader
+        ref="districtSelect"
         placeholder="请选择省市区"
-        v-model="form.categoryId"
-        :options="procateoptions"
-        :props="{ checkStrictly: true,emitPath:false }"
+        v-model="form.districtValue"
+        :options="districts"
+        :props="{ emitPath:true, expandTrigger:'hover'}"
         clearable
         style="width:80%;"
+        @change="districtChange"
       ></el-cascader>
-    </el-form-item> -->
+    </el-form-item>
     <el-form-item label="详情地址" prop="address">
       <el-input v-model="form.address" placeholder="请输入详情地址（不包括省市区）" style="width:80%;"></el-input>
     </el-form-item>
@@ -83,13 +85,23 @@ export default {
       data: {
         limitSize: 80
       },
+      fileList: [],
+      districts: [],
+
       uploadAddr: http.rootApi + "/api/upload/UploadImageAndGenerateThum",
       form: {
+        districtValue: [],
         supplierName: "",
         contactMan: "",
         contactPhone: "",
         address: "",
-        businessLicense: ""
+        businessLicense: "",
+        province: "",
+        provinceName: "",
+        city: "",
+        cityName: "",
+        district: "",
+        districtName: ""
       },
       rules: {
         contactMan: [
@@ -97,6 +109,12 @@ export default {
         ],
         contactPhone: [
           { required: true, message: "请输入联系电话", trigger: "blur" }
+        ],
+        districtValue: [
+          { required: true, message: "请选择省市区", trigger: "change" }
+        ],
+        address:[
+          { required: true, message: "请输入详细地址", trigger: "blur" }
         ]
       }
     };
@@ -104,10 +122,59 @@ export default {
   components: {
     VueHoverMask
   },
+  mounted() {
+    this.getDistrict();
+  },
   methods: {
+    districtChange() {
+      var nodes = this.$refs["districtSelect"].getCheckedNodes();
+      var node = undefined;
+      if (nodes) {
+        node = nodes[0];
+      }
+      if (node && node.pathLabels) {
+        //赋值省市区
+        this.form.province = this.form.districtValue[0];
+        //存在地级市单位
+        if (this.form.districtValue.length == 2) {
+          this.form.city = this.form.districtValue[1];
+        }
+        //存在县级单位
+        else if (this.form.districtValue.length == 3) {
+          this.form.city = this.form.districtValue[1];
+          this.form.district = this.form.districtValue[2];
+        }
+
+        //赋值省市区的名称
+        this.form.provinceName = node.pathLabels[0];
+        if (node.pathLabels.length == 2) {
+          this.form.cityName = node.pathLabels[1];
+        } else if (node.pathLabels.length == 3) {
+          this.form.cityName = node.pathLabels[1];
+          this.form.districtName = node.pathLabels[2];
+        }
+      } else {
+        this.form.province = "";
+        this.form.city = "";
+        this.form.district = "";
+        this.form.provinceName = "";
+        this.form.cityName = "";
+        this.form.districtName = "";
+      }
+    },
+    getDistrict() {
+      var api = "/api/District/GetDropDownListAsync";
+      http.get(api, null, response => {
+        if (response && response.success && response.data) {
+          this.districts = response.data;
+        } else {
+          this.districts.clear();
+        }
+      });
+    },
     uploadSuccess(data) {
       if (data.data && data.data.uploadId) {
-        this.form.uploadId = data.data.uploadId;
+        this.form.businessLicense = data.data.uploadId;
         this.fileList = data.data.fileInfosResult;
         //判断是否获取到了上传文件
         if (this.fileList && this.fileList.length > 0) {
@@ -118,21 +185,11 @@ export default {
         } else {
           this.uploadVisible = true;
         }
-        this.$refs["ruleForm"].validate();
+        //this.$refs["ruleForm"].validate();
       }
     },
     uploadExceed() {
       this.$message("只能上传一张图片");
-    },
-    getCategoryList() {
-      var api = "/api/ProCategory/GetDropDownListAsync";
-      http.get(api, null, response => {
-        if (response && response.success && response.data) {
-          this.procateoptions = response.data;
-        } else {
-          this.procateoptions.clear();
-        }
-      });
     },
     handlePicturePreview(e) {
       if (e.target.dataset && e.target.dataset.pid) {
@@ -199,3 +256,27 @@ export default {
   }
 };
 </script>
+<style scoped>
+.el-upload-list .el-upload-list__item .vue-hover-mask {
+  float: left;
+  margin-left: -80px;
+  height: 80px;
+  width: 80px;
+  margin-top: -5px;
+}
+
+.el-upload-list
+  .el-upload-list__item
+  .vue-hover-mask
+  img.el-upload-list__item-thumbnail {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  margin: auto;
+  height: auto;
+  width: auto;
+  float: none;
+}
+</style>

@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using ZeroOne.Application;
@@ -11,6 +13,7 @@ namespace ZeroOne.WebApi.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize]
     public class SupplierController : CustomController<Supplier, Guid, SupplierAddRequest, SupplierEditRequest>
     {
         protected ISupplierService Service { get; set; }
@@ -28,6 +31,17 @@ namespace ZeroOne.WebApi.Controllers
         public async Task<PageSearchResult<SupplierSearchResult>> SearchPageList(SupplierPageSearch pageSearch)
         {
             return await this.Service.SearchPageListResponse(pageSearch);
+        }
+
+        /// <summary>
+        /// 获取供应商数据
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
+        [HttpGet("GetResultById")]
+        public async Task<SupplierDetailResult> GetResultById([Required]Guid id)
+        {
+            return await this.Service.GetResultById(id);
         }
     }
 }

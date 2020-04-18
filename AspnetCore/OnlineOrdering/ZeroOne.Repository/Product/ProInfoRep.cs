@@ -6,7 +6,7 @@ using ZeroOne.Entity;
 
 namespace ZeroOne.Repository
 {
-    public class ProInfoRep : BaseRep<ProInfo, Guid?, ProInfoSearch>, IProInfoRep
+    public class ProInfoRep : BaseRep<ProInfo, Guid, ProInfoSearch>, IProInfoRep
     {
         public ISqlSugarClient Client { get; set; }
         public ProInfoRep(ISqlSugarClient client) : base(client)

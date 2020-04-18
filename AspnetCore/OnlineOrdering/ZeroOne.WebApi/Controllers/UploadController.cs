@@ -69,7 +69,7 @@ namespace ZeroOne.WebApi.Controllers
             {
                 throw new Exception();
             }
-            string currentDirectory = Path.Combine(Directory.GetCurrentDirectory(), @"MyStaticFiles/Upload");
+            string currentDirectory = Path.Combine(Environment.CurrentDirectory, @"wwwroot");
             //图片的根目录
             string imgRootPath = this.UploadSettings.SourceImgRootPath;
             //缩略图的根目录
@@ -130,7 +130,7 @@ namespace ZeroOne.WebApi.Controllers
                 fileInfo.UploadId = uploadId;
                 fileInfo.CreationTime = now;
                 fileInfo.ContentType = file.ContentType;
-                
+
                 fileInfo.FileExt = fileExt;
                 fileInfo.FileName = file.FileName.Replace(fileExt, string.Empty);
                 fileInfo.SourceFileUrl = imgRootPath + sourceFileName;
@@ -138,7 +138,7 @@ namespace ZeroOne.WebApi.Controllers
                 fileList.Add(fileInfo);
                 fileResult = new FileInfoResult();
                 fileResult.Id = fileInfo.Id;
-                fileResult.Name = fileInfo.FileName;
+                fileResult.Name = fileInfo.FileName + fileExt;
                 fileResult.SourceUrl = imgRootPath + sourceFileName;
                 fileResult.Url = thumRootPath + thumFileName;
                 result.FileInfosResult.Add(fileResult);

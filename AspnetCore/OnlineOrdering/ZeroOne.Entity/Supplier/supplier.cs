@@ -46,17 +46,32 @@ namespace ZeroOne.Entity
         /// <summary>
         /// 省
         /// </summary>
-        public string Province { get; set; }
+        public Guid? Province { get; set; }
 
         /// <summary>
         /// 市
         /// </summary>
-        public string City { get; set; }
+        public Guid? City { get; set; }
 
         /// <summary>
         /// 县市区
         /// </summary>
-        public string Prefecture { get; set; }
+        public Guid? District { get; set; }
+
+        /// <summary>
+        /// 省
+        /// </summary>
+        public string ProvinceName { get; set; }
+
+        /// <summary>
+        /// 市
+        /// </summary>
+        public string CityName { get; set; }
+
+        /// <summary>
+        /// 县市区
+        /// </summary>
+        public string DistrictName { get; set; }
 
         /// <summary>
         /// 供应商详细地址（不包括省市区）

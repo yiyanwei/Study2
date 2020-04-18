@@ -36,6 +36,9 @@ namespace ZeroOne.WebApi
 
             //添加地区映射
             CreateMap<Districts, District>();
+            //添加供应商新增编辑映射
+            CreateMap<SupplierAddRequest, Supplier>();
+            CreateMap<SupplierEditRequest, Supplier>();
         }
     }
 }

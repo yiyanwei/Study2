@@ -9,7 +9,7 @@ using AutoMapper;
 
 namespace ZeroOne.Application
 {
-    public class ProInfoService : BaseService<ProInfo, Guid?, ProInfoSearch>, IProInfoService
+    public class ProInfoService : BaseService<ProInfo, Guid, ProInfoSearch>, IProInfoService
     {
         protected IProInfoRep ProInfoRep;
         protected IProCategoryRep ProCategoryRep;
@@ -50,7 +50,7 @@ namespace ZeroOne.Application
             return res;
         }
 
-        public async Task<ProInfoSingleResult> GetSingleProInfoAsync(Guid? id)
+        public async Task<ProInfoSingleResult> GetSingleProInfoAsync(Guid id)
         {
             var entity = await this.ProInfoRep.GetEntityByIdAsync(id);
             if (entity == null)

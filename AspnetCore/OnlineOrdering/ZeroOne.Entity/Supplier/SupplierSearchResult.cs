@@ -35,17 +35,17 @@ namespace ZeroOne.Entity
         /// <summary>
         /// 省
         /// </summary>
-        public string Province { get; set; }
+        public string ProvinceName { get; set; }
 
         /// <summary>
         /// 市
         /// </summary>
-        public string City { get; set; }
+        public string CityName { get; set; }
 
         /// <summary>
         /// 县市区
         /// </summary>
-        public string Prefecture { get; set; }
+        public string DistrictName { get; set; }
 
         /// <summary>
         /// 供应商详细地址（不包括省市区）
@@ -85,5 +85,15 @@ namespace ZeroOne.Entity
         /// </summary>
         [ResultPropIgnore]
         public List<string> SourceImgs { get; set; }
+    }
+
+    [DbOrdering(nameof(Supplier.CreationTime), EOrderRule.Desc, typeof(Supplier))]
+    public class SupplierDetailResult : Supplier, IResult
+    {
+        /// <summary>
+        /// 上传文件对象
+        /// </summary>
+        [ResultPropIgnore]
+        public List<FileInfoResult> FileInfos { get; set; }
     }
 }

@@ -69,9 +69,9 @@
       <el-table-column label="供应商编码" prop="supplierCode"></el-table-column>
       <el-table-column label="联系人" prop="contactMan"></el-table-column>
       <el-table-column label="联系电话" prop="contactPhone"></el-table-column>
-      <el-table-column label="省" prop="province"></el-table-column>
-      <el-table-column label="市" prop="city"></el-table-column>
-      <el-table-column label="县/市/区" prop="prefecture"></el-table-column>
+      <el-table-column label="省" prop="provinceName"></el-table-column>
+      <el-table-column label="市" prop="cityName"></el-table-column>
+      <el-table-column label="县/市/区" prop="districtName"></el-table-column>
       <el-table-column label="详细地址" prop="address"></el-table-column>
       <el-table-column label="创建时间" prop="creationTime"></el-table-column>
       <el-table-column label="操作人" prop="realName"></el-table-column>
@@ -81,6 +81,15 @@
         </template>
       </el-table-column>
     </el-table>
+    <div>
+      <el-pagination
+        background
+        layout="prev, pager, next"
+        :total="total"
+        :page-size="form.pageSize"
+        @current-change="currentChange"
+      ></el-pagination>
+    </div>
     <el-dialog
       title="新增供应商"
       style="z-index:2"
@@ -90,6 +99,17 @@
       :destroy-on-close="true"
     >
       <AddSupplier v-if="dialogAddSupplier" />
+    </el-dialog>
+
+    <el-dialog
+      title="编辑供应商"
+      style="z-index:2"
+      :visible.sync="dialogEditSupplier"
+      width="30%"
+      :close-on-click-modal="false"
+      :destroy-on-close="true"
+    >
+      <EditSupplier v-if="dialogEditSupplier" />
     </el-dialog>
 
     <el-dialog
@@ -107,16 +127,19 @@
 import VueHoverMask from "vue-hover-mask";
 import http from "../../common/http/vueresource.js";
 import AddSupplier from "./AddSupplier.vue";
+import EditSupplier from "./EditSupplier.vue";
 export default {
   data() {
     return {
-      dialogAddSupplier:false,
+      total: 0,
+      dialogAddSupplier: false,
+      dialogEditSupplier: false,
       imgdialogWidth: "0px",
       imgdialogVisible: false,
       imageUrl: "",
       form: {
-        pageIndex: null,
-        pageSize: null,
+        pageIndex: 0,
+        pageSize: 10,
         likeSupplierName: "",
         proCode: "",
         contactMan: "",
@@ -129,12 +152,17 @@ export default {
   },
   components: {
     VueHoverMask,
-    AddSupplier
+    AddSupplier,
+    EditSupplier
   },
   mounted() {
     this.getData();
   },
   methods: {
+    currentChange(pageIndex) {
+      this.form.pageIndex = pageIndex;
+      this.getData();
+    },
     imgOnload(e) {
       if (e.path && e.path[0] && e.path[0].nodeName == "IMG") {
         this.imgdialogWidth = e.path[0].width + 40 + "px";
@@ -169,7 +197,8 @@ export default {
     },
     onSearch() {},
     onEdit(row) {
-      console.log(row);
+      this.currentId = row.id;
+      this.dialogEditSupplier = true;
     }
   }
 };

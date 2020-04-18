@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 using ZeroOne.Application;
 using ZeroOne.Entity;
 using AutoMapper;
+using System.ComponentModel.DataAnnotations;
 
 namespace ZeroOne.WebApi.Controllers
 {
@@ -45,7 +46,7 @@ namespace ZeroOne.WebApi.Controllers
         /// <param name="request">新增请求对象</param>
         /// <returns></returns>
         [HttpPost("Add")]
-        public async Task<TEntity> Add(TAddRequest request)
+        public async Task<TEntity> Add([Required]TAddRequest request)
         {
             var idClaim = User.Claims.FirstOrDefault(t => t.Type == JwtClaimTypes.Id);
             if (idClaim != null)
@@ -61,7 +62,7 @@ namespace ZeroOne.WebApi.Controllers
         /// <param name="request">更新请求对象</param>
         /// <returns></returns>
         [HttpPut("Edit")]
-        public async Task Edit(TEditRequest request)
+        public async Task Edit([Required]TEditRequest request)
         {
             var idClaim = User.Claims.FirstOrDefault(t => t.Type == JwtClaimTypes.Id);
             if (idClaim != null)
@@ -82,7 +83,7 @@ namespace ZeroOne.WebApi.Controllers
         /// <param name="rowVersion">版本号</param>
         /// <returns></returns>
         [HttpDelete("Delete")]
-        public async Task Delete(TPrimaryKey id, Guid? rowVersion)
+        public async Task Delete([Required]TPrimaryKey id, [Required]Guid? rowVersion)
         {
             if (!rowVersion.HasValue)
             {
@@ -100,9 +101,9 @@ namespace ZeroOne.WebApi.Controllers
         /// </summary>
         /// <param name="id">id</param>
         /// <returns></returns>
-        [HttpGet("GetEntityById")]
+        [HttpGet("Get")]
 
-        public async Task<TEntity> GetEntityById(TPrimaryKey id)
+        public async Task<TEntity> GetEntityById([Required]TPrimaryKey id)
         {
             return await service.GetEntityByIdAsync(id);
         }
