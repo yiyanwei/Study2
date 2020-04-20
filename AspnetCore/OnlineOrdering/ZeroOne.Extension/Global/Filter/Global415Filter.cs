@@ -19,7 +19,8 @@ namespace ZeroOne.Extension.Global
         public override void OnResultExecuting(ResultExecutingContext context)
         {
             //判断是否返回 415 http状态码
-            if (context.Result != null && context.Result is ObjectResult)
+            if (context.Result != null && context.Result is ObjectResult
+                && context.HttpContext.Request.Method != null && context.HttpContext.Request.Method.ToUpper().Equals("GET"))
             {
                 var result = context.Result as ObjectResult;
                 //判断状态码是否为415
