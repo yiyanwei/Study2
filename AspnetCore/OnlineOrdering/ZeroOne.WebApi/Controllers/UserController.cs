@@ -12,6 +12,7 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.AspNetCore.Authorization;
 using ZeroOne.Entity;
 using ZeroOne.Application;
+using System.ComponentModel.DataAnnotations;
 
 namespace ZeroOne.WebApi.Controllers
 {
@@ -84,7 +85,7 @@ namespace ZeroOne.WebApi.Controllers
 
         [AllowAnonymous]
         [HttpPost("UserLogin")]
-        public async Task<object> UserLogin(UserLoginRequest request)
+        public async Task<object> UserLogin([Required]UserLoginRequest request)
         {
             var result = await this.GetToken(request);
             return result;

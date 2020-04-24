@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Text;
 
 namespace ZeroOne.Entity
@@ -12,11 +13,13 @@ namespace ZeroOne.Entity
         /// <summary>
         /// 用户账号
         /// </summary>
+        [Required]
         public string Account { get; set; }
 
         /// <summary>
         /// 用户密码
         /// </summary>
+        [Required]
         public string Password { get; set; }
 
         /// <summary>

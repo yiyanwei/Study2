@@ -30,6 +30,7 @@ using Microsoft.Extensions.PlatformAbstractions;
 using Hangfire.MySql;
 using Hangfire;
 using ZeroOne.WebApi.Hubs;
+using ZeroOne.Extension;
 
 namespace ZeroOne.WebApi
 {
@@ -51,8 +52,10 @@ namespace ZeroOne.WebApi
         public void ConfigureServices(IServiceCollection services)
         {
 
+            services.Configure<ApiBehaviorOptions>(options => options.SuppressModelStateInvalidFilter = true);
             services.AddControllers(options =>
             {
+                options.Filters.Add<ModelValidActionFilter>();
                 ////优先使用客户端指定的数据格式，资源的表述
                 //options.RespectBrowserAcceptHeader = true;
                 ////添加xml数据格式的输出
