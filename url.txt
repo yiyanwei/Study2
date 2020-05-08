@@ -61,3 +61,6 @@ mvn install:install-file -Dfile=E:\Study\JavaPackage\markdown_to_asciidoc-1.0.ja
 mvn install:install-file -Dfile=E:\Study\JavaPackage\paleo-core-0.10.2.jar -DgroupId=ch.netzwerg -DartifactId=paleo-core -Dversion=0.10.2 -Dpackaging=jar
 mvn install:install-file -Dfile=E:\Study\JavaPackage\java.io-0.1.0.jar -DgroupId=me.moocar -DartifactId=java.io -Dversion=0.1.0 -Dpackaging=jar
 
+https://www.cnblogs.com/Tassdar/p/9584406.html    nginx 反向代理
+
+
