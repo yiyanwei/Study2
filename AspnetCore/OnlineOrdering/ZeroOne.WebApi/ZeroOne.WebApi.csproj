@@ -9,6 +9,16 @@
   <ItemGroup>
     <Content Remove="Data\District.json" />
   </ItemGroup>
+
+  <ItemGroup>
+    <None Remove="Dockerfile" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="Dockerfile">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
   
   <ItemGroup>
     <ProjectReference Include="..\ZeroOne.Application\ZeroOne.Application.csproj" />
