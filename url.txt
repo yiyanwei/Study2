@@ -53,6 +53,8 @@ https://www.jianshu.com/p/879baf1cff07   swagger2与openapi
 
 https://blog.csdn.net/LawssssCat/article/details/104879668
 
+https://mvnrepository.com/   java中央仓库
+
 https://www.apimatic.io/dashboard?modal=transform  openapi3.0转换成openapi2.0
 
 https://www.bilibili.com/video/BV12W411q7wf?p=14
