@@ -26,8 +26,8 @@ namespace ZeroOne.WebApi
         //    return x;
         //}
         public static void Main(string[] args)
-        {            
-            
+        {
+
             //BackgroundJob.Enqueue(() => Console.WriteLine("Fire-and-forget!"));
             //DateTime now = DateTime.Now;
             //long ticks = (now.ToUniversalTime().Ticks - 621355968000000000) / 10000;
@@ -104,13 +104,20 @@ namespace ZeroOne.WebApi
             CreateHostBuilder(args).Build().Run();
         }
 
-        public static IHostBuilder CreateHostBuilder(string[] args) =>
-            Host.CreateDefaultBuilder(args)
-                .ConfigureWebHostDefaults(webBuilder =>
-                {
-                    //webBuilder.Configure(app=>app.UseMiddleware())
-                    webBuilder.UseStartup<Startup>()
-                              .UseUrls("http://*:5002/");
-                });
+        public static IHostBuilder CreateHostBuilder(string[] args)
+        {
+            var config = new ConfigurationBuilder()
+           .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
+           .Build();
+            string urls = config.GetValue<string>("server.urls");
+            return Host.CreateDefaultBuilder(args)
+                   .ConfigureWebHostDefaults(webBuilder =>
+                   {
+                       //webBuilder.Configure(app=>app.UseMiddleware())
+                       webBuilder.UseConfiguration(config)
+                                 .UseStartup<Startup>()
+                                 .UseUrls(urls);
+                   });
+        }
     }
 }
