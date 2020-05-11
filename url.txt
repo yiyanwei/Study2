@@ -66,3 +66,7 @@ mvn install:install-file -Dfile=E:\Study\JavaPackage\java.io-0.1.0.jar -DgroupId
 https://www.cnblogs.com/Tassdar/p/9584406.html    nginx 反向代理
 
 
+https://www.bilibili.com/video/BV1E7411S75M?from=search&seid=14333865823728523106
+
+https://blog.csdn.net/DTXK1024/article/details/102931118       Ubuntu图形界面root登录出现“sorry, that didn't work please try again”
+https://www.cnblogs.com/yadongliang/p/8663743.html
