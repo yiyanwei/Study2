@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
@@ -100,7 +101,8 @@ namespace ZeroOne.WebApi.Controllers
         }
 
         [HttpGet("GetData")]
-        public string GetData([FromQuery]string tag)
+        public string GetData([RegularExpression("^([0-1]{1}\\d|2[0-3]):([0-5]\\d)(,([0-1]{1}\\d|2[0-3]):([0-5]\\d))*?$", ErrorMessage = "格式不正确ss")][Required][FromQuery]string tag,
+            [Required][Range(1, 10000, ErrorMessage = "数值不在范围内")]int? xx)
         {
             count++;
             if (count > 100)
