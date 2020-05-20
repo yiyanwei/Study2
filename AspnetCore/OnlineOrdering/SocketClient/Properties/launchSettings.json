@@ -1,0 +1,7 @@
+{
+  "profiles": {
+    "SocketClient": {
+      "commandName": "Project"
+    }
+  }
+}

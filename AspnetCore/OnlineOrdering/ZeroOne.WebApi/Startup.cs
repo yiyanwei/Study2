@@ -31,6 +31,9 @@ using Hangfire.MySql;
 using Hangfire;
 using ZeroOne.WebApi.Hubs;
 using ZeroOne.Extension;
+using System.Threading.Tasks;
+using Microsoft.Extensions.Caching.Distributed;
+using Microsoft.Extensions.Caching.StackExchangeRedis;
 
 namespace ZeroOne.WebApi
 {
@@ -71,6 +74,15 @@ namespace ZeroOne.WebApi
 
             services.AddSingleton<CountService>();
             services.AddSignalR();
+
+            services.Configure<RedisCacheOptions>(Configuration.GetSection(nameof(RedisCacheOptions)));
+            RedisCacheOptions redisCacheOptions = new RedisCacheOptions();
+            Configuration.Bind(redisCacheOptions);
+            services.AddSingleton<IDistributedCache>(serviceProvider => new RedisCache(redisCacheOptions));
+
+            services.AddSession((s) => {
+                s.IdleTimeout = TimeSpan.FromSeconds(2000);
+            });
 
             //映射
             var config = new MapperConfiguration(e => e.AddProfile<ViewMappingProfile>());
@@ -128,6 +140,13 @@ namespace ZeroOne.WebApi
             //运用MySql存储，对应web.config中的connectionStrings中的name
             //GlobalConfiguration.Configuration.UseStorage(new MySqlStorage(conncfg["ConnectionString"], new MySqlStorageOptions() { TablesPrefix = "hg" }));
             //services.AddHangfire(cfg => cfg.UseStorage(new MySqlStorage(conncfg["ConnectionString"], new MySqlStorageOptions() { TablesPrefix = "hg" })));
+
+            //services.AddHangfire(cfg =>
+            //{
+            //    var hangfireCfg = new HangfireConfig();
+            //    Configuration.Bind(nameof(HangfireConfig), hangfireCfg);
+            //    cfg.UseRedisStorage(hangfireCfg.ConnectionString, new RedisStorageOptions() { Db = hangfireCfg.Db });
+            //});
             #endregion
 
             //配置Jwt信息
@@ -186,7 +205,7 @@ namespace ZeroOne.WebApi
 
             //add swagger
             services.AddSwaggerGen(c =>
-            {                
+            {
                 c.SwaggerDoc("v3", new OpenApiInfo { Title = "ZeroOne", Version = "v1", Contact = new OpenApiContact { Name = "yiyanwei", Url = new Uri("http://www.baidu.com"), Email = "yiyanwei@live.com" } });
                 //c.DocumentFilter<>
                 //为 Swagger JSON and UI设置xml文档注释路径
@@ -229,6 +248,39 @@ namespace ZeroOne.WebApi
             Console.WriteLine(string.Format("IWebHostEnvironment.ContentRootPath:{0}", env.ContentRootPath));
             Console.WriteLine(string.Format("IWebHostEnvironment.WebRootPath:{0}", env.WebRootPath));
 
+            app.Use((req) =>
+            {
+                Console.WriteLine("AAA");
+                return req;
+            });
+
+            app.Use((req) =>
+            {
+                Console.WriteLine("BBB");
+                return req;
+            });
+
+            //启用swagger中间件
+            app.UseSwagger();
+            app.UseSwaggerUI(c =>
+            {
+                c.SwaggerEndpoint("/swagger/v3/swagger.json", "ApiHelp v3");
+            });
+
+            app.Use((req) =>
+            {
+                Console.WriteLine("CCC");
+
+                RequestDelegate next = context =>
+                {
+                    context.Response.StatusCode = 404;
+                    return Task.CompletedTask;
+                };
+
+                return next;
+                //return Task.CompletedTask;
+            });
+
             app.UseCors(globalCorsName);
             //允许访问静态文件
             app.UseStaticFiles();
@@ -254,12 +306,7 @@ namespace ZeroOne.WebApi
             //如果没有匹配上的路由
 
             app.UseAuthorization();
-            //启用swagger中间件
-            app.UseSwagger();
-            app.UseSwaggerUI(c =>
-            {
-                c.SwaggerEndpoint("/swagger/v3/swagger.json", "ApiHelp v3");
-            });
+
 
             app.UseEndpoints(endpoints =>
             {
