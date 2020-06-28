@@ -71,4 +71,6 @@ https://www.bilibili.com/video/BV1E7411S75M?from=search&seid=1433386582372852310
 https://blog.csdn.net/DTXK1024/article/details/102931118       Ubuntu图形界面root登录出现“sorry, that didn't work please try again”
 https://www.cnblogs.com/yadongliang/p/8663743.html
 
-https://www.jianshu.com/p/ec552ffb84fc
+https://www.jianshu.com/p/ec552ffb84fc     macos安装 putty
+
+http://blog.chinaunix.net/uid-69944074-id-5831708.html   ubuntu ssh无法连接问题
