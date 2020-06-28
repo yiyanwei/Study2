@@ -1,0 +1,15 @@
+docker 导出镜像并压缩、解压并导入镜像
+
+1.导出镜像：
+
+docker save <myimage>:<tag> | gzip > <myimage>_<tag>.tar.gz
+2.导入镜像：
+
+gunzip -c <myimage>_<tag>.tar.gz | docker load
+
+后台-相鹏 10:45:04
+docker run --name xugongback -e "ASPNETCORE_ENVIRONMENT=Production" -p 5000:5000 -d 9d671f8009dc
+
+后台-相鹏 10:45:54
+docker load -i xgfront20200618.tar
+
