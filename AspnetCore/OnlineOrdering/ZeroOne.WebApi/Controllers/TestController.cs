@@ -29,11 +29,14 @@ namespace ZeroOne.WebApi.Controllers
 
         protected IDistrictService DistrictService { get; set; }
 
-        public TestController(IWebHostEnvironment env, IDistrictService districtService, IMapper mapper)
+        protected IMapLocationService MapLocationService { get; set; }
+
+        public TestController(IWebHostEnvironment env, IDistrictService districtService, IMapLocationService mapLocationService, IMapper mapper)
         {
             this.Enviroment = env;
             this.Mapper = mapper;
             this.DistrictService = districtService;
+            this.MapLocationService = mapLocationService;
         }
         // GET: api/Test
         //[HttpGet("Get")]
@@ -201,6 +204,12 @@ namespace ZeroOne.WebApi.Controllers
         public Tuple<string, string> GetSystemPath()
         {
             return new Tuple<string, string>(Enviroment.ContentRootPath, Enviroment.WebRootPath);
+        }
+
+        [HttpGet("GetDistance")]
+        public async Task<string> GetDistance([FromQuery]string origin, [FromQuery]string destination)
+        {
+            return (await this.MapLocationService.GetDirectionDrive(origin, destination, EDriveDistanceType.MoreStrategy)).ToString();
         }
     }
 }

@@ -12,4 +12,3 @@ docker run --name xugongback -e "ASPNETCORE_ENVIRONMENT=Production" -p 5000:5000
 
 后台-相鹏 10:45:54
 docker load -i xgfront20200618.tar
-

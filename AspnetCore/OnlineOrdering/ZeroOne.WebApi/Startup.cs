@@ -115,6 +115,7 @@ namespace ZeroOne.WebApi
             services.AddTransient<IFileInfoService, FileInfoService>();
             services.AddTransient<ISupplierService, SupplierService>();
             services.AddTransient<IDistrictService, DistrictService>();
+            services.AddTransient<IMapLocationService, MapLocationService>();
 
             //数据库连接配置
             var conncfg = Configuration.GetSection(nameof(ConnectionConfig));
@@ -134,6 +135,9 @@ namespace ZeroOne.WebApi
                 connConfig.ConfigureExternalServices.SqlFuncServices = extMethodList;
                 return new SqlSugarClient(connConfig);
             });
+
+            //地图定位配置
+            services.Configure<MapLocationSettings>(Configuration.GetSection(nameof(MapLocationSettings)));
 
 
             #region 配置hangfire
@@ -248,17 +252,17 @@ namespace ZeroOne.WebApi
             Console.WriteLine(string.Format("IWebHostEnvironment.ContentRootPath:{0}", env.ContentRootPath));
             Console.WriteLine(string.Format("IWebHostEnvironment.WebRootPath:{0}", env.WebRootPath));
 
-            app.Use((req) =>
-            {
-                Console.WriteLine("AAA");
-                return req;
-            });
+            //app.Use((req) =>
+            //{
+            //    Console.WriteLine("AAA");
+            //    return req;
+            //});
 
-            app.Use((req) =>
-            {
-                Console.WriteLine("BBB");
-                return req;
-            });
+            //app.Use((req) =>
+            //{
+            //    Console.WriteLine("BBB");
+            //    return req;
+            //});
 
             //启用swagger中间件
             app.UseSwagger();
@@ -267,19 +271,19 @@ namespace ZeroOne.WebApi
                 c.SwaggerEndpoint("/swagger/v3/swagger.json", "ApiHelp v3");
             });
 
-            app.Use((req) =>
-            {
-                Console.WriteLine("CCC");
+            //app.Use((req) =>
+            //{
+            //    Console.WriteLine("CCC");
 
-                RequestDelegate next = context =>
-                {
-                    context.Response.StatusCode = 404;
-                    return Task.CompletedTask;
-                };
+            //    RequestDelegate next = context =>
+            //    {
+            //        context.Response.StatusCode = 404;
+            //        return Task.CompletedTask;
+            //    };
 
-                return next;
-                //return Task.CompletedTask;
-            });
+            //    return next;
+            //    //return Task.CompletedTask;
+            //});
 
             app.UseCors(globalCorsName);
             //允许访问静态文件

@@ -28,6 +28,18 @@ namespace ZeroOne.WebApi
         public static void Main(string[] args)
         {
 
+            //long x = 621355968000000000 + 1588291200000;
+            //Console.WriteLine(x);
+            //DateTime now = new DateTime(2020, 6, 11);
+            //Console.WriteLine(now.Ticks);
+
+            //var now2 = new DateTime(2020, 6, 11, 23, 59, 59);
+            //Console.WriteLine(now2.Ticks);
+
+            //Console.WriteLine(new DateTime(637263427246024537));
+            //Console.WriteLine(new DateTime(637274844599870219));
+            //Console.WriteLine(new DateTime(637274919102546399));
+            //Console.ReadKey();
             //BackgroundJob.Enqueue(() => Console.WriteLine("Fire-and-forget!"));
             //DateTime now = DateTime.Now;
             //long ticks = (now.ToUniversalTime().Ticks - 621355968000000000) / 10000;
