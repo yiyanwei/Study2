@@ -1,5 +1,7 @@
 ﻿using Microsoft.Extensions.Options;
+using System;
 using System.Collections.Generic;
+using System.Text;
 using System.Threading.Tasks;
 using ZeroOne.Extension;
 
@@ -124,17 +126,20 @@ namespace ZeroOne.Application
 
     public class TruckDirectionDriveRequest
     {
-        public string key { get; set; }
 
         public string origin { get; set; }
 
         public string destination { get; set; }
 
-        public string strategy { get; set; }
-
-        public string height { get; set; }
-
-        public string width { get; set; }
+        public ETruckDriveDistanceType strategy { get; set; }
+        /// <summary>
+        /// 车高，单位米
+        /// </summary>
+        public float? height { get; set; }
+        /// <summary>
+        /// 车宽，单位米
+        /// </summary>
+        public float? width { get; set; }
         /// <summary>
         /// 用汉字填入车牌省份缩写。用于判断是否限行 
         /// </summary>
@@ -148,6 +153,7 @@ namespace ZeroOne.Application
 
     public enum ETruckDriveDistanceType
     {
+        None = 0,
         /// <summary>
         /// 返回的结果考虑路况，尽量躲避拥堵而规划路径；对应导航SDK货导策略12
         /// </summary>
@@ -195,7 +201,7 @@ namespace ZeroOne.Application
             this.MLSettingOpt = mlSettingOpt.Value;
         }
 
-        private static readonly string BASE_PATH = "https://restapi.amap.com/v3";
+        private static readonly string BASE_PATH = "https://restapi.amap.com";
         /// <summary>
         /// 高德地图WebAPI : 驾车路径规划
         /// String origins:起始坐标
@@ -211,7 +217,7 @@ namespace ZeroOne.Application
              * 5:多策略（同时使用速度优先、费用优先、距离优先三个策略计算路径）;6:不走高速; 7:不走高速且避免收费;
              * 8:躲避收费和拥堵; 9:不走高速且躲避收费和拥堵
              */
-            string url = BASE_PATH + "/direction/driving?" + "origin=" + origin + "&destination=" + destination
+            string url = BASE_PATH + "/v3/direction/driving?" + "origin=" + origin + "&destination=" + destination
                     + "&strategy=" + (int)driveDistanceType + "&extensions=base&key=" + MLSettingOpt.Key;
             var mapDrive = await this.GetResponse<MapDirectionDrive>(url, 10, t =>
             {
@@ -221,14 +227,52 @@ namespace ZeroOne.Application
             return mapDrive;
         }
 
-        //public async Task<float> GetDriveDistanceFirst(string origin, string destination)
-        //{
-        //    var directionDrive = await this.GetDirectionDrive(origin, destination, EDriveDistanceType.SpeedFirst);
-        //    if (directionDrive?.route?.paths?.Count > 0)
-        //    {
-        //        string distance = directionDrive.route.paths[0].distance;
+        public async Task<MapDirectionDrive> GetTruckDirectionDrive(TruckDirectionDriveRequest request)
+        {
+            if (string.IsNullOrEmpty(request.origin))
+            {
+                throw new Exception("未提供起始位置");
+            }
 
-        //    }
-        //}
+            if (string.IsNullOrEmpty(request.destination))
+            {
+                throw new Exception("未提供结束位置");
+            }
+            StringBuilder sbUrl = new StringBuilder();
+            sbUrl.AppendFormat("{0}/v4/direction/truck?origin={1}&destination={2}&key={3}",
+                BASE_PATH, request.origin.Trim(), request.destination.Trim(), MLSettingOpt.Key);
+
+            if (request.strategy != ETruckDriveDistanceType.None)
+            {
+                sbUrl.AppendFormat("&strategy={0}", (int)request.strategy);
+            }
+
+            if (request.height.HasValue)
+            {
+                sbUrl.AppendFormat("&height={0}", request.height.Value);
+            }
+
+            if (request.width.HasValue)
+            {
+                sbUrl.AppendFormat("&width={0}", request.width.Value);
+            }
+
+            if (!string.IsNullOrEmpty(request.province))
+            {
+                sbUrl.AppendFormat("&province={0}", request.province.Trim());
+            }
+
+            if (!string.IsNullOrEmpty(request.number))
+            {
+                sbUrl.AppendFormat("&number={0}", request.number.Trim());
+            }
+
+            var mapDrive = await this.GetResponse<MapDirectionDrive>(sbUrl.ToString(), 10, t =>
+            {
+                var temp = System.Text.RegularExpressions.Regex.Replace(t, "\"action\":.?\\[\\]", "\"action\": null");
+                return System.Text.RegularExpressions.Regex.Replace(temp, "\"assistant_action\":.?\\[\\]", "\"assistant_action\": null");
+            });
+            return mapDrive;
+        }
     }
 }
