@@ -97,7 +97,7 @@ namespace ZeroOne.WebApi
                 //    set.AllowAnyOrigin().AllowAnyHeader().AllowAnyMethod().AllowCredentials();
                 //});
 
-                options.AddPolicy(globalCorsName, builder => builder.WithOrigins("http://localhost:8080", "http://localhost:5000").AllowAnyMethod().AllowAnyHeader().AllowCredentials());
+                options.AddPolicy(globalCorsName, builder => builder.WithOrigins("http://localhost:8080", "http://localhost:8081").AllowAnyMethod().AllowAnyHeader().AllowCredentials());
             });
 
             services.Configure<RouteOptions>(config =>
